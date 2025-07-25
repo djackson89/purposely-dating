@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Heart, MessageCircle, Zap, Users, Share, Plus, ChevronDown, ChevronUp, Eye, EyeOff } from 'lucide-react';
+import { Heart, MessageCircle, Zap, Users, Share, Plus, ChevronDown, ChevronUp, Eye, EyeOff, ThumbsUp, ThumbsDown, HelpCircle, Trash2 } from 'lucide-react';
 import { Share as CapacitorShare } from '@capacitor/share';
 import { useRelationshipAI } from '@/hooks/useRelationshipAI';
 
@@ -269,6 +269,18 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
     }
   };
 
+  const deleteProspect = (prospectId: string) => {
+    setProspects(prospects.filter(p => p.id !== prospectId));
+    // Clean up related state
+    const newShowMoreMetrics = { ...showMoreMetrics };
+    delete newShowMoreMetrics[prospectId];
+    setShowMoreMetrics(newShowMoreMetrics);
+    
+    const newAiContext = { ...aiContext };
+    delete newAiContext[prospectId];
+    setAiContext(newAiContext);
+  };
+
   const sections = [
     { id: 'prospects', label: 'Dating Prospects', icon: Users },
     { id: 'starters', label: 'Conversation', icon: MessageCircle },
@@ -413,21 +425,42 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
                             <div key={metric} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
                               <span className="text-sm font-medium">{prospect.nickname}'s {metric.toLowerCase()}:</span>
                               <div className="flex space-x-2">
-                                {['green', 'red', 'unsure'].map((flag) => (
-                                  <Button
-                                    key={flag}
-                                    size="sm"
-                                    variant={prospect.flags[metric] === flag ? "default" : "outline"}
-                                    onClick={() => updateProspectFlag(prospect.id, metric, flag as any)}
-                                    className={`${
-                                      flag === 'green' ? 'bg-green-500 hover:bg-green-600 text-white' :
-                                      flag === 'red' ? 'bg-red-500 hover:bg-red-600 text-white' :
-                                      'bg-yellow-500 hover:bg-yellow-600 text-white'
-                                    } ${prospect.flags[metric] === flag ? '' : 'bg-transparent text-foreground'}`}
-                                  >
-                                    {flag === 'green' ? '✓' : flag === 'red' ? '✗' : '?'}
-                                  </Button>
-                                ))}
+                                <Button
+                                  size="sm"
+                                  variant={prospect.flags[metric] === 'green' ? "default" : "outline"}
+                                  onClick={() => updateProspectFlag(prospect.id, metric, 'green')}
+                                  className={`${
+                                    prospect.flags[metric] === 'green' 
+                                      ? 'bg-green-500 hover:bg-green-600 text-white' 
+                                      : 'bg-transparent text-foreground hover:bg-green-50'
+                                  }`}
+                                >
+                                  <ThumbsUp className="w-4 h-4" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant={prospect.flags[metric] === 'red' ? "default" : "outline"}
+                                  onClick={() => updateProspectFlag(prospect.id, metric, 'red')}
+                                  className={`${
+                                    prospect.flags[metric] === 'red' 
+                                      ? 'bg-red-500 hover:bg-red-600 text-white' 
+                                      : 'bg-transparent text-foreground hover:bg-red-50'
+                                  }`}
+                                >
+                                  <ThumbsDown className="w-4 h-4" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant={prospect.flags[metric] === 'unsure' ? "default" : "outline"}
+                                  onClick={() => updateProspectFlag(prospect.id, metric, 'unsure')}
+                                  className={`${
+                                    prospect.flags[metric] === 'unsure' 
+                                      ? 'bg-yellow-500 hover:bg-yellow-600 text-white' 
+                                      : 'bg-transparent text-foreground hover:bg-yellow-50'
+                                  }`}
+                                >
+                                  <HelpCircle className="w-4 h-4" />
+                                </Button>
                               </div>
                             </div>
                           ))}
@@ -483,6 +516,19 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
                           className="w-full"
                         >
                           {isLoading ? 'Getting advice...' : 'Ask Purposely'}
+                        </Button>
+                      </div>
+
+                      {/* Delete Prospect Button */}
+                      <div className="pt-4 border-t border-border">
+                        <Button
+                          onClick={() => deleteProspect(prospect.id)}
+                          variant="destructive"
+                          size="sm"
+                          className="w-full"
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          Delete Prospect
                         </Button>
                       </div>
                     </div>
