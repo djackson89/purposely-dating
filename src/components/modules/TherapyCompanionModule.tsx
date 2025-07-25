@@ -3,7 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
-import { Heart, BookOpen, TrendingUp, Calendar, Sparkles, Brain, MessageSquare } from 'lucide-react';
+import { Heart, BookOpen, TrendingUp, Calendar, Sparkles, Brain, MessageSquare, Loader2 } from 'lucide-react';
+import { useRelationshipAI } from '@/hooks/useRelationshipAI';
+import { useToast } from '@/components/ui/use-toast';
 
 interface OnboardingData {
   loveLanguage: string;
@@ -22,6 +24,12 @@ const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userPro
   const [journalEntry, setJournalEntry] = useState('');
   const [showAIInsight, setShowAIInsight] = useState<{[key: number]: boolean}>({});
   const [postTherapyInputs, setPostTherapyInputs] = useState<{[key: number]: string}>({});
+  const [aiInsights, setAiInsights] = useState<{[key: number]: string}>({});
+  const [postTherapyAIResponses, setPostTherapyAIResponses] = useState<{[key: number]: string}>({});
+  const [loadingInsight, setLoadingInsight] = useState<{[key: number]: boolean}>({});
+  
+  const { getTherapyInsight, isLoading } = useRelationshipAI();
+  const { toast } = useToast();
   
   // Personalized therapy prompts based on user profile
   const getPersonalizedPrompts = () => {
@@ -71,8 +79,44 @@ const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userPro
     setPostTherapyInputs(prev => ({ ...prev, [index]: value }));
   };
 
-  const toggleAIInsight = (index: number) => {
+  const toggleAIInsight = async (index: number) => {
+    const isCurrentlyShown = showAIInsight[index];
     setShowAIInsight(prev => ({ ...prev, [index]: !prev[index] }));
+    
+    // If we're showing the insight and haven't generated it yet, get AI response
+    if (!isCurrentlyShown && !aiInsights[index]) {
+      setLoadingInsight(prev => ({ ...prev, [index]: true }));
+      try {
+        const prompt = personalizedPrompts.pre[index];
+        const insight = await getTherapyInsight(prompt, userProfile);
+        setAiInsights(prev => ({ ...prev, [index]: insight }));
+      } catch (error) {
+        console.error('Failed to get AI insight:', error);
+        // Keep the default insight if AI fails
+        setAiInsights(prev => ({ ...prev, [index]: getAIInsight(personalizedPrompts.pre[index], true) }));
+      } finally {
+        setLoadingInsight(prev => ({ ...prev, [index]: false }));
+      }
+    }
+  };
+
+  const handlePostTherapyAIResponse = async (index: number, input: string) => {
+    if (!input.trim()) return;
+    
+    try {
+      const response = await getTherapyInsight(
+        `The user shared this therapy takeaway: "${input}". Please provide encouraging affirmation and practical next steps for implementing this insight in their relationship.`,
+        userProfile
+      );
+      setPostTherapyAIResponses(prev => ({ ...prev, [index]: response }));
+    } catch (error) {
+      console.error('Failed to get AI response:', error);
+      toast({
+        title: "AI Error",
+        description: "Failed to generate AI response. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const dailyPrompt = userProfile.personalityType.includes("Introspective") 
@@ -154,14 +198,21 @@ const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userPro
                       <Brain className="w-4 h-4" />
                     </Button>
                   </div>
-                  {showAIInsight[index] && (
-                    <div className="mt-3 p-3 bg-primary/5 rounded-lg border border-primary/10">
-                      <p className="text-xs font-medium text-primary mb-2">AI Relationship Therapist's Perspective:</p>
-                      <p className="text-sm text-muted-foreground">
-                        {getAIInsight(prompt, true)}
-                      </p>
-                    </div>
-                  )}
+                   {showAIInsight[index] && (
+                     <div className="mt-3 p-3 bg-primary/5 rounded-lg border border-primary/10">
+                       <p className="text-xs font-medium text-primary mb-2">AI Relationship Therapist's Perspective:</p>
+                       {loadingInsight[index] ? (
+                         <div className="flex items-center space-x-2">
+                           <Loader2 className="w-4 h-4 animate-spin" />
+                           <span className="text-sm text-muted-foreground">Getting personalized insight...</span>
+                         </div>
+                       ) : (
+                         <p className="text-sm text-muted-foreground">
+                           {aiInsights[index] || getAIInsight(prompt, true)}
+                         </p>
+                       )}
+                     </div>
+                   )}
                 </div>
               ))}
               <Button variant="romance" className="w-full">
@@ -184,20 +235,28 @@ const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userPro
               {personalizedPrompts.post.map((prompt, index) => (
                 <div key={index} className="p-4 bg-gradient-soft rounded-lg border border-primary/10">
                   <p className="text-sm text-foreground mb-3 font-medium">{prompt}:</p>
-                  <Textarea 
-                    placeholder="Share your therapy takeaway..."
-                    className="min-h-[80px] border-primary/20 focus:border-primary mb-3"
-                    value={postTherapyInputs[index] || ''}
-                    onChange={(e) => handlePostTherapyInput(index, e.target.value)}
-                  />
-                  {postTherapyInputs[index] && (
-                    <div className="mt-3 p-3 bg-primary/5 rounded-lg border border-primary/10">
-                      <p className="text-xs font-medium text-primary mb-2">AI Relationship Therapist's Response:</p>
-                      <p className="text-sm text-muted-foreground">
-                        {getAIInsight(postTherapyInputs[index], false)} Here are some ways to implement this insight: Practice this awareness daily, discuss it with your partner when appropriate, and celebrate small progress steps.
-                      </p>
-                    </div>
-                  )}
+                   <Textarea 
+                     placeholder="Share your therapy takeaway..."
+                     className="min-h-[80px] border-primary/20 focus:border-primary mb-3"
+                     value={postTherapyInputs[index] || ''}
+                     onChange={(e) => handlePostTherapyInput(index, e.target.value)}
+                     onBlur={() => handlePostTherapyAIResponse(index, postTherapyInputs[index] || '')}
+                   />
+                   {postTherapyInputs[index] && (
+                     <div className="mt-3 p-3 bg-primary/5 rounded-lg border border-primary/10">
+                       <p className="text-xs font-medium text-primary mb-2">AI Relationship Therapist's Response:</p>
+                       {isLoading ? (
+                         <div className="flex items-center space-x-2">
+                           <Loader2 className="w-4 h-4 animate-spin" />
+                           <span className="text-sm text-muted-foreground">Generating personalized response...</span>
+                         </div>
+                       ) : (
+                         <p className="text-sm text-muted-foreground">
+                           {postTherapyAIResponses[index] || getAIInsight(postTherapyInputs[index], false)}
+                         </p>
+                       )}
+                     </div>
+                   )}
                 </div>
               ))}
               <Button variant="romance" className="w-full">

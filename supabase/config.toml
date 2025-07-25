@@ -1,1 +1,4 @@
 project_id = "csupviqxprhtrbfbugct"
+
+[functions.relationship-ai]
+verify_jwt = false
