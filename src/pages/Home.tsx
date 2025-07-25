@@ -122,7 +122,7 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel }) => {
   };
 
   return (
-    <div className="pb-20 pt-6 px-4 space-y-6 bg-gradient-soft min-h-screen">
+    <div className="pb-20 pt-6 px-4 space-y-6 bg-gradient-soft min-h-screen safe-area-pt">
       {/* Header */}
       <div className="text-center space-y-2">
         <h1 className="text-2xl font-bold bg-gradient-romance bg-clip-text text-transparent">
