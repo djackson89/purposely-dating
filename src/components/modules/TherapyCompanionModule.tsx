@@ -243,6 +243,14 @@ const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userPro
       {/* Therapy Reflection */}
       {activeSection === 'reflection' && (
         <div className="space-y-4 animate-fade-in-up">
+          {/* Descriptive One-liner */}
+          <Card className="shadow-soft border-primary/10">
+            <CardContent className="pt-6">
+              <p className="text-sm text-muted-foreground text-center leading-relaxed">
+                Prepare thoughtful questions for therapy and reflect on your insights to maximize your relationship growth.
+              </p>
+            </CardContent>
+          </Card>
           <Card className="shadow-romance border-primary/20">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
@@ -418,6 +426,14 @@ const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userPro
       {/* Growth Journal */}
       {activeSection === 'journal' && (
         <div className="space-y-4 animate-fade-in-up">
+          {/* Descriptive One-liner */}
+          <Card className="shadow-soft border-primary/10">
+            <CardContent className="pt-6">
+              <p className="text-sm text-muted-foreground text-center leading-relaxed">
+                Document your relationship journey, capture breakthrough moments, and track your emotional growth over time.
+              </p>
+            </CardContent>
+          </Card>
           <Card className="shadow-romance border-primary/20">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
@@ -474,6 +490,14 @@ const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userPro
       {/* Insights & Tracking */}
       {activeSection === 'insights' && (
         <div className="space-y-4 animate-fade-in-up">
+          {/* Descriptive One-liner */}
+          <Card className="shadow-soft border-primary/10">
+            <CardContent className="pt-6">
+              <p className="text-sm text-muted-foreground text-center leading-relaxed">
+                Visualize your relationship patterns, track emotional trends, and celebrate your progress with data-driven insights.
+              </p>
+            </CardContent>
+          </Card>
           <Card className="shadow-romance border-primary/20">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
@@ -522,6 +546,14 @@ const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userPro
       {/* Daily Prompts */}
       {activeSection === 'prompts' && (
         <div className="space-y-4 animate-fade-in-up">
+          {/* Descriptive One-liner */}
+          <Card className="shadow-soft border-primary/10">
+            <CardContent className="pt-6">
+              <p className="text-sm text-muted-foreground text-center leading-relaxed">
+                Start each day with intention through guided reflection and gratitude practices designed to deepen your connections.
+              </p>
+            </CardContent>
+          </Card>
           <Card className="shadow-romance border-primary/20">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">

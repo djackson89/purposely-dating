@@ -150,6 +150,46 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
         "What's your favorite memory of us together?",
         "How do you prefer to handle disagreements?"
       ]
+    },
+    {
+      category: "Intimacy",
+      prompts: [
+        "What does emotional intimacy mean to you?",
+        "How do you like to show and receive affection?",
+        "What makes you feel most connected to someone?"
+      ]
+    },
+    {
+      category: "Relationship Boundaries",
+      prompts: [
+        "What are your non-negotiables in a relationship?",
+        "How do you handle time with friends versus partner time?",
+        "What boundaries help you feel secure in relationships?"
+      ]
+    },
+    {
+      category: "Turn-Offs & Turn-Ons",
+      prompts: [
+        "What instantly makes you lose interest in someone?",
+        "What qualities make someone irresistible to you?",
+        "What's a green flag that not everyone appreciates?"
+      ]
+    },
+    {
+      category: "Mental Health",
+      prompts: [
+        "How do you take care of your mental health?",
+        "How would you support a partner going through a tough time?",
+        "What's your relationship with therapy or self-improvement?"
+      ]
+    },
+    {
+      category: "Date Night Debates",
+      prompts: [
+        "Pineapple on pizza: yes or no?",
+        "What's better: planning everything or being spontaneous?",
+        "Would you rather travel to the past or the future?"
+      ]
     }
   ];
 
@@ -320,6 +360,14 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
       {/* Dating Prospects */}
       {activeSection === 'prospects' && (
         <div className="space-y-4 animate-fade-in-up">
+          {/* Descriptive One-liner */}
+          <Card className="shadow-soft border-primary/10">
+            <CardContent className="pt-6">
+              <p className="text-sm text-muted-foreground text-center leading-relaxed">
+                Whether building a roster or evaluating a potential soulmate, keep track of the red flags, green flags, and even let Purposely tell you the best way to move forward towards your Happily Ever After!
+              </p>
+            </CardContent>
+          </Card>
           {/* Add New Prospect Button */}
           <Card className="shadow-soft border-primary/10">
             <CardContent className="pt-6">
@@ -551,6 +599,14 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
       {/* Conversation Starters */}
       {activeSection === 'starters' && (
         <div className="space-y-4 animate-fade-in-up">
+          {/* Descriptive One-liner */}
+          <Card className="shadow-soft border-primary/10">
+            <CardContent className="pt-6">
+              <p className="text-sm text-muted-foreground text-center leading-relaxed">
+                Break the ice and dive deep with thoughtfully curated questions for every stage of your relationship journey.
+              </p>
+            </CardContent>
+          </Card>
           {conversationStarters.map((category, index) => (
             <Card key={index} className="shadow-soft border-primary/10">
               <CardHeader>
@@ -584,6 +640,14 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
       {/* Flirty Texts */}
       {activeSection === 'messages' && (
         <div className="space-y-4 animate-fade-in-up">
+          {/* Descriptive One-liner */}
+          <Card className="shadow-soft border-primary/10">
+            <CardContent className="pt-6">
+              <p className="text-sm text-muted-foreground text-center leading-relaxed">
+                Keep the spark alive with sweet messages and daily challenges that build deeper connection and confidence.
+              </p>
+            </CardContent>
+          </Card>
           {/* Daily Challenge moved here */}
           <Card className="shadow-romance border-primary/20">
             <CardHeader>
@@ -633,7 +697,16 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
 
       {/* AI Practice */}
       {activeSection === 'practice' && (
-        <Card className="shadow-romance border-primary/20 animate-fade-in-up">
+        <div className="space-y-4 animate-fade-in-up">
+          {/* Descriptive One-liner */}
+          <Card className="shadow-soft border-primary/10">
+            <CardContent className="pt-6">
+              <p className="text-sm text-muted-foreground text-center leading-relaxed">
+                Practice conversations and build your confidence in a safe, judgment-free space before the real deal.
+              </p>
+            </CardContent>
+          </Card>
+        <Card className="shadow-romance border-primary/20">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <Users className="w-5 h-5 text-primary animate-heart-pulse" />
@@ -656,6 +729,7 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
             </div>
           </CardContent>
         </Card>
+        </div>
       )}
     </div>
   );

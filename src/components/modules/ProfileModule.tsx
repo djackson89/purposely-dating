@@ -58,6 +58,15 @@ const ProfileModule: React.FC<ProfileModuleProps> = ({ userProfile, onProfileUpd
         <p className="text-muted-foreground">Your relationship journey</p>
       </div>
 
+      {/* Descriptive One-liner */}
+      <Card className="shadow-soft border-primary/10">
+        <CardContent className="pt-6">
+          <p className="text-sm text-muted-foreground text-center leading-relaxed">
+            Track your growth, celebrate your progress, and personalize your Purposely Dating experience.
+          </p>
+        </CardContent>
+      </Card>
+
       {/* Profile Picture & Name */}
       <Card className="shadow-romance border-primary/20">
         <CardContent className="pt-6">

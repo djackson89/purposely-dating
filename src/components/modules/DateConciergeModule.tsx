@@ -72,7 +72,7 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
   ];
 
   const sections = [
-    { id: 'suggestions', label: 'AI Suggestions', icon: Sparkles },
+    { id: 'suggestions', label: 'Dating Planner', icon: Sparkles },
     { id: 'local', label: 'Local Events', icon: MapPin },
     { id: 'planning', label: 'Planning Board', icon: Users }
   ];
@@ -109,6 +109,14 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
       {/* AI Date Suggestions */}
       {activeSection === 'suggestions' && (
         <div className="space-y-4 animate-fade-in-up">
+          {/* Descriptive One-liner */}
+          <Card className="shadow-soft border-primary/10">
+            <CardContent className="pt-6">
+              <p className="text-sm text-muted-foreground text-center leading-relaxed">
+                Get personalized date ideas perfectly tailored to your love language, personality, and relationship goals.
+              </p>
+            </CardContent>
+          </Card>
           <Card className="shadow-romance border-primary/20">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
@@ -161,6 +169,14 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
       {/* Local Experiences */}
       {activeSection === 'local' && (
         <div className="space-y-4 animate-fade-in-up">
+          {/* Descriptive One-liner */}
+          <Card className="shadow-soft border-primary/10">
+            <CardContent className="pt-6">
+              <p className="text-sm text-muted-foreground text-center leading-relaxed">
+                Discover exciting activities and hidden gems in your area to create unforgettable experiences together.
+              </p>
+            </CardContent>
+          </Card>
           <Card className="shadow-romance border-primary/20">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
@@ -206,6 +222,14 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
       {/* Shared Planning Board */}
       {activeSection === 'planning' && (
         <div className="space-y-4 animate-fade-in-up">
+          {/* Descriptive One-liner */}
+          <Card className="shadow-soft border-primary/10">
+            <CardContent className="pt-6">
+              <p className="text-sm text-muted-foreground text-center leading-relaxed">
+                Collaborate with your partner to plan the perfect date night and keep track of who's doing what.
+              </p>
+            </CardContent>
+          </Card>
           <Card className="shadow-romance border-primary/20">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
