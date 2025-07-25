@@ -314,6 +314,31 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
     }
   };
 
+  const loadMoreFlirtyMessages = async () => {
+    const level = assertivenessLevel[0];
+    let styleDescription = '';
+    
+    if (level <= 3) {
+      styleDescription = 'passive, gentle, and sweet. They should be perfect for early relationship stages and shy personalities.';
+    } else if (level <= 7) {
+      styleDescription = 'moderately flirty with romantic tension. They should build attraction while being confident but not overwhelming.';
+    } else {
+      styleDescription = 'assertive, bold, and direct. They should express strong desire and passion for established intimate relationships.';
+    }
+    
+    const prompt = `Generate 3 new flirty text message suggestions that are ${styleDescription} Include the message text and brief explanations of why they work, when to use them, when to avoid them, and what level of familiarity is needed. Format each as a complete suggestion with explanations.`;
+    
+    try {
+      const response = await getFlirtSuggestion(prompt, userProfile);
+      
+      // This would ideally parse the AI response and add to existing messages
+      // For now, we'll show the response in an alert (you could enhance this with a modal)
+      alert(`New flirty message suggestions:\n\n${response}`);
+    } catch (error) {
+      console.error('Error generating more flirty messages:', error);
+    }
+  };
+
   const addNewProspect = () => {
     if (!newProspectNickname.trim()) return;
     
@@ -972,6 +997,18 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
               ))}
             </CardContent>
           </Card>
+
+          {/* See More Button */}
+          <div className="text-center">
+            <Button
+              onClick={loadMoreFlirtyMessages}
+              disabled={isLoading}
+              variant="outline"
+              className="w-full"
+            >
+              {isLoading ? 'Loading...' : 'See More'}
+            </Button>
+          </div>
         </div>
       )}
 
