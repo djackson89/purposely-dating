@@ -35,11 +35,11 @@ const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userPro
   const getPersonalizedPrompts = () => {
     const basePrompts = {
       pre: [
-        "What relationship patterns would you like to explore in today's session?",
-        "How do you feel your communication style is working in your relationship?",
-        "What emotions have been challenging for you to process this week?",
-        "Are there any specific conflicts or concerns you'd like to discuss?",
-        "How has your attachment style been showing up in your relationship lately?"
+        "Can you help me identify unhealthy relationship patterns based on my past relationships?",
+        "How can I improve my communication style to better connect with my partner?",
+        "What tools can you teach me to better process difficult emotions in my relationship?",
+        "Can we work through some specific conflicts I've been having with my partner?",
+        "How is my attachment style affecting my current relationship, and what can I do about it?"
       ],
       post: [
         "Share a key takeaway from your therapy session today",
@@ -50,9 +50,9 @@ const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userPro
     };
 
     if (userProfile.loveLanguage === "Words of Affirmation") {
-      basePrompts.pre.push("How comfortable are you with expressing your emotional needs verbally?");
+      basePrompts.pre.push("Can you help me learn how to better express my emotional needs verbally?");
     } else if (userProfile.loveLanguage === "Quality Time") {
-      basePrompts.pre.push("How connected do you feel during intimate moments with your partner?");
+      basePrompts.pre.push("How can my partner and I create more meaningful intimate moments together?");
     }
 
     return basePrompts;
