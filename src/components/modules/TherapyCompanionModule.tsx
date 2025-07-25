@@ -3,7 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
-import { Heart, BookOpen, TrendingUp, Calendar, Sparkles, Brain, MessageSquare, Loader2, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
+import { Slider } from '@/components/ui/slider';
+import { Heart, BookOpen, TrendingUp, Sparkles, Brain, MessageSquare, Loader2, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { useRelationshipAI } from '@/hooks/useRelationshipAI';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -20,7 +21,7 @@ interface TherapyCompanionModuleProps {
 }
 
 const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userProfile }) => {
-  const [activeSection, setActiveSection] = useState<'reflection' | 'journal' | 'insights' | 'prompts'>('reflection');
+  const [activeSection, setActiveSection] = useState<'reflection' | 'journal' | 'insights'>('reflection');
   const [journalEntry, setJournalEntry] = useState('');
   const [postTherapyInputs, setPostTherapyInputs] = useState<{[key: number]: string}>({});
   const [preTherapyInputs, setPreTherapyInputs] = useState<{[key: number]: string}>({});
@@ -31,6 +32,23 @@ const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userPro
   const [preTherapyPage, setPreTherapyPage] = useState(0);
   const [postTherapyPage, setPostTherapyPage] = useState(0);
   const [savedJournalEntries, setSavedJournalEntries] = useState<{[key: string]: string[]}>({});
+  
+  // Mental Health Check-In state
+  const [stressLevel, setStressLevel] = useState([5]);
+  const [energyLevel, setEnergyLevel] = useState([5]);
+  const [mentalClarity, setMentalClarity] = useState([5]);
+  const [anxiousThoughts, setAnxiousThoughts] = useState([5]);
+  const [depressiveThoughts, setDepressiveThoughts] = useState([5]);
+  const [checkInEntries, setCheckInEntries] = useState<Array<{
+    date: string;
+    stress: number;
+    energy: number;
+    clarity: number;
+    anxiety: number;
+    depression: number;
+  }>>([]);
+  const [recommendation, setRecommendation] = useState('');
+  const [loadingRecommendation, setLoadingRecommendation] = useState(false);
   
   const { getTherapyInsight, isLoading } = useRelationshipAI();
   const { toast } = useToast();
@@ -207,9 +225,64 @@ const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userPro
   const sections = [
     { id: 'reflection', label: 'Therapy Reflection', icon: Sparkles },
     { id: 'journal', label: 'Growth Journal', icon: BookOpen },
-    { id: 'insights', label: 'Insights', icon: TrendingUp },
-    { id: 'prompts', label: 'Daily Prompts', icon: Calendar }
+    { id: 'insights', label: 'Mental Health Check-In', icon: TrendingUp }
   ];
+
+  // Handle mental health check-in completion
+  const handleCompleteCheckIn = async () => {
+    const today = new Date().toDateString();
+    const newEntry = {
+      date: today,
+      stress: stressLevel[0],
+      energy: energyLevel[0],
+      clarity: mentalClarity[0],
+      anxiety: anxiousThoughts[0],
+      depression: depressiveThoughts[0]
+    };
+
+    // Save new entry
+    const updatedEntries = [...checkInEntries, newEntry];
+    setCheckInEntries(updatedEntries);
+    localStorage.setItem('mentalHealthCheckIns', JSON.stringify(updatedEntries));
+
+    // Generate recommendation based on current and previous entries
+    setLoadingRecommendation(true);
+    try {
+      let prompt = `Based on today's mental health check-in: Stress Level: ${stressLevel[0]}/10, Energy Level: ${energyLevel[0]}/10, Mental Clarity: ${mentalClarity[0]}/10, Anxious Thoughts: ${anxiousThoughts[0]}/10, Depressive Thoughts: ${depressiveThoughts[0]}/10.`;
+      
+      if (checkInEntries.length > 0) {
+        const lastEntry = checkInEntries[checkInEntries.length - 1];
+        prompt += ` Previous entry: Stress: ${lastEntry.stress}/10, Energy: ${lastEntry.energy}/10, Clarity: ${lastEntry.clarity}/10, Anxiety: ${lastEntry.anxiety}/10, Depression: ${lastEntry.depression}/10.`;
+      }
+
+      prompt += ' Please provide a personalized recommendation for improving mental health or maintaining good progress, considering trends if there are previous entries. Keep it encouraging and actionable.';
+
+      const response = await getTherapyInsight(prompt, userProfile);
+      setRecommendation(response);
+
+      toast({
+        title: "Check-in Complete",
+        description: "Your mental health check-in has been saved with a personalized recommendation.",
+      });
+    } catch (error) {
+      console.error('Error generating recommendation:', error);
+      toast({
+        title: "Check-in Saved",
+        description: "Your check-in was saved, but we couldn't generate a recommendation right now.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingRecommendation(false);
+    }
+  };
+
+  // Load saved check-ins on mount
+  React.useEffect(() => {
+    const saved = localStorage.getItem('mentalHealthCheckIns');
+    if (saved) {
+      setCheckInEntries(JSON.parse(saved));
+    }
+  }, []);
 
   return (
     <div className="pb-20 pt-6 px-4 space-y-6 bg-gradient-soft min-h-screen">
@@ -487,114 +560,179 @@ const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userPro
         </div>
       )}
 
-      {/* Insights & Tracking */}
+      {/* Mental Health Check-In */}
       {activeSection === 'insights' && (
         <div className="space-y-4 animate-fade-in-up">
           {/* Descriptive One-liner */}
           <Card className="shadow-soft border-primary/10">
             <CardContent className="pt-6">
               <p className="text-sm text-muted-foreground text-center leading-relaxed">
-                Visualize your relationship patterns, track emotional trends, and celebrate your progress with data-driven insights.
+                Track your daily mental health and receive personalized recommendations to support your emotional well-being.
               </p>
             </CardContent>
           </Card>
+          
           <Card className="shadow-romance border-primary/20">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <TrendingUp className="w-5 h-5 text-primary animate-heart-pulse" />
-                <span>Relationship Insights</span>
+                <span>Mental Health Check-In</span>
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              {intimacyInsights.map((insight, index) => (
-                <div key={index} className="flex justify-between items-center p-3 bg-gradient-soft rounded-lg">
-                  <div>
-                    <h4 className="font-medium text-foreground">{insight.metric}</h4>
-                    <p className="text-sm text-muted-foreground">{insight.value}</p>
-                  </div>
-                  <Badge variant={insight.trend === 'up' ? 'default' : insight.trend === 'down' ? 'secondary' : 'outline'}>
-                    {insight.trend === 'up' ? '↗️' : insight.trend === 'down' ? '↘️' : '→'}
-                  </Badge>
+            <CardContent className="space-y-6">
+              {/* Stress Level */}
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <label className="text-sm font-medium text-foreground">Stress Level</label>
+                  <span className="text-xs text-muted-foreground">{stressLevel[0]}/10</span>
                 </div>
-              ))}
-            </CardContent>
-          </Card>
-
-          <Card className="shadow-soft border-primary/10">
-            <CardHeader>
-              <CardTitle>Weekly Check-in</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="p-4 bg-gradient-soft rounded-lg border border-primary/10 text-center">
-                <p className="text-sm text-muted-foreground mb-4">
-                  Track your emotional patterns and relationship satisfaction
-                </p>
-                <Button variant="romance" className="w-full">
-                  Complete Check-in ✨
-                </Button>
-              </div>
-              <div className="text-center">
-                <p className="text-xs text-muted-foreground">
-                  Advanced tracking features require backend integration
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      {/* Daily Prompts */}
-      {activeSection === 'prompts' && (
-        <div className="space-y-4 animate-fade-in-up">
-          {/* Descriptive One-liner */}
-          <Card className="shadow-soft border-primary/10">
-            <CardContent className="pt-6">
-              <p className="text-sm text-muted-foreground text-center leading-relaxed">
-                Start each day with intention through guided reflection and gratitude practices designed to deepen your connections.
-              </p>
-            </CardContent>
-          </Card>
-          <Card className="shadow-romance border-primary/20">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Calendar className="w-5 h-5 text-primary animate-heart-pulse" />
-                <span>Today's Reflection</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="p-4 bg-gradient-soft rounded-lg border border-primary/10">
-                <p className="text-foreground leading-relaxed mb-4">{dailyPrompt}</p>
-                <Textarea 
-                  placeholder="Take a moment to reflect..."
-                  className="min-h-[100px] border-primary/20 focus:border-primary"
+                <Slider
+                  value={stressLevel}
+                  onValueChange={setStressLevel}
+                  max={10}
+                  min={1}
+                  step={1}
+                  className="w-full"
                 />
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>Low</span>
+                  <span>High</span>
+                </div>
               </div>
-              <Button variant="romance" className="w-full">
-                Save Reflection 💕
+
+              {/* Energy Levels */}
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <label className="text-sm font-medium text-foreground">Energy Levels</label>
+                  <span className="text-xs text-muted-foreground">{energyLevel[0]}/10</span>
+                </div>
+                <Slider
+                  value={energyLevel}
+                  onValueChange={setEnergyLevel}
+                  max={10}
+                  min={1}
+                  step={1}
+                  className="w-full"
+                />
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>Low</span>
+                  <span>High</span>
+                </div>
+              </div>
+
+              {/* Mental Clarity */}
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <label className="text-sm font-medium text-foreground">Mental Clarity</label>
+                  <span className="text-xs text-muted-foreground">{mentalClarity[0]}/10</span>
+                </div>
+                <Slider
+                  value={mentalClarity}
+                  onValueChange={setMentalClarity}
+                  max={10}
+                  min={1}
+                  step={1}
+                  className="w-full"
+                />
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>Low</span>
+                  <span>High</span>
+                </div>
+              </div>
+
+              {/* Anxious Thoughts */}
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <label className="text-sm font-medium text-foreground">Anxious Thoughts</label>
+                  <span className="text-xs text-muted-foreground">{anxiousThoughts[0]}/10</span>
+                </div>
+                <Slider
+                  value={anxiousThoughts}
+                  onValueChange={setAnxiousThoughts}
+                  max={10}
+                  min={1}
+                  step={1}
+                  className="w-full"
+                />
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>Low</span>
+                  <span>High</span>
+                </div>
+              </div>
+
+              {/* Depressive Thoughts */}
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <label className="text-sm font-medium text-foreground">Depressive Thoughts</label>
+                  <span className="text-xs text-muted-foreground">{depressiveThoughts[0]}/10</span>
+                </div>
+                <Slider
+                  value={depressiveThoughts}
+                  onValueChange={setDepressiveThoughts}
+                  max={10}
+                  min={1}
+                  step={1}
+                  className="w-full"
+                />
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>Low</span>
+                  <span>High</span>
+                </div>
+              </div>
+
+              {/* Complete Check-in Button */}
+              <Button 
+                onClick={handleCompleteCheckIn}
+                disabled={loadingRecommendation}
+                variant="romance" 
+                className="w-full"
+              >
+                {loadingRecommendation ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Generating Recommendation...
+                  </>
+                ) : (
+                  'Complete Check-in'
+                )}
               </Button>
+
+              {/* Purposely Recommendation */}
+              {recommendation && (
+                <div className="mt-4 p-4 bg-primary/5 rounded-lg border border-primary/10">
+                  <p className="text-xs font-medium text-primary mb-2">Purposely's Recommendation:</p>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {recommendation}
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
 
-          <Card className="shadow-soft border-primary/10">
-            <CardHeader>
-              <CardTitle>Gratitude Practice</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <p className="text-sm text-muted-foreground mb-4">
-                What are three things in your relationship that you're grateful for today?
-              </p>
-              {[1, 2, 3].map((num) => (
-                <Textarea 
-                  key={num}
-                  placeholder={`Gratitude ${num}...`}
-                  className="min-h-[60px] border-primary/20 focus:border-primary"
-                />
-              ))}
-              <Button variant="romance" className="w-full mt-4">
-                Save Gratitudes ✨
-              </Button>
-            </CardContent>
-          </Card>
+          {/* Previous Check-ins */}
+          {checkInEntries.length > 0 && (
+            <Card className="shadow-soft border-primary/10">
+              <CardHeader>
+                <CardTitle>Recent Check-ins</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {checkInEntries.slice(-3).reverse().map((entry, index) => (
+                  <div key={index} className="p-3 bg-gradient-soft rounded-lg border border-primary/10">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-sm font-medium text-foreground">{entry.date}</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div>Stress: {entry.stress}/10</div>
+                      <div>Energy: {entry.energy}/10</div>
+                      <div>Clarity: {entry.clarity}/10</div>
+                      <div>Anxiety: {entry.anxiety}/10</div>
+                      <div className="col-span-2">Depression: {entry.depression}/10</div>
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          )}
         </div>
       )}
     </div>

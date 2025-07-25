@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import OnboardingFlow from '@/components/OnboardingFlow';
 import Navigation from '@/components/Navigation';
+import Home from '@/pages/Home';
 import FlirtFuelModule from '@/components/modules/FlirtFuelModule';
 import DateConciergeModule from '@/components/modules/DateConciergeModule';
 import TherapyCompanionModule from '@/components/modules/TherapyCompanionModule';
@@ -17,7 +18,7 @@ interface OnboardingData {
 const Index = () => {
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
   const [userProfile, setUserProfile] = useState<OnboardingData | null>(null);
-  const [activeModule, setActiveModule] = useState<'flirtfuel' | 'concierge' | 'therapy' | 'profile'>('flirtfuel');
+  const [activeModule, setActiveModule] = useState<'home' | 'flirtfuel' | 'concierge' | 'therapy' | 'profile'>('home');
 
   // Check for existing onboarding data
   useEffect(() => {
@@ -45,8 +46,14 @@ const Index = () => {
     localStorage.setItem('relationshipCompanionProfile', JSON.stringify(updatedProfile));
   };
 
+  const handleNavigateToFlirtFuel = () => {
+    setActiveModule('flirtfuel');
+  };
+
   const renderActiveModule = () => {
     switch (activeModule) {
+      case 'home':
+        return <Home userProfile={userProfile} onNavigateToFlirtFuel={handleNavigateToFlirtFuel} />;
       case 'flirtfuel':
         return <FlirtFuelModule userProfile={userProfile} />;
       case 'concierge':
@@ -56,7 +63,7 @@ const Index = () => {
       case 'profile':
         return <ProfileModule userProfile={userProfile} onProfileUpdate={handleProfileUpdate} />;
       default:
-        return <FlirtFuelModule userProfile={userProfile} />;
+        return <Home userProfile={userProfile} onNavigateToFlirtFuel={handleNavigateToFlirtFuel} />;
     }
   };
 

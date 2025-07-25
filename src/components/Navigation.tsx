@@ -1,14 +1,20 @@
 import React from 'react';
-import { Heart, Calendar, Sparkles, User } from 'lucide-react';
+import { Home, Heart, Calendar, Sparkles, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface NavigationProps {
-  activeModule: 'flirtfuel' | 'concierge' | 'therapy' | 'profile';
-  onModuleChange: (module: 'flirtfuel' | 'concierge' | 'therapy' | 'profile') => void;
+  activeModule: 'home' | 'flirtfuel' | 'concierge' | 'therapy' | 'profile';
+  onModuleChange: (module: 'home' | 'flirtfuel' | 'concierge' | 'therapy' | 'profile') => void;
 }
 
 const Navigation: React.FC<NavigationProps> = ({ activeModule, onModuleChange }) => {
   const navItems = [
+    {
+      id: 'home' as const,
+      icon: Home,
+      label: 'Home',
+      color: 'text-blue-500'
+    },
     {
       id: 'flirtfuel' as const,
       icon: Heart,
