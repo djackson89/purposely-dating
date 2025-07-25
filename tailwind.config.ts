@@ -26,7 +26,8 @@ export default {
 				foreground: 'hsl(var(--foreground))',
 				primary: {
 					DEFAULT: 'hsl(var(--primary))',
-					foreground: 'hsl(var(--primary-foreground))'
+					foreground: 'hsl(var(--primary-foreground))',
+					glow: 'hsl(var(--primary-glow))'
 				},
 				secondary: {
 					DEFAULT: 'hsl(var(--secondary))',
@@ -63,6 +64,16 @@ export default {
 					ring: 'hsl(var(--sidebar-ring))'
 				}
 			},
+			backgroundImage: {
+				'gradient-romance': 'var(--gradient-romance)',
+				'gradient-sunset': 'var(--gradient-sunset)',
+				'gradient-soft': 'var(--gradient-soft)'
+			},
+			boxShadow: {
+				'romance': 'var(--shadow-romance)',
+				'glow': 'var(--shadow-glow)',
+				'soft': 'var(--shadow-soft)'
+			},
 			borderRadius: {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',
@@ -84,11 +95,42 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'heart-pulse': {
+					'0%, 100%': { 
+						transform: 'scale(1)',
+						opacity: '1'
+					},
+					'50%': { 
+						transform: 'scale(1.1)',
+						opacity: '0.8'
+					}
+				},
+				'float': {
+					'0%, 100%': { transform: 'translateY(0px)' },
+					'50%': { transform: 'translateY(-10px)' }
+				},
+				'fade-in-up': {
+					'0%': { 
+						opacity: '0',
+						transform: 'translateY(20px)'
+					},
+					'100%': { 
+						opacity: '1',
+						transform: 'translateY(0)'
+					}
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'heart-pulse': 'heart-pulse 2s ease-in-out infinite',
+				'float': 'float 3s ease-in-out infinite',
+				'fade-in-up': 'fade-in-up 0.6s ease-out'
+			},
+			transitionTimingFunction: {
+				'romance': 'var(--transition-romance)',
+				'bounce': 'var(--transition-bounce)'
 			}
 		}
 	},

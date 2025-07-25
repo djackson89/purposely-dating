@@ -2,39 +2,62 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
+/* ROMANCE-THEMED DESIGN SYSTEM
+All colors MUST be HSL. Romance palette with warm pinks, corals, and creams.
 */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Romance Background Colors */
+    --background: 351 25% 97%; /* Soft cream-pink */
+    --foreground: 345 15% 15%; /* Deep romantic brown */
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    /* Card & Surface Colors */
+    --card: 0 0% 100%; /* Pure white for contrast */
+    --card-foreground: 345 15% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 345 15% 15%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Primary Romance Colors */
+    --primary: 345 83% 61%; /* Rose pink */
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 345 65% 75%; /* Lighter rose for gradients */
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Secondary Warm Colors */
+    --secondary: 25 35% 91%; /* Warm cream */
+    --secondary-foreground: 345 15% 15%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Muted & Neutral */
+    --muted: 351 25% 94%; /* Very light pink-cream */
+    --muted-foreground: 345 8% 46%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Accent Coral */
+    --accent: 14 78% 70%; /* Warm coral */
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    /* Status Colors */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    /* Borders & Inputs */
+    --border: 345 25% 88%; /* Soft pink border */
+    --input: 345 25% 88%;
+    --ring: 345 83% 61%; /* Rose focus ring */
+
+    /* Romance Gradients */
+    --gradient-romance: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
+    --gradient-sunset: linear-gradient(135deg, hsl(345, 83%, 61%), hsl(25, 78%, 70%), hsl(45, 93%, 80%));
+    --gradient-soft: linear-gradient(180deg, hsl(var(--background)), hsl(var(--muted)));
+
+    /* Romantic Shadows */
+    --shadow-romance: 0 10px 30px -10px hsl(var(--primary) / 0.3);
+    --shadow-glow: 0 0 40px hsl(var(--primary-glow) / 0.4);
+    --shadow-soft: 0 4px 20px -4px hsl(var(--primary) / 0.15);
+
+    /* Smooth Animations */
+    --transition-romance: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
     --radius: 0.5rem;
 
