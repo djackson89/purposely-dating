@@ -75,13 +75,17 @@ const flagMetrics = [
 ];
 
 const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
-  const [activeSection, setActiveSection] = useState<'prospects' | 'starters' | 'messages' | 'practice'>('prospects');
+  const [activeSection, setActiveSection] = useState<'prospects' | 'starters' | 'messages' | 'practice'>('starters');
   const [prospects, setProspects] = useState<DatingProspect[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [newProspectNickname, setNewProspectNickname] = useState('');
   const [newProspectRanking, setNewProspectRanking] = useState(1);
   const [showMoreMetrics, setShowMoreMetrics] = useState<{ [key: string]: boolean }>({});
   const [aiContext, setAiContext] = useState<{ [key: string]: string }>({});
+  const [selectedCategory, setSelectedCategory] = useState('Relationship Talk');
+  const [customKeywords, setCustomKeywords] = useState('');
+  const [currentStarters, setCurrentStarters] = useState<string[]>([]);
+  const [isCustom, setIsCustom] = useState(false);
   const { getFlirtSuggestion, isLoading } = useRelationshipAI();
 
   const handleShare = async (text: string) => {
@@ -135,12 +139,18 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
         ? [
             "What's the most spontaneous thing you've ever done?",
             "If you could have dinner with anyone, who would it be?",
-            "What's your favorite way to celebrate small wins?"
+            "What's your favorite way to celebrate small wins?",
+            "What's the craziest adventure you've been on?",
+            "If you could live anywhere in the world, where would it be?",
+            "What's your go-to karaoke song?"
           ]
         : [
             "What book has influenced you the most?",
             "What's your ideal way to spend a quiet evening?",
-            "What's something you're passionate about that might surprise me?"
+            "What's something you're passionate about that might surprise me?",
+            "What's the most interesting documentary you've watched?",
+            "What's a skill you've always wanted to learn?",
+            "What's your favorite way to unwind after a long day?"
           ]
     },
     {
@@ -148,7 +158,10 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
       prompts: [
         `Since your love language is ${userProfile.loveLanguage}, what makes you feel most loved?`,
         "What's your favorite memory of us together?",
-        "How do you prefer to handle disagreements?"
+        "How do you prefer to handle disagreements?",
+        "What's one thing you appreciate about our relationship?",
+        "How do you like to be comforted when you're stressed?",
+        "What does a perfect relationship look like to you?"
       ]
     },
     {
@@ -156,7 +169,10 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
       prompts: [
         "What does emotional intimacy mean to you?",
         "How do you like to show and receive affection?",
-        "What makes you feel most connected to someone?"
+        "What makes you feel most connected to someone?",
+        "What's your favorite way to be romantic?",
+        "How do you express love without words?",
+        "What makes you feel most vulnerable in a good way?"
       ]
     },
     {
@@ -164,7 +180,10 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
       prompts: [
         "What are your non-negotiables in a relationship?",
         "How do you handle time with friends versus partner time?",
-        "What boundaries help you feel secure in relationships?"
+        "What boundaries help you feel secure in relationships?",
+        "How do you communicate when you need space?",
+        "What's important to you about maintaining independence?",
+        "How do you handle social media in relationships?"
       ]
     },
     {
@@ -172,7 +191,10 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
       prompts: [
         "What instantly makes you lose interest in someone?",
         "What qualities make someone irresistible to you?",
-        "What's a green flag that not everyone appreciates?"
+        "What's a green flag that not everyone appreciates?",
+        "What's the most attractive thing someone can do?",
+        "What's a deal-breaker that might surprise people?",
+        "What kind of confidence do you find most appealing?"
       ]
     },
     {
@@ -180,7 +202,10 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
       prompts: [
         "How do you take care of your mental health?",
         "How would you support a partner going through a tough time?",
-        "What's your relationship with therapy or self-improvement?"
+        "What's your relationship with therapy or self-improvement?",
+        "How do you handle stress in relationships?",
+        "What helps you feel emotionally safe?",
+        "How do you practice self-compassion?"
       ]
     },
     {
@@ -188,7 +213,21 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
       prompts: [
         "Pineapple on pizza: yes or no?",
         "What's better: planning everything or being spontaneous?",
-        "Would you rather travel to the past or the future?"
+        "Would you rather travel to the past or the future?",
+        "Cats or dogs, and why?",
+        "What's the best movie genre for a date night?",
+        "Morning person or night owl?"
+      ]
+    },
+    {
+      category: "Conflict Resolution",
+      prompts: [
+        "How can we better communicate when we're both upset?",
+        "What's one thing we could improve about how we handle disagreements?",
+        "How do you prefer to make up after an argument?",
+        "What helps you feel heard during difficult conversations?",
+        "How can we prevent this issue from happening again?",
+        "What do you need from me when you're feeling hurt?"
       ]
     }
   ];
@@ -197,17 +236,53 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
     {
       tone: "Sweet",
       messages: [
-        "Just thinking about you and smiling 😊",
-        "Hope your day is as amazing as you are!",
-        "Can't wait to hear about your day tonight"
+        {
+          text: "Just thinking about you and smiling 😊",
+          explanation: "This message creates emotional warmth and shows genuine affection without being overwhelming.",
+          goodFor: "Early dating stages or established relationships when you want to express care",
+          avoidWhen: "They're going through a stressful time or have expressed need for space",
+          familiarityLevel: "After 3-5 dates or in an established relationship"
+        },
+        {
+          text: "Hope your day is as amazing as you are!",
+          explanation: "A supportive message that builds them up and shows you care about their wellbeing.",
+          goodFor: "Morning messages or when they have important events",
+          avoidWhen: "When they've had a bad day - might seem dismissive of their struggles",
+          familiarityLevel: "After establishing regular communication"
+        },
+        {
+          text: "Can't wait to hear about your day tonight",
+          explanation: "Shows genuine interest in their life and creates anticipation for your conversation.",
+          goodFor: "When you have established evening check-ins or regular communication",
+          avoidWhen: "If they haven't established this pattern of sharing daily experiences",
+          familiarityLevel: "After several weeks of dating or in a relationship"
+        }
       ]
     },
     {
       tone: "Flirty",
       messages: [
-        "You've been on my mind all day... 💕",
-        "Missing that gorgeous smile of yours",
-        "Planning something special for us 😉"
+        {
+          text: "You've been on my mind all day... 💕",
+          explanation: "Creates romantic tension and shows they're a priority in your thoughts.",
+          goodFor: "Building romantic momentum and showing serious interest",
+          avoidWhen: "Very early dating stages or if they're not ready for emotional intensity",
+          familiarityLevel: "After physical chemistry is established and mutual interest is clear"
+        },
+        {
+          text: "Missing that gorgeous smile of yours",
+          explanation: "Combines physical compliment with emotional longing, creating connection.",
+          goodFor: "When you haven't seen them recently and want to express attraction",
+          avoidWhen: "If they're insecure about their appearance or prefer non-physical compliments",
+          familiarityLevel: "After you've established physical attraction and comfort"
+        },
+        {
+          text: "Planning something special for us 😉",
+          explanation: "Creates anticipation and mystery while implying future together.",
+          goodFor: "Building excitement before dates or special occasions",
+          avoidWhen: "If they prefer direct communication or are anxious about surprises",
+          familiarityLevel: "After establishing trust and knowing their preferences"
+        }
       ]
     }
   ];
@@ -321,9 +396,74 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
     setAiContext(newAiContext);
   };
 
+  // Initialize current starters with default category
+  React.useEffect(() => {
+    const defaultCategory = conversationStarters.find(cat => cat.category === selectedCategory);
+    if (defaultCategory && !isCustom) {
+      setCurrentStarters(defaultCategory.prompts);
+    }
+  }, [selectedCategory, isCustom]);
+
+  const generateCustomStarters = async () => {
+    if (!customKeywords.trim()) return;
+    
+    try {
+      const prompt = `Generate 6 conversation starter questions based on these keywords: ${customKeywords}. The questions should be engaging, thoughtful, and incorporate the mood/themes of the keywords provided.`;
+      const response = await getFlirtSuggestion(prompt, userProfile);
+      
+      // Parse the response into an array of questions
+      const questions = response.split('\n').filter(line => 
+        line.trim() && 
+        (line.includes('?') || line.match(/^\d+\.?/))
+      ).map(line => 
+        line.replace(/^\d+\.?\s*/, '').trim()
+      ).slice(0, 6);
+      
+      setCurrentStarters(questions);
+      setIsCustom(true);
+      setSelectedCategory('Custom');
+    } catch (error) {
+      console.error('Error generating custom starters:', error);
+    }
+  };
+
+  const loadMoreStarters = async () => {
+    if (isCustom) {
+      await generateCustomStarters();
+    } else {
+      const category = conversationStarters.find(cat => cat.category === selectedCategory);
+      if (category) {
+        // Generate more questions for the same category
+        const prompt = `Generate 6 new conversation starter questions in the style of "${selectedCategory}" category. They should be similar to these examples but completely different: ${category.prompts.join(', ')}`;
+        try {
+          const response = await getFlirtSuggestion(prompt, userProfile);
+          const questions = response.split('\n').filter(line => 
+            line.trim() && 
+            (line.includes('?') || line.match(/^\d+\.?/))
+          ).map(line => 
+            line.replace(/^\d+\.?\s*/, '').trim()
+          ).slice(0, 6);
+          
+          setCurrentStarters(questions);
+        } catch (error) {
+          console.error('Error loading more starters:', error);
+        }
+      }
+    }
+  };
+
+  const selectCategory = (categoryName: string) => {
+    setSelectedCategory(categoryName);
+    setIsCustom(false);
+    const category = conversationStarters.find(cat => cat.category === categoryName);
+    if (category) {
+      setCurrentStarters(category.prompts);
+    }
+  };
+
   const sections = [
     { id: 'prospects', label: 'Dating Prospects', icon: Users },
-    { id: 'starters', label: 'Conversation', icon: MessageCircle },
+    { id: 'starters', label: 'Conversation Starters', icon: MessageCircle },
     { id: 'messages', label: 'Flirty Texts', icon: Heart },
     { id: 'practice', label: 'AI Practice', icon: Zap }
   ];
@@ -607,33 +747,89 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
               </p>
             </CardContent>
           </Card>
-          {conversationStarters.map((category, index) => (
-            <Card key={index} className="shadow-soft border-primary/10">
-              <CardHeader>
-                <CardTitle className="text-primary">{category.category}</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {category.prompts.map((prompt, promptIndex) => (
-                  <div 
-                    key={promptIndex}
-                    className="p-3 bg-muted/50 rounded-lg hover:bg-primary/5 transition-colors group"
+
+          {/* Category Bubbles */}
+          <Card className="shadow-soft border-primary/10">
+            <CardContent className="pt-6">
+              <div className="flex flex-wrap gap-2">
+                {conversationStarters.map((category) => (
+                  <Button
+                    key={category.category}
+                    onClick={() => selectCategory(category.category)}
+                    variant={selectedCategory === category.category && !isCustom ? "romance" : "outline"}
+                    size="sm"
+                    className="rounded-full"
                   >
-                    <div className="flex justify-between items-start space-x-3">
-                      <p className="text-sm text-foreground flex-1">{prompt}</p>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleShare(prompt)}
-                        className="opacity-0 group-hover:opacity-100 transition-opacity p-1 h-auto"
-                      >
-                        <Share className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
+                    {category.category}
+                  </Button>
                 ))}
-              </CardContent>
-            </Card>
-          ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Custom Input */}
+          <Card className="shadow-soft border-primary/10">
+            <CardContent className="pt-6 space-y-3">
+              <div className="flex space-x-2">
+                <Input
+                  placeholder="Enter keywords (e.g., sexy, deep, funny)"
+                  value={customKeywords}
+                  onChange={(e) => setCustomKeywords(e.target.value)}
+                  className="flex-1"
+                />
+                <Button
+                  onClick={generateCustomStarters}
+                  disabled={isLoading || !customKeywords.trim()}
+                  variant="romance"
+                >
+                  {isLoading ? '...' : 'Customize'}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Current Category Name */}
+          <div className="text-center">
+            <h3 className="text-lg font-semibold text-primary">
+              {isCustom ? 'Custom' : selectedCategory}
+            </h3>
+          </div>
+
+          {/* Questions with Share Icons */}
+          <Card className="shadow-soft border-primary/10">
+            <CardContent className="pt-6 space-y-3">
+              {currentStarters.map((prompt, index) => (
+                <div 
+                  key={index}
+                  className="p-3 bg-muted/50 rounded-lg hover:bg-primary/5 transition-colors group"
+                >
+                  <div className="flex justify-between items-start space-x-3">
+                    <p className="text-sm text-foreground flex-1">{prompt}</p>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleShare(prompt)}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity p-1 h-auto"
+                    >
+                      <Share className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+
+          {/* See More Button */}
+          <div className="text-center">
+            <Button
+              onClick={loadMoreStarters}
+              disabled={isLoading}
+              variant="outline"
+              className="w-full"
+            >
+              {isLoading ? 'Loading...' : 'See More'}
+            </Button>
+          </div>
         </div>
       )}
 
@@ -680,13 +876,48 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
                   <span>{category.tone} Messages</span>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
+              <CardContent className="space-y-4">
                 {category.messages.map((message, messageIndex) => (
                   <div 
                     key={messageIndex}
-                    className="p-3 bg-gradient-soft rounded-lg border border-primary/10 hover:shadow-soft transition-all cursor-pointer"
+                    className="p-4 bg-gradient-soft rounded-lg border border-primary/10 hover:shadow-soft transition-all"
                   >
-                    <p className="text-sm text-foreground">{message}</p>
+                    <div className="space-y-3">
+                      <p className="text-sm text-foreground font-medium">{message.text}</p>
+                      
+                      <div className="space-y-2 text-xs text-muted-foreground">
+                        <div>
+                          <span className="font-medium text-primary">Why it works: </span>
+                          {message.explanation}
+                        </div>
+                        
+                        <div>
+                          <span className="font-medium text-green-600">Good for: </span>
+                          {message.goodFor}
+                        </div>
+                        
+                        <div>
+                          <span className="font-medium text-red-600">Avoid when: </span>
+                          {message.avoidWhen}
+                        </div>
+                        
+                        <div>
+                          <span className="font-medium text-blue-600">Familiarity needed: </span>
+                          {message.familiarityLevel}
+                        </div>
+                      </div>
+
+                      <div className="flex justify-end pt-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleShare(message.text)}
+                          className="p-1 h-auto"
+                        >
+                          <Share className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
                   </div>
                 ))}
               </CardContent>
