@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
-import { Heart, BookOpen, TrendingUp, Calendar, Sparkles, Brain, MessageSquare, Loader2 } from 'lucide-react';
+import { Heart, BookOpen, TrendingUp, Calendar, Sparkles, Brain, MessageSquare, Loader2, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { useRelationshipAI } from '@/hooks/useRelationshipAI';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -22,111 +22,180 @@ interface TherapyCompanionModuleProps {
 const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userProfile }) => {
   const [activeSection, setActiveSection] = useState<'reflection' | 'journal' | 'insights' | 'prompts'>('reflection');
   const [journalEntry, setJournalEntry] = useState('');
-  const [showAIInsight, setShowAIInsight] = useState<{[key: number]: boolean}>({});
   const [postTherapyInputs, setPostTherapyInputs] = useState<{[key: number]: string}>({});
-  const [aiInsights, setAiInsights] = useState<{[key: number]: string}>({});
+  const [preTherapyInputs, setPreTherapyInputs] = useState<{[key: number]: string}>({});
   const [postTherapyAIResponses, setPostTherapyAIResponses] = useState<{[key: number]: string}>({});
-  const [loadingInsight, setLoadingInsight] = useState<{[key: number]: boolean}>({});
+  const [preTherapyAIResponses, setPreTherapyAIResponses] = useState<{[key: number]: string}>({});
+  const [loadingPreTherapyAI, setLoadingPreTherapyAI] = useState<{[key: number]: boolean}>({});
+  const [loadingPostTherapyAI, setLoadingPostTherapyAI] = useState<{[key: number]: boolean}>({});
+  const [preTherapyPage, setPreTherapyPage] = useState(0);
+  const [postTherapyPage, setPostTherapyPage] = useState(0);
+  const [savedJournalEntries, setSavedJournalEntries] = useState<{[key: string]: string[]}>({});
   
   const { getTherapyInsight, isLoading } = useRelationshipAI();
   const { toast } = useToast();
   
-  // Personalized therapy prompts based on user profile
+  // Personalized therapy prompts based on user profile with multiple sets
   const getPersonalizedPrompts = () => {
-    const basePrompts = {
+    const allPrompts = {
       pre: [
-        "Can you help me identify unhealthy relationship patterns based on my past relationships?",
-        "How can I improve my communication style to better connect with my partner?",
-        "What tools can you teach me to better process difficult emotions in my relationship?",
-        "Can we work through some specific conflicts I've been having with my partner?",
-        "How is my attachment style affecting my current relationship, and what can I do about it?"
+        // Set 1
+        [
+          "Can you help me identify unhealthy relationship patterns based on my past relationships?",
+          "How can I improve my communication style to better connect with my partner?",
+          "What tools can you teach me to better process difficult emotions in my relationship?",
+          "Can we work through some specific conflicts I've been having with my partner?",
+          "How is my attachment style affecting my current relationship, and what can I do about it?"
+        ],
+        // Set 2
+        [
+          "How can I better understand and meet my partner's emotional needs?",
+          "What boundaries do I need to work on establishing in my relationship?",
+          "Can you help me process feelings of jealousy or insecurity?",
+          "How do I handle disagreements without escalating into arguments?",
+          "What role does my family background play in my current relationship?"
+        ],
+        // Set 3
+        [
+          "How can I rebuild trust after it's been damaged in my relationship?",
+          "What strategies can help me be more emotionally available to my partner?",
+          "How do I balance independence and togetherness in my relationship?",
+          "Can we explore how stress affects my relationship dynamics?",
+          "What does healthy intimacy look like for me and my partner?"
+        ]
       ],
       post: [
-        "Share a key takeaway from your therapy session today",
-        "What insight resonated most with you?",
-        "Describe any 'aha' moments you experienced",
-        "What homework or actions did your therapist suggest?"
+        // Set 1
+        [
+          "Share a key takeaway from your therapy session today",
+          "What insight resonated most with you?",
+          "Describe any 'aha' moments you experienced",
+          "What homework or actions did your therapist suggest?"
+        ],
+        // Set 2
+        [
+          "What patterns did you become aware of during today's session?",
+          "How did discussing your relationship make you feel?",
+          "What challenged you most in today's conversation?",
+          "What tools or strategies will you try this week?"
+        ],
+        // Set 3
+        [
+          "What emotions came up for you during therapy today?",
+          "How has your perspective on your relationship shifted?",
+          "What breakthrough moment did you experience?",
+          "What commitment are you making to yourself moving forward?"
+        ]
       ]
     };
 
+    // Add personalized questions based on love language
     if (userProfile.loveLanguage === "Words of Affirmation") {
-      basePrompts.pre.push("Can you help me learn how to better express my emotional needs verbally?");
+      allPrompts.pre[0].push("Can you help me learn how to better express my emotional needs verbally?");
     } else if (userProfile.loveLanguage === "Quality Time") {
-      basePrompts.pre.push("How can my partner and I create more meaningful intimate moments together?");
+      allPrompts.pre[0].push("How can my partner and I create more meaningful intimate moments together?");
     }
 
-    return basePrompts;
+    return allPrompts;
   };
 
   const personalizedPrompts = getPersonalizedPrompts();
+  
+  // Get current set of prompts based on page
+  const currentPrePrompts = personalizedPrompts.pre[preTherapyPage] || [];
+  const currentPostPrompts = personalizedPrompts.post[postTherapyPage] || [];
 
-  const getAIInsight = (prompt: string, isPreTherapy: boolean = true) => {
-    if (isPreTherapy) {
-      // AI therapist perspective for pre-therapy questions
-      const insights = {
-        "What relationship patterns would you like to explore in today's session?": "Consider exploring recurring conflicts, communication breakdowns, or emotional triggers. These patterns often reveal deeper attachment styles and unmet needs.",
-        "How do you feel your communication style is working in your relationship?": "Reflect on whether you tend to be direct/indirect, defensive/open, or if you struggle with timing. Healthy communication involves both speaking your truth and creating space for your partner.",
-        "What emotions have been challenging for you to process this week?": "Difficult emotions often carry important information about our needs and boundaries. Consider what these emotions might be trying to tell you about your relationship dynamics."
-      };
-      return insights[prompt] || "This is a valuable question to explore in therapy. Consider what emotions or experiences come up for you when you think about this topic.";
-    } else {
-      // AI affirmation and guidance for post-therapy
-      return "Your commitment to growth and self-reflection is commendable. Implementing therapeutic insights takes time and practice. Be patient with yourself as you integrate these new understandings into your relationship.";
-    }
+  const handlePreTherapyInput = (index: number, value: string) => {
+    setPreTherapyInputs(prev => ({ ...prev, [index]: value }));
   };
 
   const handlePostTherapyInput = (index: number, value: string) => {
     setPostTherapyInputs(prev => ({ ...prev, [index]: value }));
   };
 
-  const toggleAIInsight = async (index: number) => {
-    const isCurrentlyShown = showAIInsight[index];
-    setShowAIInsight(prev => ({ ...prev, [index]: !prev[index] }));
-    
-    // If we're showing the insight and haven't generated it yet, get AI response
-    if (!isCurrentlyShown && !aiInsights[index]) {
-      setLoadingInsight(prev => ({ ...prev, [index]: true }));
+  const handleAskPurposely = async (index: number, input: string, isPreTherapy: boolean = true) => {
+    if (!input.trim()) {
+      toast({
+        title: "Input Required",
+        description: "Please enter your thoughts before asking Purposely for insight.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (isPreTherapy) {
+      setLoadingPreTherapyAI(prev => ({ ...prev, [index]: true }));
       try {
-        const prompt = personalizedPrompts.pre[index];
-        const insight = await getTherapyInsight(prompt, userProfile);
-        setAiInsights(prev => ({ ...prev, [index]: insight }));
+        const prompt = `User input about therapy question: "${input}". Please provide compassionate insight and guidance from Purposely Dating's AI perspective.`;
+        const response = await getTherapyInsight(prompt, userProfile);
+        setPreTherapyAIResponses(prev => ({ ...prev, [index]: response }));
       } catch (error) {
-        console.error('Failed to get AI insight:', error);
-        // Keep the default insight if AI fails
-        setAiInsights(prev => ({ ...prev, [index]: getAIInsight(personalizedPrompts.pre[index], true) }));
+        console.error('Failed to get AI response:', error);
+        toast({
+          title: "AI Error",
+          description: "Failed to generate AI response. Please try again.",
+          variant: "destructive",
+        });
       } finally {
-        setLoadingInsight(prev => ({ ...prev, [index]: false }));
+        setLoadingPreTherapyAI(prev => ({ ...prev, [index]: false }));
+      }
+    } else {
+      setLoadingPostTherapyAI(prev => ({ ...prev, [index]: true }));
+      try {
+        const response = await getTherapyInsight(
+          `The user shared this therapy takeaway: "${input}". Please provide encouraging affirmation and practical next steps for implementing this insight in their relationship.`,
+          userProfile
+        );
+        setPostTherapyAIResponses(prev => ({ ...prev, [index]: response }));
+      } catch (error) {
+        console.error('Failed to get AI response:', error);
+        toast({
+          title: "AI Error",
+          description: "Failed to generate AI response. Please try again.",
+          variant: "destructive",
+        });
+      } finally {
+        setLoadingPostTherapyAI(prev => ({ ...prev, [index]: false }));
       }
     }
   };
 
-  const handlePostTherapyAIResponse = async (index: number, input: string) => {
-    if (!input.trim()) return;
-    
-    try {
-      const response = await getTherapyInsight(
-        `The user shared this therapy takeaway: "${input}". Please provide encouraging affirmation and practical next steps for implementing this insight in their relationship.`,
-        userProfile
-      );
-      setPostTherapyAIResponses(prev => ({ ...prev, [index]: response }));
-    } catch (error) {
-      console.error('Failed to get AI response:', error);
+  const addToJournal = (index: number, content: string) => {
+    if (!content.trim()) {
       toast({
-        title: "AI Error",
-        description: "Failed to generate AI response. Please try again.",
+        title: "Nothing to Save",
+        description: "Please enter a takeaway before saving to journal.",
         variant: "destructive",
       });
+      return;
     }
+
+    const today = new Date().toDateString();
+    setSavedJournalEntries(prev => ({
+      ...prev,
+      [today]: [...(prev[today] || []), content]
+    }));
+
+    toast({
+      title: "Added to Journal",
+      description: "Your takeaway has been saved to today's journal entry.",
+    });
   };
 
   const dailyPrompt = userProfile.personalityType.includes("Introspective") 
     ? "What inner dialogue has been most prominent today, and how has it affected your relationships?"
     : "What moments of connection did you create or experience today?";
 
-  const journalEntries = [
+  // Update journal entries to include saved therapy takeaways
+  const allJournalEntries = [
     { date: "Today", title: "Morning Reflection", preview: "Feeling grateful for the small moments..." },
     { date: "Yesterday", title: "Therapy Session Notes", preview: "Explored my attachment style and how it shows up..." },
-    { date: "2 days ago", title: "Relationship Check-in", preview: "Had a really good conversation about..." }
+    { date: "2 days ago", title: "Relationship Check-in", preview: "Had a really good conversation about..." },
+    ...Object.entries(savedJournalEntries).map(([date, entries]) => ({
+      date,
+      title: "Therapy Takeaways",
+      preview: `${entries.length} takeaway${entries.length > 1 ? 's' : ''} saved from therapy sessions...`
+    }))
   ];
 
   const intimacyInsights = [
@@ -147,7 +216,7 @@ const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userPro
       {/* Header */}
       <div className="text-center space-y-2">
         <h1 className="text-2xl font-bold bg-gradient-romance bg-clip-text text-transparent">
-          Therapy Companion 🌱
+          Purposely Dating 💕
         </h1>
         <p className="text-muted-foreground">Grow together, reflect deeply</p>
       </div>
@@ -185,39 +254,73 @@ const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userPro
               <p className="text-sm text-muted-foreground mb-4">
                 These are suggested questions you can ask your therapist during your session:
               </p>
-              {personalizedPrompts.pre.map((prompt, index) => (
+              {currentPrePrompts.map((prompt, index) => (
                 <div key={index} className="p-4 bg-gradient-soft rounded-lg border border-primary/10">
-                  <div className="flex justify-between items-start mb-2">
-                    <p className="text-sm text-foreground font-medium flex-1">{prompt}</p>
+                  <p className="text-sm text-foreground font-medium mb-3">{prompt}</p>
+                  <Textarea 
+                    placeholder="Share your thoughts or context about this question..."
+                    className="min-h-[80px] border-primary/20 focus:border-primary mb-3"
+                    value={preTherapyInputs[index] || ''}
+                    onChange={(e) => handlePreTherapyInput(index, e.target.value)}
+                  />
+                  <div className="flex space-x-2">
                     <Button
-                      variant="ghost"
+                      variant="soft"
                       size="sm"
-                      onClick={() => toggleAIInsight(index)}
-                      className="ml-2 p-1 h-auto"
+                      onClick={() => handleAskPurposely(index, preTherapyInputs[index] || '', true)}
+                      disabled={loadingPreTherapyAI[index]}
+                      className="flex-1"
                     >
-                      <Brain className="w-4 h-4" />
+                      {loadingPreTherapyAI[index] ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Asking Purposely...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="w-4 h-4 mr-2" />
+                          Ask Purposely
+                        </>
+                      )}
                     </Button>
                   </div>
-                   {showAIInsight[index] && (
-                     <div className="mt-3 p-3 bg-primary/5 rounded-lg border border-primary/10">
-                       <p className="text-xs font-medium text-primary mb-2">AI Relationship Therapist's Perspective:</p>
-                       {loadingInsight[index] ? (
-                         <div className="flex items-center space-x-2">
-                           <Loader2 className="w-4 h-4 animate-spin" />
-                           <span className="text-sm text-muted-foreground">Getting personalized insight...</span>
-                         </div>
-                       ) : (
-                         <p className="text-sm text-muted-foreground">
-                           {aiInsights[index] || getAIInsight(prompt, true)}
-                         </p>
-                       )}
-                     </div>
-                   )}
+                  {preTherapyAIResponses[index] && (
+                    <div className="mt-3 p-3 bg-primary/5 rounded-lg border border-primary/10">
+                      <p className="text-xs font-medium text-primary mb-2">Purposely's Insight:</p>
+                      <p className="text-sm text-muted-foreground">
+                        {preTherapyAIResponses[index]}
+                      </p>
+                    </div>
+                  )}
                 </div>
               ))}
-              <Button variant="romance" className="w-full">
-                Save Questions 💕
-              </Button>
+              
+              {/* Navigation buttons */}
+              <div className="flex justify-between items-center pt-4">
+                <Button
+                  variant="soft"
+                  onClick={() => setPreTherapyPage(Math.max(0, preTherapyPage - 1))}
+                  disabled={preTherapyPage === 0}
+                  className="flex items-center"
+                >
+                  <ChevronLeft className="w-4 h-4 mr-1" />
+                  Previous
+                </Button>
+                
+                <span className="text-sm text-muted-foreground">
+                  Set {preTherapyPage + 1} of {personalizedPrompts.pre.length}
+                </span>
+                
+                <Button
+                  variant="soft"
+                  onClick={() => setPreTherapyPage(Math.min(personalizedPrompts.pre.length - 1, preTherapyPage + 1))}
+                  disabled={preTherapyPage === personalizedPrompts.pre.length - 1}
+                  className="flex items-center"
+                >
+                  See More
+                  <ChevronRight className="w-4 h-4 ml-1" />
+                </Button>
+              </div>
             </CardContent>
           </Card>
 
@@ -230,38 +333,83 @@ const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userPro
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-sm text-muted-foreground mb-4">
-                Share what you learned in therapy so our AI can offer affirmation and additional guidance:
+                Share what you learned in therapy so Purposely can offer affirmation and additional guidance:
               </p>
-              {personalizedPrompts.post.map((prompt, index) => (
+              {currentPostPrompts.map((prompt, index) => (
                 <div key={index} className="p-4 bg-gradient-soft rounded-lg border border-primary/10">
                   <p className="text-sm text-foreground mb-3 font-medium">{prompt}:</p>
-                   <Textarea 
-                     placeholder="Share your therapy takeaway..."
-                     className="min-h-[80px] border-primary/20 focus:border-primary mb-3"
-                     value={postTherapyInputs[index] || ''}
-                     onChange={(e) => handlePostTherapyInput(index, e.target.value)}
-                     onBlur={() => handlePostTherapyAIResponse(index, postTherapyInputs[index] || '')}
-                   />
-                   {postTherapyInputs[index] && (
-                     <div className="mt-3 p-3 bg-primary/5 rounded-lg border border-primary/10">
-                       <p className="text-xs font-medium text-primary mb-2">AI Relationship Therapist's Response:</p>
-                       {isLoading ? (
-                         <div className="flex items-center space-x-2">
-                           <Loader2 className="w-4 h-4 animate-spin" />
-                           <span className="text-sm text-muted-foreground">Generating personalized response...</span>
-                         </div>
-                       ) : (
-                         <p className="text-sm text-muted-foreground">
-                           {postTherapyAIResponses[index] || getAIInsight(postTherapyInputs[index], false)}
-                         </p>
-                       )}
-                     </div>
-                   )}
+                  <Textarea 
+                    placeholder="Share your therapy takeaway..."
+                    className="min-h-[80px] border-primary/20 focus:border-primary mb-3"
+                    value={postTherapyInputs[index] || ''}
+                    onChange={(e) => handlePostTherapyInput(index, e.target.value)}
+                  />
+                  <div className="flex space-x-2">
+                    <Button
+                      variant="soft"
+                      size="sm"
+                      onClick={() => handleAskPurposely(index, postTherapyInputs[index] || '', false)}
+                      disabled={loadingPostTherapyAI[index]}
+                      className="flex-1"
+                    >
+                      {loadingPostTherapyAI[index] ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Asking Purposely...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="w-4 h-4 mr-2" />
+                          Ask Purposely
+                        </>
+                      )}
+                    </Button>
+                    <Button
+                      variant="romance"
+                      size="sm"
+                      onClick={() => addToJournal(index, postTherapyInputs[index] || '')}
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add to Journal
+                    </Button>
+                  </div>
+                  {postTherapyAIResponses[index] && (
+                    <div className="mt-3 p-3 bg-primary/5 rounded-lg border border-primary/10">
+                      <p className="text-xs font-medium text-primary mb-2">Purposely's Response:</p>
+                      <p className="text-sm text-muted-foreground">
+                        {postTherapyAIResponses[index]}
+                      </p>
+                    </div>
+                  )}
                 </div>
               ))}
-              <Button variant="romance" className="w-full">
-                Save Integration Notes ✨
-              </Button>
+              
+              {/* Navigation buttons */}
+              <div className="flex justify-between items-center pt-4">
+                <Button
+                  variant="soft"
+                  onClick={() => setPostTherapyPage(Math.max(0, postTherapyPage - 1))}
+                  disabled={postTherapyPage === 0}
+                  className="flex items-center"
+                >
+                  <ChevronLeft className="w-4 h-4 mr-1" />
+                  Previous
+                </Button>
+                
+                <span className="text-sm text-muted-foreground">
+                  Set {postTherapyPage + 1} of {personalizedPrompts.post.length}
+                </span>
+                
+                <Button
+                  variant="soft"
+                  onClick={() => setPostTherapyPage(Math.min(personalizedPrompts.post.length - 1, postTherapyPage + 1))}
+                  disabled={postTherapyPage === personalizedPrompts.post.length - 1}
+                  className="flex items-center"
+                >
+                  See More
+                  <ChevronRight className="w-4 h-4 ml-1" />
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -300,13 +448,22 @@ const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userPro
               <CardTitle>Recent Entries</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              {journalEntries.map((entry, index) => (
+              {allJournalEntries.map((entry, index) => (
                 <div key={index} className="p-3 bg-gradient-soft rounded-lg border border-primary/10 hover:shadow-soft transition-all cursor-pointer">
                   <div className="flex justify-between items-start mb-2">
                     <h4 className="font-medium text-foreground">{entry.title}</h4>
                     <span className="text-xs text-muted-foreground">{entry.date}</span>
                   </div>
                   <p className="text-sm text-muted-foreground">{entry.preview}</p>
+                  {entry.title === "Therapy Takeaways" && savedJournalEntries[entry.date] && (
+                    <div className="mt-2 space-y-1">
+                      {savedJournalEntries[entry.date].map((takeaway, takeawayIndex) => (
+                        <div key={takeawayIndex} className="text-xs bg-primary/5 p-2 rounded border border-primary/10">
+                          {takeaway.substring(0, 50)}...
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               ))}
             </CardContent>
