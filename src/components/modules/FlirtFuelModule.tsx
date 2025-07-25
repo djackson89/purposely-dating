@@ -514,8 +514,8 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
   };
 
   const sections = [
-    { id: 'prospects', label: 'Dating Prospects', icon: Users },
     { id: 'starters', label: 'Conversation Starters', icon: MessageCircle },
+    { id: 'prospects', label: 'Dating Prospects', icon: Users },
     { id: 'messages', label: 'Flirty Texts', icon: Heart },
     { id: 'practice', label: 'AI Practice', icon: Zap }
   ];
