@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
-import { Heart, BookOpen, TrendingUp, Calendar, Sparkles } from 'lucide-react';
+import { Heart, BookOpen, TrendingUp, Calendar, Sparkles, Brain, MessageSquare } from 'lucide-react';
 
 interface OnboardingData {
   loveLanguage: string;
@@ -20,34 +20,60 @@ interface TherapyCompanionModuleProps {
 const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userProfile }) => {
   const [activeSection, setActiveSection] = useState<'reflection' | 'journal' | 'insights' | 'prompts'>('reflection');
   const [journalEntry, setJournalEntry] = useState('');
+  const [showAIInsight, setShowAIInsight] = useState<{[key: number]: boolean}>({});
+  const [postTherapyInputs, setPostTherapyInputs] = useState<{[key: number]: string}>({});
   
   // Personalized therapy prompts based on user profile
   const getPersonalizedPrompts = () => {
     const basePrompts = {
       pre: [
         "What relationship patterns would you like to explore in today's session?",
-        "How are you feeling about your communication with your partner lately?",
-        "What emotions have been most present for you this week?"
+        "How do you feel your communication style is working in your relationship?",
+        "What emotions have been challenging for you to process this week?",
+        "Are there any specific conflicts or concerns you'd like to discuss?",
+        "How has your attachment style been showing up in your relationship lately?"
       ],
       post: [
-        "What was the most meaningful insight from today's session?",
-        "How can you apply what you learned to your relationship this week?",
-        "What would you like to remember from today's conversation?"
+        "Share a key takeaway from your therapy session today",
+        "What insight resonated most with you?",
+        "Describe any 'aha' moments you experienced",
+        "What homework or actions did your therapist suggest?"
       ]
     };
 
     if (userProfile.loveLanguage === "Words of Affirmation") {
-      basePrompts.pre.push("How comfortable do you feel expressing your needs verbally?");
-      basePrompts.post.push("What affirmations resonate most with you right now?");
+      basePrompts.pre.push("How comfortable are you with expressing your emotional needs verbally?");
     } else if (userProfile.loveLanguage === "Quality Time") {
-      basePrompts.pre.push("How present do you feel in your relationships lately?");
-      basePrompts.post.push("What did you learn about creating meaningful moments together?");
+      basePrompts.pre.push("How connected do you feel during intimate moments with your partner?");
     }
 
     return basePrompts;
   };
 
   const personalizedPrompts = getPersonalizedPrompts();
+
+  const getAIInsight = (prompt: string, isPreTherapy: boolean = true) => {
+    if (isPreTherapy) {
+      // AI therapist perspective for pre-therapy questions
+      const insights = {
+        "What relationship patterns would you like to explore in today's session?": "Consider exploring recurring conflicts, communication breakdowns, or emotional triggers. These patterns often reveal deeper attachment styles and unmet needs.",
+        "How do you feel your communication style is working in your relationship?": "Reflect on whether you tend to be direct/indirect, defensive/open, or if you struggle with timing. Healthy communication involves both speaking your truth and creating space for your partner.",
+        "What emotions have been challenging for you to process this week?": "Difficult emotions often carry important information about our needs and boundaries. Consider what these emotions might be trying to tell you about your relationship dynamics."
+      };
+      return insights[prompt] || "This is a valuable question to explore in therapy. Consider what emotions or experiences come up for you when you think about this topic.";
+    } else {
+      // AI affirmation and guidance for post-therapy
+      return "Your commitment to growth and self-reflection is commendable. Implementing therapeutic insights takes time and practice. Be patient with yourself as you integrate these new understandings into your relationship.";
+    }
+  };
+
+  const handlePostTherapyInput = (index: number, value: string) => {
+    setPostTherapyInputs(prev => ({ ...prev, [index]: value }));
+  };
+
+  const toggleAIInsight = (index: number) => {
+    setShowAIInsight(prev => ({ ...prev, [index]: !prev[index] }));
+  };
 
   const dailyPrompt = userProfile.personalityType.includes("Introspective") 
     ? "What inner dialogue has been most prominent today, and how has it affected your relationships?"
@@ -107,22 +133,39 @@ const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userPro
           <Card className="shadow-romance border-primary/20">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
-                <Sparkles className="w-5 h-5 text-primary animate-heart-pulse" />
-                <span>Pre-Therapy Reflection</span>
+                <MessageSquare className="w-5 h-5 text-primary animate-heart-pulse" />
+                <span>Pre-Therapy: Questions for Your Therapist</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              <p className="text-sm text-muted-foreground mb-4">
+                These are suggested questions you can ask your therapist during your session:
+              </p>
               {personalizedPrompts.pre.map((prompt, index) => (
                 <div key={index} className="p-4 bg-gradient-soft rounded-lg border border-primary/10">
-                  <p className="text-sm text-foreground mb-3">{prompt}</p>
-                  <Textarea 
-                    placeholder="Write your thoughts..."
-                    className="min-h-[80px] border-primary/20 focus:border-primary"
-                  />
+                  <div className="flex justify-between items-start mb-2">
+                    <p className="text-sm text-foreground font-medium flex-1">{prompt}</p>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => toggleAIInsight(index)}
+                      className="ml-2 p-1 h-auto"
+                    >
+                      <Brain className="w-4 h-4" />
+                    </Button>
+                  </div>
+                  {showAIInsight[index] && (
+                    <div className="mt-3 p-3 bg-primary/5 rounded-lg border border-primary/10">
+                      <p className="text-xs font-medium text-primary mb-2">AI Relationship Therapist's Perspective:</p>
+                      <p className="text-sm text-muted-foreground">
+                        {getAIInsight(prompt, true)}
+                      </p>
+                    </div>
+                  )}
                 </div>
               ))}
               <Button variant="romance" className="w-full">
-                Save Reflections 💕
+                Save Questions 💕
               </Button>
             </CardContent>
           </Card>
@@ -131,17 +174,30 @@ const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userPro
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <Heart className="w-5 h-5 text-primary" />
-                <span>Post-Therapy Integration</span>
+                <span>Post-Therapy: Share Your Takeaways</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              <p className="text-sm text-muted-foreground mb-4">
+                Share what you learned in therapy so our AI can offer affirmation and additional guidance:
+              </p>
               {personalizedPrompts.post.map((prompt, index) => (
                 <div key={index} className="p-4 bg-gradient-soft rounded-lg border border-primary/10">
-                  <p className="text-sm text-foreground mb-3">{prompt}</p>
+                  <p className="text-sm text-foreground mb-3 font-medium">{prompt}:</p>
                   <Textarea 
-                    placeholder="Reflect on your session..."
-                    className="min-h-[80px] border-primary/20 focus:border-primary"
+                    placeholder="Share your therapy takeaway..."
+                    className="min-h-[80px] border-primary/20 focus:border-primary mb-3"
+                    value={postTherapyInputs[index] || ''}
+                    onChange={(e) => handlePostTherapyInput(index, e.target.value)}
                   />
+                  {postTherapyInputs[index] && (
+                    <div className="mt-3 p-3 bg-primary/5 rounded-lg border border-primary/10">
+                      <p className="text-xs font-medium text-primary mb-2">AI Relationship Therapist's Response:</p>
+                      <p className="text-sm text-muted-foreground">
+                        {getAIInsight(postTherapyInputs[index], false)} Here are some ways to implement this insight: Practice this awareness daily, discuss it with your partner when appropriate, and celebrate small progress steps.
+                      </p>
+                    </div>
+                  )}
                 </div>
               ))}
               <Button variant="romance" className="w-full">

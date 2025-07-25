@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Heart, MessageCircle, Zap, Users } from 'lucide-react';
+import { Heart, MessageCircle, Zap, Users, Share } from 'lucide-react';
+import { Share as CapacitorShare } from '@capacitor/share';
 
 interface OnboardingData {
   loveLanguage: string;
@@ -18,6 +19,39 @@ interface FlirtFuelModuleProps {
 
 const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
   const [activeSection, setActiveSection] = useState<'challenges' | 'starters' | 'messages' | 'practice'>('challenges');
+
+  const handleShare = async (text: string) => {
+    try {
+      // Try Capacitor Share first (for mobile)
+      if ((window as any).Capacitor) {
+        await CapacitorShare.share({
+          title: 'Conversation Starter from FlirtFuel',
+          text: text,
+        });
+      } else {
+        // Fallback to Web Share API
+        if (navigator.share) {
+          await navigator.share({
+            title: 'Conversation Starter from FlirtFuel',
+            text: text,
+          });
+        } else {
+          // Fallback to clipboard
+          await navigator.clipboard.writeText(text);
+          alert('Copied to clipboard!');
+        }
+      }
+    } catch (error) {
+      console.error('Error sharing:', error);
+      // Final fallback to clipboard
+      try {
+        await navigator.clipboard.writeText(text);
+        alert('Copied to clipboard!');
+      } catch (clipboardError) {
+        console.error('Error copying to clipboard:', clipboardError);
+      }
+    }
+  };
   
   const dailyChallenge = {
     type: "Compliment Challenge",
@@ -147,9 +181,19 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
                 {category.prompts.map((prompt, promptIndex) => (
                   <div 
                     key={promptIndex}
-                    className="p-3 bg-muted/50 rounded-lg hover:bg-primary/5 transition-colors cursor-pointer"
+                    className="p-3 bg-muted/50 rounded-lg hover:bg-primary/5 transition-colors group"
                   >
-                    <p className="text-sm text-foreground">{prompt}</p>
+                    <div className="flex justify-between items-start space-x-3">
+                      <p className="text-sm text-foreground flex-1">{prompt}</p>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleShare(prompt)}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity p-1 h-auto"
+                      >
+                        <Share className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </div>
                 ))}
               </CardContent>

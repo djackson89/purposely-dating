@@ -1,10 +1,10 @@
 import React from 'react';
-import { Heart, Calendar, Sparkles } from 'lucide-react';
+import { Heart, Calendar, Sparkles, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface NavigationProps {
-  activeModule: 'flirtfuel' | 'concierge' | 'therapy';
-  onModuleChange: (module: 'flirtfuel' | 'concierge' | 'therapy') => void;
+  activeModule: 'flirtfuel' | 'concierge' | 'therapy' | 'profile';
+  onModuleChange: (module: 'flirtfuel' | 'concierge' | 'therapy' | 'profile') => void;
 }
 
 const Navigation: React.FC<NavigationProps> = ({ activeModule, onModuleChange }) => {
@@ -26,6 +26,12 @@ const Navigation: React.FC<NavigationProps> = ({ activeModule, onModuleChange })
       icon: Sparkles,
       label: 'Therapy Companion',
       color: 'text-amber-500'
+    },
+    {
+      id: 'profile' as const,
+      icon: User,
+      label: 'Profile',
+      color: 'text-purple-500'
     }
   ];
 
