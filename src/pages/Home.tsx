@@ -15,11 +15,13 @@ interface OnboardingData {
 interface HomeProps {
   userProfile: OnboardingData;
   onNavigateToFlirtFuel: () => void;
+  onNavigateToAIPractice: (scenario?: string) => void;
 }
 
-const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel }) => {
+const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavigateToAIPractice }) => {
   const [dailyQuestion, setDailyQuestion] = useState('');
   const [dailyQuote, setDailyQuote] = useState('');
+  const [dailyScenario, setDailyScenario] = useState('');
   const [quoteVote, setQuoteVote] = useState<'agree' | 'disagree' | null>(null);
   const { toast } = useToast();
 
@@ -56,6 +58,20 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel }) => {
     "You're not being picky—you're being selective. There's a difference between knowing what you want and settling."
   ];
 
+  // Practice scenarios for "How would you reply?" section
+  const practiceScenarios = [
+    "Your new dating partner just texted you to see if you got home safely after a great first date. He follows up with, 'Btw...I'd love to come over if you're up for more company...'",
+    "You've been on three dates and really like each other. They text: 'I know this might be forward, but I can't stop thinking about our conversation last night. Want to continue it over dinner at my place?'",
+    "After a wonderful evening together, they text: 'I had such an amazing time with you. I'm already looking forward to seeing you again. How about we make this a regular thing?'",
+    "You receive a text: 'Hey beautiful, I know we said we'd take things slow, but I'm really attracted to you. Would you be open to being more intimate next time we see each other?'",
+    "They send: 'I've been thinking about what you said about wanting someone who truly understands you. I feel like we have that connection. What do you think?'",
+    "You get a message: 'I love how comfortable I feel with you already. It's rare to find someone who gets my sense of humor. Are you free this weekend for something spontaneous?'",
+    "They text: 'Last night was incredible. I hope I'm not being too eager, but I'd love to plan something special for our next date. Any hints on what would make you smile?'",
+    "You receive: 'I know we're still getting to know each other, but I feel like there's real potential here. How are you feeling about us so far?'",
+    "They send: 'Good morning! I couldn't sleep last night thinking about our conversation. You mentioned feeling unsure about relationships lately - want to talk about it over coffee?'",
+    "You get a text: 'I really appreciate how honest you've been with me about what you're looking for. I feel the same way about wanting something real. Should we have that conversation?'"
+  ];
+
   // Get or set daily question (changes at midnight)
   useEffect(() => {
     const today = new Date().toDateString();
@@ -80,6 +96,17 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel }) => {
       const newQuote = affirmingQuotes[randomQuoteIndex];
       setDailyQuote(newQuote);
       localStorage.setItem(`dailyQuote_${today}`, newQuote);
+    }
+
+    // Get or set daily practice scenario
+    const savedScenario = localStorage.getItem(`dailyScenario_${today}`);
+    if (savedScenario) {
+      setDailyScenario(savedScenario);
+    } else {
+      const randomScenarioIndex = Math.floor(Math.random() * practiceScenarios.length);
+      const newScenario = practiceScenarios[randomScenarioIndex];
+      setDailyScenario(newScenario);
+      localStorage.setItem(`dailyScenario_${today}`, newScenario);
     }
 
     // Get saved vote for today's quote
@@ -149,6 +176,28 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel }) => {
             className="w-full"
           >
             See More Conversation Starters
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* How would you reply? Practice Section */}
+      <Card className="shadow-romance border-primary/20">
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2">
+            <MessageCircle className="w-5 h-5 text-primary animate-heart-pulse" />
+            <span>How would you reply?</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="p-4 bg-gradient-soft rounded-lg border border-primary/10">
+            <p className="text-foreground leading-relaxed">{dailyScenario}</p>
+          </div>
+          <Button
+            onClick={() => onNavigateToAIPractice(dailyScenario)}
+            variant="romance"
+            className="w-full"
+          >
+            Reply
           </Button>
         </CardContent>
       </Card>

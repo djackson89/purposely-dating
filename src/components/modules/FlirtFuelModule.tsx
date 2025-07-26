@@ -191,6 +191,24 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
     }
   }, [selectedCategory, isCustom]);
 
+  // Check for stored practice scenario from Home page navigation
+  React.useEffect(() => {
+    const storedScenario = localStorage.getItem('practiceScenario');
+    const activePracticeSection = localStorage.getItem('activePracticeSection');
+    
+    if (storedScenario && activePracticeSection === 'practice') {
+      setActiveSection('practice');
+      setCurrentScenarioText(storedScenario);
+      setPracticeMessages([{ role: 'ai', message: storedScenario }]);
+      setPracticePartnerActive(true);
+      setShowPracticeInput(true);
+      
+      // Clear the stored data after using it
+      localStorage.removeItem('practiceScenario');
+      localStorage.removeItem('activePracticeSection');
+    }
+  }, []);
+
   const generateCustomStarters = async () => {
     if (!customKeywords.trim()) return;
     

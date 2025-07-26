@@ -88,10 +88,19 @@ const Index = () => {
     setActiveModule('flirtfuel');
   };
 
+  const handleNavigateToAIPractice = (scenario?: string) => {
+    setActiveModule('flirtfuel');
+    // Store the scenario for the FlirtFuelModule to use
+    if (scenario) {
+      localStorage.setItem('practiceScenario', scenario);
+      localStorage.setItem('activePracticeSection', 'practice');
+    }
+  };
+
   const renderActiveModule = () => {
     switch (activeModule) {
       case 'home':
-        return <Home userProfile={userProfile} onNavigateToFlirtFuel={handleNavigateToFlirtFuel} />;
+        return <Home userProfile={userProfile} onNavigateToFlirtFuel={handleNavigateToFlirtFuel} onNavigateToAIPractice={handleNavigateToAIPractice} />;
       case 'flirtfuel':
         return <FlirtFuelModule userProfile={userProfile} />;
       case 'concierge':
@@ -101,7 +110,7 @@ const Index = () => {
       case 'profile':
         return <ProfileModule userProfile={userProfile} onProfileUpdate={handleProfileUpdate} />;
       default:
-        return <Home userProfile={userProfile} onNavigateToFlirtFuel={handleNavigateToFlirtFuel} />;
+        return <Home userProfile={userProfile} onNavigateToFlirtFuel={handleNavigateToFlirtFuel} onNavigateToAIPractice={handleNavigateToAIPractice} />;
     }
   };
 
