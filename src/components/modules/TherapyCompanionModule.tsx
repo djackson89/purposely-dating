@@ -294,8 +294,8 @@ const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userPro
         <p className="text-muted-foreground">Grow together, reflect deeply</p>
       </div>
 
-      {/* Section Tabs */}
-      <div className="flex space-x-2 overflow-x-auto pb-2">
+      {/* Section Tabs - Stacked and Visible */}
+      <div className="grid grid-cols-3 gap-2 mb-6">
         {sections.map((section) => {
           const IconComponent = section.icon;
           return (
@@ -304,10 +304,10 @@ const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userPro
               onClick={() => setActiveSection(section.id as any)}
               variant={activeSection === section.id ? "romance" : "soft"}
               size="sm"
-              className="whitespace-nowrap"
+              className="flex flex-col items-center p-3 h-auto"
             >
               <IconComponent className="w-4 h-4 mr-1" />
-              {section.label}
+              <span className="text-xs leading-tight text-center">{section.label}</span>
             </Button>
           );
         })}

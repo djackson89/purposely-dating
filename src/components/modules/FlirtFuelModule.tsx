@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -530,8 +531,8 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
         <p className="text-muted-foreground">Build confidence & spark connections</p>
       </div>
 
-      {/* Section Tabs */}
-      <div className="flex space-x-2 overflow-x-auto pb-2">
+      {/* Section Tabs - Stacked and Visible */}
+      <div className="grid grid-cols-4 gap-2 mb-6">
         {sections.map((section) => {
           const IconComponent = section.icon;
           return (
@@ -540,10 +541,10 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
               onClick={() => setActiveSection(section.id as any)}
               variant={activeSection === section.id ? "romance" : "soft"}
               size="sm"
-              className="whitespace-nowrap"
+              className="flex flex-col items-center p-3 h-auto"
             >
-              <IconComponent className="w-4 h-4 mr-1" />
-              {section.label}
+              <IconComponent className="w-4 h-4 mb-1" />
+              <span className="text-xs leading-tight text-center">{section.label}</span>
             </Button>
           );
         })}
@@ -800,21 +801,27 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
             </CardContent>
           </Card>
 
-          {/* Category Bubbles */}
+          {/* Category Dropdown */}
           <Card className="shadow-soft border-primary/10">
             <CardContent className="pt-6">
-              <div className="flex flex-wrap gap-2">
-                {conversationStarters.map((category) => (
-                  <Button
-                    key={category.category}
-                    onClick={() => selectCategory(category.category)}
-                    variant={selectedCategory === category.category && !isCustom ? "romance" : "outline"}
-                    size="sm"
-                    className="rounded-full"
-                  >
-                    {category.category}
-                  </Button>
-                ))}
+              <div className="space-y-3">
+                <Label htmlFor="category-select" className="text-sm font-medium">Choose Category:</Label>
+                <Select value={selectedCategory} onValueChange={selectCategory}>
+                  <SelectTrigger className="w-full bg-card z-50">
+                    <SelectValue placeholder="Select a category" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-card border border-border shadow-lg z-50">
+                    {conversationStarters.map((category) => (
+                      <SelectItem 
+                        key={category.category} 
+                        value={category.category}
+                        className="bg-card hover:bg-muted cursor-pointer"
+                      >
+                        {category.category}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </CardContent>
           </Card>
