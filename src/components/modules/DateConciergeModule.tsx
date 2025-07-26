@@ -89,7 +89,7 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
       </div>
 
       {/* Section Tabs */}
-      <div className="flex space-x-2 overflow-x-auto pb-2">
+      <div className="grid grid-cols-3 gap-2 mb-6">
         {sections.map((section) => {
           const IconComponent = section.icon;
           return (
@@ -98,10 +98,9 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
               onClick={() => setActiveSection(section.id as any)}
               variant={activeSection === section.id ? "romance" : "soft"}
               size="sm"
-              className="whitespace-nowrap"
+              className="flex items-center justify-center p-3 h-12 w-full"
             >
-              <IconComponent className="w-4 h-4 mr-1" />
-              {section.label}
+              <IconComponent className="w-5 h-5" />
             </Button>
           );
         })}

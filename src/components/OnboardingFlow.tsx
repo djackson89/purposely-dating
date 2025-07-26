@@ -38,7 +38,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
     },
     {
       icon: Sparkles,
-      title: "Therapy Companion - Grow Together 🌱",
+      title: "Self-Love Journey - Grow Together 🌱",
       description: "Reflect, journal, and track your emotional growth with personalized prompts and insights!"
     }
   ];

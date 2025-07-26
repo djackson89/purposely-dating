@@ -290,7 +290,7 @@ const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userPro
       {/* Header */}
       <div className="text-center space-y-2">
         <h1 className="text-2xl font-bold bg-gradient-romance bg-clip-text text-transparent">
-          Purposely Dating 💕
+          Self-Love Journey 🌱
         </h1>
         <p className="text-muted-foreground">Grow together, reflect deeply</p>
       </div>
@@ -305,10 +305,9 @@ const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userPro
               onClick={() => setActiveSection(section.id as any)}
               variant={activeSection === section.id ? "romance" : "soft"}
               size="sm"
-              className="flex flex-col items-center p-3 h-auto"
+              className="flex items-center justify-center p-3 h-12 w-full"
             >
-              <IconComponent className="w-4 h-4 mr-1" />
-              <span className="text-xs leading-tight text-center">{section.label}</span>
+              <IconComponent className="w-5 h-5" />
             </Button>
           );
         })}

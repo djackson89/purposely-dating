@@ -49,43 +49,59 @@ export const FTUETooltip: React.FC<FTUETooltipProps> = ({
     setShowTooltip(true);
   };
 
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    // Only close if clicking the backdrop itself, not the modal content
+    if (e.target === e.currentTarget) {
+      markAsSeen();
+    }
+  };
+
   if (showTooltip && !hasSeenTooltip) {
     return (
-      <Card className={`shadow-romance border-primary/20 mb-4 ${className}`}>
-        <CardContent className="pt-6">
-          <div className="flex items-start space-x-3">
-            <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-gradient-romance rounded-full flex items-center justify-center">
-                <HelpCircle className="w-4 h-4 text-white" />
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in">
+        {/* Backdrop */}
+        <div 
+          className="absolute inset-0 bg-black/50 backdrop-blur-sm" 
+          onClick={handleBackdropClick}
+        />
+        
+        {/* Modal Content */}
+        <Card className="relative z-10 shadow-romance border-primary/20 max-w-sm w-full animate-scale-in">
+          <CardContent className="pt-6">
+            <div className="flex items-start space-x-3">
+              <div className="flex-shrink-0">
+                <div className="w-8 h-8 bg-gradient-romance rounded-full flex items-center justify-center">
+                  <HelpCircle className="w-4 h-4 text-white" />
+                </div>
               </div>
-            </div>
-            <div className="flex-1 space-y-2">
-              <h3 className="font-semibold text-primary">{title}</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                {description}
-              </p>
-              <div className="flex justify-end">
-                <Button 
-                  variant="soft" 
-                  size="sm" 
-                  onClick={markAsSeen}
-                  className="text-xs"
-                >
-                  Got it! ✨
-                </Button>
+              <div className="flex-1 space-y-2">
+                <h3 className="font-semibold text-primary">{title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {description}
+                </p>
+                <div className="flex justify-end">
+                  <Button 
+                    variant="soft" 
+                    size="sm" 
+                    onClick={markAsSeen}
+                    className="text-xs"
+                  >
+                    Got it! ✨
+                  </Button>
+                </div>
               </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={markAsSeen}
+                className="flex-shrink-0 h-6 w-6 p-0"
+              >
+                <X className="w-4 h-4" />
+              </Button>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={markAsSeen}
-              className="flex-shrink-0 h-6 w-6 p-0"
-            >
-              <X className="w-4 h-4" />
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
