@@ -391,9 +391,6 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
 
         {/* App Features Preview */}
         <div className="mt-8 text-center">
-          <p className="text-sm text-muted-foreground mb-4">
-            Join thousands finding meaningful connections through:
-          </p>
           <div className="flex justify-center space-x-6 text-xs text-muted-foreground">
             <div>💬 Mental Stimulation</div>
             <div>📅 Red Flag Finders</div>
