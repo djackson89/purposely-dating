@@ -222,13 +222,13 @@ const TextGenieModule: React.FC<TextGenieModuleProps> = ({ userProfile }) => {
     Determine:
     1. The message type (manipulation, attraction, deep_feelings, disrespect, casual, flirty)
     2. Your confidence level (1-10)
-    3. A brief interpretation (maximum 2 sentences) explaining what's really happening - address ${userName} directly
+    3. A brief interpretation (maximum 1 sentence) explaining what's really happening - address ${userName} directly
     4. A detailed analysis for when they want more insight
 
     Respond in this exact format:
     TYPE: [message_type]
     CONFIDENCE: [1-10]
-    INTERPRETATION: [brief 2-sentence analysis addressing ${userName} personally]
+    INTERPRETATION: [brief 1-sentence analysis addressing ${userName} personally]
     DETAILED: [comprehensive analysis with deeper insights for ${userName}]`;
 
     try {
@@ -277,75 +277,25 @@ const TextGenieModule: React.FC<TextGenieModuleProps> = ({ userProfile }) => {
 
   const generateReplies = async (content: string, replyType: 'flirt' | 'reply' | 'clap', analysis: ConversationAnalysis) => {
     const userName = userProfile.firstName || 'love';
-    let prompt = '';
+    const prompt = `Generate 3 text responses to this conversation context: "${content}"
+        
+    Analysis: ${analysis.interpretation}
+    Message type: ${analysis.messageType}
     
-    switch (replyType) {
-      case 'flirt':
-        prompt = `Generate 3 flirty text responses to this conversation context: "${content}"
-        
-        Analysis: ${analysis.interpretation}
-        Message type: ${analysis.messageType}
-        
-        Create 3 responses with different tones:
-        1. Sweet (passive, gentle, warm)
-        2. Mild (assertive, confident, balanced)  
-        3. Spicy (aggressive, bold, challenging)
-        
-        For each response, provide the message text and a warm, personable explanation of how it should land given the scenario. Address ${userName} directly in the explanations.
-        
-        Format as:
-        SWEET: [message]
-        SWEET_PERSPECTIVE: [warm explanation for ${userName}]
-        MILD: [message]
-        MILD_PERSPECTIVE: [warm explanation for ${userName}]
-        SPICY: [message]
-        SPICY_PERSPECTIVE: [warm explanation for ${userName}]`;
-        break;
-        
-      case 'reply':
-        prompt = `Generate 3 natural conversation responses to this context: "${content}"
-        
-        Analysis: ${analysis.interpretation}
-        Message type: ${analysis.messageType}
-        
-        Create 3 responses with different tones:
-        1. Sweet (passive, gentle, warm)
-        2. Mild (assertive, confident, balanced)
-        3. Spicy (aggressive, bold, direct)
-        
-        For each response, provide the message text and a warm, personable explanation of how it should land. Address ${userName} directly in the explanations.
-        
-        Format as:
-        SWEET: [message]
-        SWEET_PERSPECTIVE: [warm explanation for ${userName}]
-        MILD: [message]
-        MILD_PERSPECTIVE: [warm explanation for ${userName}]
-        SPICY: [message]
-        SPICY_PERSPECTIVE: [warm explanation for ${userName}]`;
-        break;
-        
-      case 'clap':
-        prompt = `Generate 3 boundary-setting responses to this context: "${content}"
-        
-        Analysis: ${analysis.interpretation}
-        Message type: ${analysis.messageType}
-        
-        Create 3 responses with different tones:
-        1. Sweet (passive but firm, gentle boundary)
-        2. Mild (assertive, clear standards)
-        3. Spicy (aggressive, no-nonsense shutdown)
-        
-        For each response, provide the message text and a warm, personable explanation of how it should land. Address ${userName} directly in the explanations.
-        
-        Format as:
-        SWEET: [message]
-        SWEET_PERSPECTIVE: [warm explanation for ${userName}]
-        MILD: [message]  
-        MILD_PERSPECTIVE: [warm explanation for ${userName}]
-        SPICY: [message]
-        SPICY_PERSPECTIVE: [warm explanation for ${userName}]`;
-        break;
-    }
+    Create 3 responses with these specific tones:
+    1. Sweet: Flirty and fun response, even to disrespect
+    2. Mild: Inquisitive and curious while remaining neutral about what was said
+    3. Spicy: Clapping back and setting firm, assertive boundaries if needed
+    
+    For each response, provide the message text and a warm, personable explanation of how it should land given the scenario. Address ${userName} directly in the explanations.
+    
+    Format as:
+    SWEET: [message]
+    SWEET_PERSPECTIVE: [warm explanation for ${userName}]
+    MILD: [message]
+    MILD_PERSPECTIVE: [warm explanation for ${userName}]
+    SPICY: [message]
+    SPICY_PERSPECTIVE: [warm explanation for ${userName}]`;
 
     try {
       const response = await getAIResponse(prompt, userProfile, 'general');
@@ -661,48 +611,22 @@ const TextGenieModule: React.FC<TextGenieModuleProps> = ({ userProfile }) => {
                 </>
               )}
               
-              <div className="text-xs text-muted-foreground">
-                Confidence: {analysis.confidence}/10
-              </div>
             </div>
           </CardContent>
         </Card>
       )}
 
-      {/* Reply Type Buttons */}
-      <div className="grid grid-cols-3 gap-3">
-        <Button
-          onClick={() => handleGenerateReplies('flirt')}
-          disabled={!hasInput || isLoading}
-          variant={!hasInput ? "outline" : "default"}
-          className={`flex flex-col p-4 h-auto ${
-            hasInput ? 'bg-rose-500 hover:bg-rose-600 text-white' : ''
-          }`}
-        >
-          <span className="font-medium">Flirt Back</span>
-          <span className="text-xs opacity-80">Playful & Fun</span>
-        </Button>
+      {/* Generate Response Button */}
+      <div className="flex justify-center">
         <Button
           onClick={() => handleGenerateReplies('reply')}
           disabled={!hasInput || isLoading}
           variant={!hasInput ? "outline" : "default"}
-          className={`flex flex-col p-4 h-auto ${
-            hasInput ? 'bg-blue-500 hover:bg-blue-600 text-white' : ''
+          className={`px-8 py-4 h-auto ${
+            hasInput ? 'bg-primary hover:bg-primary/90 text-primary-foreground' : ''
           }`}
         >
-          <span className="font-medium">Reply Back</span>
-          <span className="text-xs opacity-80">Keep It Going</span>
-        </Button>
-        <Button
-          onClick={() => handleGenerateReplies('clap')}
-          disabled={!hasInput || isLoading}
-          variant={!hasInput ? "outline" : "default"}
-          className={`flex flex-col p-4 h-auto ${
-            hasInput ? 'bg-purple-500 hover:bg-purple-600 text-white' : ''
-          }`}
-        >
-          <span className="font-medium">Clap Back</span>
-          <span className="text-xs opacity-80">Set Boundaries</span>
+          <span className="font-medium">Generate Response</span>
         </Button>
       </div>
 
@@ -716,8 +640,8 @@ const TextGenieModule: React.FC<TextGenieModuleProps> = ({ userProfile }) => {
             {Object.entries(replyOptions).map(([type, options]) =>
               options.length > 0 && (
                 <div key={type} className="space-y-4">
-                  <h4 className="font-medium capitalize text-primary">
-                    {type === 'flirt' ? 'Flirt Back' : type === 'reply' ? 'Reply Back' : 'Clap Back'} Options
+                   <h4 className="font-medium text-primary">
+                    Response Options
                   </h4>
                   {options.map((option, index) => (
                     <div key={index} className="space-y-4">
