@@ -79,148 +79,6 @@ const TextGenieModule: React.FC<TextGenieModuleProps> = ({ userProfile }) => {
     "Thinking.."
   ];
 
-  const getFallbackReplies = (replyType: 'flirt' | 'reply' | 'clap'): ReplyOption[] => {
-    switch (replyType) {
-      case 'flirt':
-        return [
-          {
-            sweet: {
-              text: "That's really sweet of you to say 😊",
-              perspective: "This gentle response acknowledges their compliment while keeping things light and friendly. Perfect when you want to show appreciation without escalating too quickly."
-            },
-            mild: {
-              text: "Interesting... tell me more 😏",
-              perspective: "Shows intrigue while maintaining mystery. This balanced approach keeps them talking while showing you're engaged and confident."
-            },
-            spicy: {
-              text: "You're going to have to try harder than that 🔥",
-              perspective: "A bold challenge that tests their confidence. This reply shows you have high standards and aren't easily impressed - use when you want to see if they can step up their game."
-            }
-          },
-          {
-            sweet: {
-              text: "You always know what to say 💕",
-              perspective: "A warm, appreciative response that builds connection. This works well when they've been consistently thoughtful and you want to encourage more of that energy."
-            },
-            mild: {
-              text: "I like where this is going 💫",
-              perspective: "Direct positive reinforcement that shows interest without giving everything away. This signals you're open to more while maintaining your position of power."
-            },
-            spicy: {
-              text: "Keep talking like that and see what happens 🔥",
-              perspective: "Creates anticipation and sexual tension. This daring response shows confidence and hints at possibilities while keeping them wanting more."
-            }
-          },
-          {
-            sweet: {
-              text: "That made me smile ☺️",
-              perspective: "Simple and genuine, this response shares your positive reaction. Great for when their message genuinely brightened your mood and you want to let them know."
-            },
-            mild: {
-              text: "You're smooth, I'll give you that 😉",
-              perspective: "Acknowledges their effort while maintaining your power. This shows you recognize game when you see it, but you're not easily swayed."
-            },
-            spicy: {
-              text: "Is that your best line? I'm not that easy 😈",
-              perspective: "A playful rejection that challenges them to do better. Use this when they're being lazy with their approach and you want to see real effort."
-            }
-          }
-        ];
-      case 'reply':
-        return [
-          {
-            sweet: {
-              text: "That's such a thoughtful way to look at it",
-              perspective: "Validates their perspective warmly. This response shows you appreciate their depth and creates space for meaningful conversation."
-            },
-            mild: {
-              text: "That's really interesting! What made you think about that?",
-              perspective: "Shows genuine interest and asks for deeper insight. This keeps the conversation flowing naturally while encouraging them to share more."
-            },
-            spicy: {
-              text: "Finally, someone with an actual brain. Tell me more.",
-              perspective: "A direct compliment that sets high standards. This response rewards intelligence while implying many others don't meet your intellectual expectations."
-            }
-          },
-          {
-            sweet: {
-              text: "I love hearing your thoughts on this",
-              perspective: "Encouraging and warm, this makes them feel valued for their mind. Perfect when you want to build emotional connection and show appreciation."
-            },
-            mild: {
-              text: "I can relate to that. Have you experienced something similar before?",
-              perspective: "Creates connection through shared experience. This builds rapport while opening up space for them to be more vulnerable."
-            },
-            spicy: {
-              text: "Most people don't think that deeply. I'm impressed.",
-              perspective: "Separates them from the crowd while giving a rare compliment. This makes them feel special while establishing your high standards."
-            }
-          },
-          {
-            sweet: {
-              text: "You have such a unique perspective on things",
-              perspective: "Celebrates their individuality in a gentle way. This builds their confidence while showing you pay attention to what makes them different."
-            },
-            mild: {
-              text: "Tell me more about your perspective on this",
-              perspective: "Shows you value their thoughts and opinions. This response demonstrates respect for their mind while keeping the conversation going."
-            },
-            spicy: {
-              text: "I don't usually meet people who think like this. Keep going.",
-              perspective: "A powerful statement that makes them feel rare and valuable. This implies most people bore you, but they've captured your attention."
-            }
-          }
-        ];
-      case 'clap':
-        return [
-          {
-            sweet: {
-              text: "I'd prefer if we could keep this conversation respectful",
-              perspective: "A gentle but firm boundary. This gives them a chance to correct course while making your standards clear without being harsh."
-            },
-            mild: {
-              text: "That's not how I operate. I expect better communication than that.",
-              perspective: "Firmly communicates your standards without room for misinterpretation. This shows you won't tolerate poor treatment while staying professional."
-            },
-            spicy: {
-              text: "Try that approach with someone else. I'm not the one.",
-              perspective: "A definitive shutdown that leaves no room for negotiation. This response makes it crystal clear you won't tolerate disrespect or manipulation."
-            }
-          },
-          {
-            sweet: {
-              text: "I don't think that's the energy I'm looking for right now",
-              perspective: "A diplomatic way to redirect unwanted behavior. This allows them to save face while making your boundaries clear."
-            },
-            mild: {
-              text: "I value myself too much to engage with that energy. Try again.",
-              perspective: "Demonstrates self-worth while giving them an opportunity to correct course. This teaches them how you expect to be treated."
-            },
-            spicy: {
-              text: "The audacity. Do better or don't bother.",
-              perspective: "A sharp response that calls out inappropriate behavior directly. This shows you won't tolerate disrespect and have zero patience for poor treatment."
-            }
-          },
-          {
-            sweet: {
-              text: "I think we might be looking for different things",
-              perspective: "A kind but clear way to establish incompatibility. This response protects your peace while being considerate of their feelings."
-            },
-            mild: {
-              text: "That approach doesn't work with me. I prefer authentic connection.",
-              perspective: "Redirects them toward better behavior while staying open to improvement. This educates them on what actually attracts you."
-            },
-            spicy: {
-              text: "I'm worth more than low-effort conversation. Level up or log off.",
-              perspective: "A fierce response that demands excellence. This either filters them out completely or motivates them to bring their A-game."
-            }
-          }
-        ];
-      default:
-        return [];
-    }
-  };
-
   const analyzeConversation = async (content: string): Promise<ConversationAnalysis> => {
     const userName = userProfile.firstName || 'love';
     const prompt = `You are a supportive, no-nonsense relationship coach speaking to ${userName}. Analyze this conversation context and identify the underlying message type. Content: "${content}"
@@ -333,7 +191,8 @@ const TextGenieModule: React.FC<TextGenieModuleProps> = ({ userProfile }) => {
       }
       
       // Return fallback if parsing fails
-      return [getFallbackReplies(replyType)[0]];
+      return [];
+      
     } catch (error) {
       console.error('Error generating replies:', error);
       return [];
@@ -379,10 +238,6 @@ const TextGenieModule: React.FC<TextGenieModuleProps> = ({ userProfile }) => {
         description: errorMessage,
         variant: "destructive",
       });
-      
-      // Provide fallback suggestions based on type
-      const fallbackOptions = getFallbackReplies(replyType);
-      setReplyOptions(prev => ({ ...prev, [replyType]: fallbackOptions }));
       
     } finally {
       setIsLoading(false);
@@ -510,61 +365,17 @@ const TextGenieModule: React.FC<TextGenieModuleProps> = ({ userProfile }) => {
       setIsLoading(false);
     }
   };
-    setIsLoading(true);
-    const userName = userProfile.firstName || 'love';
-    
-    const prompt = `Generate 5 conversation starters for ${userName} based on their profile:
-    - Love Language: ${userProfile.loveLanguage}
-    - Age: ${userProfile.age}
-    - Personality: ${userProfile.personalityType}
-    - Relationship Status: ${userProfile.relationshipStatus}
-    
-    Create engaging, personality-appropriate conversation starters that feel natural and help build connection. Make them specific to their love language and personality type. Format as a simple list.`;
-
-    try {
-      const response = await getAIResponse(prompt, userProfile, 'general');
-      const starters = response.split('\n').filter(line => line.trim()).map(line => line.replace(/^\d+\.?\s*/, '').trim());
-      setConversationStarters(starters);
-    } catch (error) {
-      console.error('Error generating conversation starters:', error);
-      toast({
-        title: "AI Error", 
-        description: "Failed to generate conversation starters. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleRetry = async () => {
-    // Find which reply types have existing options and regenerate them
-    const activeTypes = Object.entries(replyOptions).filter(([_, options]) => options.length > 0);
-    
-    if (activeTypes.length > 0) {
-      // Regenerate the first active type (or you could regenerate all)
-      const [firstActiveType] = activeTypes[0];
-      await handleGenerateReplies(firstActiveType as 'flirt' | 'reply' | 'clap');
-    }
+    await handleGenerateReplies('reply');
   };
 
   const handleImageUpload = async () => {
-    try {
-      const photo = await selectPhoto();
-      if (photo) {
-        setAttachedImages(prev => [...prev, photo.dataUrl || photo.webPath || '']);
-        toast({
-          title: "Image attached",
-          description: "Screenshot added to conversation context.",
-        });
-      }
-    } catch (error) {
-      console.error('Error uploading image:', error);
-      toast({
-        title: "Upload failed",
-        description: "Failed to attach image. Please try again.",
-        variant: "destructive",
-      });
+    const photo = await selectPhoto();
+    if (photo && typeof photo === 'string') {
+      setAttachedImages(prev => [...prev, photo]);
+    } else if (photo && typeof photo === 'object' && 'webPath' in photo) {
+      setAttachedImages(prev => [...prev, photo.webPath || '']);
     }
   };
 
@@ -572,32 +383,23 @@ const TextGenieModule: React.FC<TextGenieModuleProps> = ({ userProfile }) => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const recorder = new MediaRecorder(stream);
-      const chunks: BlobPart[] = [];
       
-      recorder.ondataavailable = (e) => chunks.push(e.data);
-      recorder.onstop = async () => {
-        const blob = new Blob(chunks, { type: 'audio/webm' });
-        // In a real implementation, you'd send this to a speech-to-text service
-        toast({
-          title: "Recording complete",
-          description: "Voice input feature coming soon!",
-        });
+      recorder.ondataavailable = (event) => {
+        console.log('Audio data available:', event.data);
+      };
+      
+      recorder.onstop = () => {
         stream.getTracks().forEach(track => track.stop());
       };
       
       recorder.start();
       setMediaRecorder(recorder);
       setIsRecording(true);
-      
-      toast({
-        title: "Recording started",
-        description: "Speak your message now...",
-      });
     } catch (error) {
       console.error('Error starting recording:', error);
       toast({
-        title: "Recording failed",
-        description: "Could not access microphone.",
+        title: "Recording Error",
+        description: "Could not access microphone. Please check permissions.",
         variant: "destructive",
       });
     }
@@ -752,7 +554,7 @@ const TextGenieModule: React.FC<TextGenieModuleProps> = ({ userProfile }) => {
                  </Button>
                </div>
                
-               {/* Generate Response Button - moved directly below input */}
+               {/* Generate Response Button */}
                <div className="pt-4">
                  <Button
                    onClick={() => handleGenerateReplies('reply')}
@@ -803,13 +605,12 @@ const TextGenieModule: React.FC<TextGenieModuleProps> = ({ userProfile }) => {
                       )}
                     </>
                   )}
-                  
                 </div>
               </CardContent>
             </Card>
           )}
 
-          {/* Send This Section */}
+          {/* Response Options */}
           {(replyOptions.flirt.length > 0 || replyOptions.reply.length > 0 || replyOptions.clap.length > 0) && (
             <Card className="shadow-soft border-primary/10">
               <CardHeader>
