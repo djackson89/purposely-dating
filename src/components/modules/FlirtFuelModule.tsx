@@ -91,7 +91,9 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [isCustom, setIsCustom] = useState(false);
   const [customCategories, setCustomCategories] = useState<{[key: string]: string[]}>({});
+  const [savedPacks, setSavedPacks] = useState<{[key: string]: boolean}>({});
   const [showRename, setShowRename] = useState(false);
+  const [showManage, setShowManage] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
   const { getFlirtSuggestion, isLoading } = useRelationshipAI();
 
@@ -393,7 +395,39 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
       [categoryName]: currentStarters
     }));
     
+    // Mark as saved pack
+    setSavedPacks(prev => ({
+      ...prev,
+      [categoryName]: true
+    }));
+    
     setSelectedCategory(categoryName);
+  };
+
+  const deleteCustomCategory = (categoryName: string) => {
+    if (!customCategories[categoryName]) return;
+    
+    // Remove from custom categories
+    setCustomCategories(prev => {
+      const newCategories = { ...prev };
+      delete newCategories[categoryName];
+      return newCategories;
+    });
+    
+    // Remove from saved packs
+    setSavedPacks(prev => {
+      const newPacks = { ...prev };
+      delete newPacks[categoryName];
+      return newPacks;
+    });
+    
+    // Reset to default if this was the selected category
+    if (selectedCategory === categoryName) {
+      setSelectedCategory('Relationship Talk');
+      setIsCustom(false);
+    }
+    
+    setShowManage(false);
   };
 
   const renameCustomCategory = () => {
@@ -410,10 +444,21 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
         return newCategories;
       });
       
+      // Update saved packs if it was saved
+      if (savedPacks[oldName]) {
+        setSavedPacks(prev => {
+          const newPacks = { ...prev };
+          delete newPacks[oldName];
+          newPacks[newCategoryName.trim()] = true;
+          return newPacks;
+        });
+      }
+      
       setSelectedCategory(newCategoryName.trim());
     }
     
     setShowRename(false);
+    setShowManage(false);
     setNewCategoryName('');
   };
 
@@ -839,16 +884,29 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
                   </SelectContent>
                 </Select>
                 
-                {/* Rename button for custom categories */}
-                {isCustom && customCategories[selectedCategory] && (
-                  <Button
-                    onClick={() => setShowRename(true)}
-                    variant="outline"
-                    size="sm"
-                    className="w-full"
-                  >
-                    Rename Category
-                  </Button>
+                {/* Save/Manage button for custom categories */}
+                {isCustom && currentStarters.length > 0 && (
+                  <div className="space-y-2">
+                    {!savedPacks[selectedCategory] ? (
+                      <Button
+                        onClick={saveCurrentCustom}
+                        variant="romance"
+                        size="sm"
+                        className="w-full"
+                      >
+                        Save This Pack
+                      </Button>
+                    ) : (
+                      <Button
+                        onClick={() => setShowManage(true)}
+                        variant="outline"
+                        size="sm"
+                        className="w-full"
+                      >
+                        Manage this Category
+                      </Button>
+                    )}
+                  </div>
                 )}
               </div>
             </CardContent>
@@ -858,19 +916,59 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
           {selectedCategory === 'Customize' && (
             <Card className="shadow-soft border-primary/10">
               <CardContent className="pt-6 space-y-3">
-                <div className="flex space-x-2">
+               <div className="flex flex-col sm:flex-row gap-2">
                   <Input
                     placeholder="Enter keywords (e.g., sexy, deep, funny)"
                     value={customKeywords}
                     onChange={(e) => setCustomKeywords(e.target.value)}
-                    className="flex-1"
+                    className="flex-1 min-w-0"
                   />
                   <Button
                     onClick={generateCustomStarters}
                     disabled={isLoading || !customKeywords.trim()}
                     variant="romance"
+                    className="whitespace-nowrap"
                   >
                     {isLoading ? '...' : 'Generate'}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Management Dialog */}
+          {showManage && (
+            <Card className="shadow-soft border-primary/10">
+              <CardContent className="pt-6 space-y-3">
+                <Label className="text-sm font-medium">Manage Category: {selectedCategory}</Label>
+                <div className="flex flex-col gap-2">
+                  <Button
+                    onClick={() => {
+                      setShowManage(false);
+                      setShowRename(true);
+                    }}
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                  >
+                    Rename Category
+                  </Button>
+                  <Button
+                    onClick={() => deleteCustomCategory(selectedCategory)}
+                    variant="destructive"
+                    size="sm"
+                    className="w-full flex items-center justify-center"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Delete Category
+                  </Button>
+                  <Button
+                    onClick={() => setShowManage(false)}
+                    variant="ghost"
+                    size="sm"
+                    className="w-full"
+                  >
+                    Cancel
                   </Button>
                 </div>
               </CardContent>
@@ -882,29 +980,35 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
             <Card className="shadow-soft border-primary/10">
               <CardContent className="pt-6 space-y-3">
                 <Label className="text-sm font-medium">Rename Category:</Label>
-                <div className="flex space-x-2">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <Input
                     placeholder="Enter new name"
                     value={newCategoryName}
                     onChange={(e) => setNewCategoryName(e.target.value)}
-                    className="flex-1"
+                    className="flex-1 min-w-0"
                   />
-                  <Button
-                    onClick={renameCustomCategory}
-                    disabled={!newCategoryName.trim()}
-                    variant="romance"
-                  >
-                    Save
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      setShowRename(false);
-                      setNewCategoryName('');
-                    }}
-                    variant="outline"
-                  >
-                    Cancel
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={renameCustomCategory}
+                      disabled={!newCategoryName.trim()}
+                      variant="romance"
+                      size="sm"
+                      className="whitespace-nowrap"
+                    >
+                      Save
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        setShowRename(false);
+                        setNewCategoryName('');
+                      }}
+                      variant="outline"
+                      size="sm"
+                      className="whitespace-nowrap"
+                    >
+                      Cancel
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -931,16 +1035,16 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
               </div>
 
               {/* Navigation Controls */}
-              <div className="flex justify-between items-center px-4">
+              <div className="flex justify-between items-center px-2 sm:px-4">
                 <Button
                   onClick={previousQuestion}
                   disabled={currentQuestionIndex === 0}
                   variant="soft"
                   size="lg"
-                  className="flex items-center space-x-2"
+                  className="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-4"
                 >
                   <span>←</span>
-                  <span>Previous</span>
+                  <span className="hidden sm:inline">Previous</span>
                 </Button>
 
                 <div className="flex space-x-2">
@@ -961,7 +1065,7 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
                   disabled={isLoading}
                   variant="soft"
                   size="lg"
-                  className="flex items-center space-x-2"
+                  className="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-4"
                 >
                   <span>{isLoading ? '...' : 'Next'}</span>
                   <span>→</span>
