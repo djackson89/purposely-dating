@@ -109,11 +109,13 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
       setCurrentStep(currentStep + 1);
     } else {
       // Complete onboarding
-      onComplete({
-        ...updatedData,
-        gender: 'female', // Default as specified for target audience
-        age: updatedData.age || '25-34'
-      } as OnboardingData);
+      onComplete(updatedData as OnboardingData);
+    }
+  };
+
+  const handleBack = () => {
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1);
     }
   };
 
@@ -189,16 +191,35 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
             ))}
           </div>
           <div className="space-y-3">
-            {quizStep.options.map((option) => (
-              <Button
-                key={option}
-                onClick={() => handleQuizAnswer(option)}
-                variant="outline"
-                className="w-full justify-start hover:bg-primary/5 hover:border-primary hover:shadow-soft transition-all duration-300"
-              >
-                {option}
-              </Button>
-            ))}
+            {quizStep.options.map((option) => {
+              const isSelected = formData[quizStep.key as keyof OnboardingData] === option;
+              return (
+                <Button
+                  key={option}
+                  onClick={() => handleQuizAnswer(option)}
+                  variant={isSelected ? "romance" : "outline"}
+                  className={`w-full justify-start transition-all duration-300 ${
+                    isSelected 
+                      ? "shadow-romance" 
+                      : "hover:bg-primary/5 hover:border-primary hover:shadow-soft"
+                  }`}
+                >
+                  {option}
+                </Button>
+              );
+            })}
+          </div>
+          
+          {/* Navigation buttons */}
+          <div className="flex justify-between pt-4">
+            <Button
+              onClick={handleBack}
+              variant="ghost"
+              className={`${currentStep === 0 ? "invisible" : ""}`}
+            >
+              Back
+            </Button>
+            <div className="flex-1" />
           </div>
         </CardContent>
       </Card>
