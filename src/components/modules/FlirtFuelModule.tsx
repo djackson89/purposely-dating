@@ -44,6 +44,8 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
   const [practiceScenario, setPracticeScenario] = useState('first_date');
   const [showPracticeInput, setShowPracticeInput] = useState(false);
   const [currentScenarioText, setCurrentScenarioText] = useState('');
+  const [sessionFeedback, setSessionFeedback] = useState('');
+  const [showFeedback, setShowFeedback] = useState(false);
   const { getFlirtSuggestion, isLoading } = useRelationshipAI();
 
   const handleShare = async (text: string) => {
@@ -501,10 +503,74 @@ Respond naturally as someone they might be dating. Be engaging, realistic, and p
     }
   };
 
-  const endPracticeSession = () => {
+  const generateSessionFeedback = async () => {
+    if (practiceMessages.length <= 1) return "Not enough conversation to provide feedback.";
+
+    const scenario = practiceScenarios.find(s => s.id === practiceScenario);
+    const conversationHistory = practiceMessages.map(m => 
+      `${m.role === 'user' ? 'User' : 'Practice Partner'}: ${m.message}`
+    ).join('\n');
+
+    // Category-specific feedback prompts
+    const feedbackPrompts = {
+      first_date: `Analyze this first date practice conversation and provide encouraging but constructive feedback. Focus on: conversation flow, showing genuine interest, asking engaging follow-up questions, being authentic while staying engaging, and creating comfort. Highlight what they did well and offer 2-3 specific tips for future first dates.`,
+      
+      relationship_talk: `Analyze this relationship conversation practice and provide thoughtful feedback. Focus on: emotional intelligence, vulnerability, active listening, expressing appreciation, and healthy communication patterns. Acknowledge their strengths and provide 2-3 specific suggestions for deeper relationship conversations.`,
+      
+      conflict_resolution: `Analyze this conflict resolution practice conversation and provide constructive feedback. Focus on: staying calm under pressure, using "I" statements vs. "you" accusations, finding middle ground without compromising core boundaries, de-escalation techniques, and showing empathy while standing firm. Highlight what they did well and offer 2-3 specific strategies for handling future conflicts more effectively.`,
+      
+      flirting: `Analyze this flirting practice conversation and provide playful yet helpful feedback. Focus on: playfulness and light-heartedness, building romantic tension, confidence without being pushy, humor and charm, and creating intrigue. Celebrate what they did well and offer 2-3 specific tips to be more fun, engaging, and naturally seductive in future interactions.`,
+      
+      vulnerable_sharing: `Analyze this vulnerable sharing practice conversation and provide supportive feedback. Focus on: emotional openness, appropriate pacing of vulnerability, creating safe space for deep connection, authenticity, and reciprocal sharing. Acknowledge their courage and provide 2-3 specific suggestions for sharing more effectively in intimate conversations.`
+    };
+
+    const scenarioPrompt = feedbackPrompts[practiceScenario as keyof typeof feedbackPrompts] || feedbackPrompts.first_date;
+
+    const prompt = `You are a dating and relationship coach providing personalized feedback after a practice conversation session.
+
+Scenario Type: ${scenario?.name}
+User Profile: Love Language: ${userProfile.loveLanguage}, Personality: ${userProfile.personalityType}
+
+Conversation:
+${conversationHistory}
+
+${scenarioPrompt}
+
+Format your feedback as:
+1. Start with genuine encouragement about what they did well
+2. Provide 2-3 specific, actionable improvements
+3. End with motivation for their next real-world interaction
+
+Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid generic advice - make it personal to their conversation.`;
+
+    try {
+      const feedback = await getFlirtSuggestion(prompt, userProfile);
+      return feedback;
+    } catch (error) {
+      console.error('Error generating feedback:', error);
+      return "Great job practicing! Keep working on your conversation skills - every interaction is a chance to improve.";
+    }
+  };
+
+  const endPracticeSession = async () => {
+    // Generate feedback before ending the session
+    setShowFeedback(false);
+    setSessionFeedback('');
+    
+    if (practiceMessages.length > 1) {
+      try {
+        const feedback = await generateSessionFeedback();
+        setSessionFeedback(feedback);
+        setShowFeedback(true);
+      } catch (error) {
+        console.error('Error generating session feedback:', error);
+      }
+    }
+    
     setPracticePartnerActive(false);
     setPracticeMessages([]);
     setCurrentPracticeMessage('');
+    setShowPracticeInput(false);
   };
 
   const sections = [
@@ -979,6 +1045,43 @@ Respond naturally as someone they might be dating. Be engaging, realistic, and p
                   </Button>
                 </div>
               )}
+            </CardContent>
+          </Card>
+        )}
+        
+        {/* Session Feedback Modal */}
+        {showFeedback && sessionFeedback && (
+          <Card className="shadow-romance border-primary/20 bg-gradient-soft">
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Heart className="w-5 h-5 text-primary animate-heart-pulse" />
+                <span>Practice Session Feedback</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="p-4 bg-muted/20 rounded-lg border">
+                <p className="text-sm leading-relaxed whitespace-pre-wrap">{sessionFeedback}</p>
+              </div>
+              
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => {
+                    setShowFeedback(false);
+                    setSessionFeedback('');
+                  }}
+                  variant="romance"
+                  className="flex-1"
+                >
+                  Got it! ✨
+                </Button>
+                <Button
+                  onClick={startPracticeSession}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  Practice Again
+                </Button>
+              </div>
             </CardContent>
           </Card>
         )}
