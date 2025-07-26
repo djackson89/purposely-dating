@@ -183,12 +183,9 @@ const TextGenieModule: React.FC<TextGenieModuleProps> = ({ userProfile }) => {
         content += `\n\n[User also provided ${attachedImages.length} screenshot(s) of the conversation]`;
       }
       
-      // Analyze conversation if not done yet
-      let currentAnalysis = analysis;
-      if (!currentAnalysis) {
-        currentAnalysis = await analyzeConversation(content);
-        setAnalysis(currentAnalysis);
-      }
+      // Always analyze conversation first
+      const currentAnalysis = await analyzeConversation(content);
+      setAnalysis(currentAnalysis);
       
       // Generate replies for the specific type
       const replies = await generateReplies(content, replyType, currentAnalysis);
@@ -391,7 +388,7 @@ const TextGenieModule: React.FC<TextGenieModuleProps> = ({ userProfile }) => {
           <CardContent className="pt-6">
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <h3 className="font-medium">AI Analysis</h3>
+                <h3 className="font-medium">Purposely Perspective</h3>
                 <Badge variant={getMessageTypeDisplay(analysis.messageType).color as any}>
                   {getMessageTypeDisplay(analysis.messageType).label}
                 </Badge>
@@ -412,8 +409,10 @@ const TextGenieModule: React.FC<TextGenieModuleProps> = ({ userProfile }) => {
         <Button
           onClick={() => handleGenerateReplies('flirt')}
           disabled={!hasInput || isLoading}
-          variant={!hasInput ? "outline" : "romance"}
-          className="flex flex-col p-4 h-auto"
+          variant={!hasInput ? "outline" : "default"}
+          className={`flex flex-col p-4 h-auto ${
+            hasInput ? 'bg-rose-500 hover:bg-rose-600 text-white' : ''
+          }`}
         >
           <span className="font-medium">Flirt Back</span>
           <span className="text-xs opacity-80">Playful & Fun</span>
@@ -422,7 +421,9 @@ const TextGenieModule: React.FC<TextGenieModuleProps> = ({ userProfile }) => {
           onClick={() => handleGenerateReplies('reply')}
           disabled={!hasInput || isLoading}
           variant={!hasInput ? "outline" : "default"}
-          className="flex flex-col p-4 h-auto"
+          className={`flex flex-col p-4 h-auto ${
+            hasInput ? 'bg-blue-500 hover:bg-blue-600 text-white' : ''
+          }`}
         >
           <span className="font-medium">Reply Back</span>
           <span className="text-xs opacity-80">Keep It Going</span>
@@ -430,8 +431,10 @@ const TextGenieModule: React.FC<TextGenieModuleProps> = ({ userProfile }) => {
         <Button
           onClick={() => handleGenerateReplies('clap')}
           disabled={!hasInput || isLoading}
-          variant={!hasInput ? "outline" : "secondary"}
-          className="flex flex-col p-4 h-auto"
+          variant={!hasInput ? "outline" : "default"}
+          className={`flex flex-col p-4 h-auto ${
+            hasInput ? 'bg-purple-500 hover:bg-purple-600 text-white' : ''
+          }`}
         >
           <span className="font-medium">Clap Back</span>
           <span className="text-xs opacity-80">Set Boundaries</span>
