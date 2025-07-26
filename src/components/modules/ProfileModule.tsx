@@ -4,9 +4,12 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { User, Camera, Edit, Heart, Calendar, MessageCircle, LogOut } from 'lucide-react';
+import { User, Camera, Edit, Heart, Calendar, MessageCircle, LogOut, Settings } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/components/ui/use-toast';
+import { useCamera } from '@/hooks/useCamera';
+import { useHaptics } from '@/hooks/useHaptics';
+import AppSettings from '@/components/AppSettings';
 
 interface OnboardingData {
   loveLanguage: string;
@@ -26,16 +29,37 @@ const ProfileModule: React.FC<ProfileModuleProps> = ({ userProfile, onProfileUpd
   const [editedProfile, setEditedProfile] = useState(userProfile);
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [userName, setUserName] = useState('Your Name');
+  const [showSettings, setShowSettings] = useState(false);
   const { user, signOut } = useAuth();
   const { toast } = useToast();
+  const { selectPhoto } = useCamera();
+  const { success, light } = useHaptics();
 
   const handleSaveProfile = () => {
     onProfileUpdate(editedProfile);
     setIsEditing(false);
-    // Here you would typically save to backend
+    success(); // Haptic feedback for successful save
+    toast({
+      title: "Profile Updated",
+      description: "Your profile has been saved successfully.",
+    });
+  };
+
+  const handleImageUpload = async () => {
+    light(); // Light haptic feedback on button press
+    
+    const photo = await selectPhoto();
+    if (photo) {
+      setProfileImage(photo.dataUrl);
+      toast({
+        title: "Photo Updated",
+        description: "Your profile photo has been updated.",
+      });
+    }
   };
 
   const handleSignOut = async () => {
+    light(); // Haptic feedback on button press
     const { error } = await signOut();
     if (error) {
       toast({
@@ -48,17 +72,6 @@ const ProfileModule: React.FC<ProfileModuleProps> = ({ userProfile, onProfileUpd
         title: "Signed Out",
         description: "You've been successfully signed out.",
       });
-    }
-  };
-
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setProfileImage(e.target?.result as string);
-      };
-      reader.readAsDataURL(file);
     }
   };
 
@@ -98,16 +111,12 @@ const ProfileModule: React.FC<ProfileModuleProps> = ({ userProfile, onProfileUpd
                   {userName.split(' ').map(n => n[0]).join('')}
                 </AvatarFallback>
               </Avatar>
-              <label htmlFor="profile-upload" className="absolute bottom-0 right-0 bg-primary rounded-full p-2 cursor-pointer hover:bg-primary/90 transition-colors shadow-lg">
+              <button 
+                onClick={handleImageUpload}
+                className="absolute bottom-0 right-0 bg-primary rounded-full p-2 hover:bg-primary/90 transition-colors shadow-lg"
+              >
                 <Camera className="w-4 h-4 text-white" />
-                <input
-                  id="profile-upload"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className="hidden"
-                />
-              </label>
+              </button>
             </div>
             
             <div className="text-center space-y-2">
@@ -259,8 +268,13 @@ const ProfileModule: React.FC<ProfileModuleProps> = ({ userProfile, onProfileUpd
           <CardTitle>App Settings</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          <Button variant="soft" className="w-full justify-start">
-            Subscription Settings
+          <Button 
+            variant="soft" 
+            className="w-full justify-start"
+            onClick={() => setShowSettings(true)}
+          >
+            <Settings className="w-4 h-4 mr-2" />
+            Device & App Settings
           </Button>
           <Button variant="soft" className="w-full justify-start">
             Privacy Settings
@@ -283,6 +297,9 @@ const ProfileModule: React.FC<ProfileModuleProps> = ({ userProfile, onProfileUpd
           </div>
         </CardContent>
       </Card>
+
+      {/* Settings Modal */}
+      {showSettings && <AppSettings onClose={() => setShowSettings(false)} />}
     </div>
   );
 };

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Home, MessageCircleHeart, Calendar, HeartHandshake, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useHaptics } from '@/hooks/useHaptics';
 
 interface NavigationProps {
   activeModule: 'home' | 'flirtfuel' | 'concierge' | 'therapy' | 'profile';
@@ -8,6 +9,8 @@ interface NavigationProps {
 }
 
 const Navigation: React.FC<NavigationProps> = ({ activeModule, onModuleChange }) => {
+  const { light } = useHaptics();
+
   const navItems = [
     {
       id: 'home' as const,
@@ -36,6 +39,11 @@ const Navigation: React.FC<NavigationProps> = ({ activeModule, onModuleChange })
     }
   ];
 
+  const handleModuleChange = (moduleId: typeof activeModule) => {
+    light(); // Haptic feedback on navigation
+    onModuleChange(moduleId);
+  };
+
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-md border-t border-border shadow-soft z-50 safe-area-pb">
       <div className="flex justify-around items-center py-2 px-1 max-w-md mx-auto">
@@ -46,7 +54,7 @@ const Navigation: React.FC<NavigationProps> = ({ activeModule, onModuleChange })
           return (
             <button
               key={item.id}
-              onClick={() => onModuleChange(item.id)}
+              onClick={() => handleModuleChange(item.id)}
               className={cn(
                 "flex items-center justify-center min-h-[60px] min-w-[60px]",
                 "p-3 rounded-full transition-all duration-300",

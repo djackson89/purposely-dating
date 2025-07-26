@@ -6,6 +6,7 @@ import FlirtFuelModule from '@/components/modules/FlirtFuelModule';
 import DateConciergeModule from '@/components/modules/DateConciergeModule';
 import TherapyCompanionModule from '@/components/modules/TherapyCompanionModule';
 import ProfileModule from '@/components/modules/ProfileModule';
+import { useAppInitialization } from '@/hooks/useAppInitialization';
 
 interface OnboardingData {
   loveLanguage: string;
@@ -19,6 +20,9 @@ const Index = () => {
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
   const [userProfile, setUserProfile] = useState<OnboardingData | null>(null);
   const [activeModule, setActiveModule] = useState<'home' | 'flirtfuel' | 'concierge' | 'therapy' | 'profile'>('home');
+  
+  // Initialize native app features
+  const { isNative, isOnline } = useAppInitialization(userProfile);
 
   // Check for existing onboarding data
   useEffect(() => {
