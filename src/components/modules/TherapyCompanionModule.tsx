@@ -32,7 +32,7 @@ const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userPro
   const [loadingPostTherapyAI, setLoadingPostTherapyAI] = useState<{[key: number]: boolean}>({});
   const [preTherapyPage, setPreTherapyPage] = useState(0);
   const [postTherapyPage, setPostTherapyPage] = useState(0);
-  const [showMorePreTherapy, setShowMorePreTherapy] = useState(false);
+  const [currentPreTherapyIndex, setCurrentPreTherapyIndex] = useState(0);
   const [currentPostTherapyIndex, setCurrentPostTherapyIndex] = useState(0);
   const [savedJournalEntries, setSavedJournalEntries] = useState<{[key: string]: string[]}>({});
   
@@ -117,12 +117,9 @@ const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userPro
 
   const personalizedPrompts = getPersonalizedPrompts();
   
-  // Get current prompts - show only one by default unless "see more" is clicked
-  const getDisplayedPrePrompts = () => {
-    if (showMorePreTherapy) {
-      return personalizedPrompts.pre.slice(0, 5); // Show 5 questions when "see more"
-    }
-    return [personalizedPrompts.pre[0]]; // Show only first question by default
+  // Get current prompts for pre-therapy (now swipeable like post-therapy)
+  const getCurrentPrePrompt = () => {
+    return personalizedPrompts.pre[currentPreTherapyIndex] || personalizedPrompts.pre[0];
   };
 
   const getCurrentPostPrompt = () => {
@@ -352,63 +349,79 @@ const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userPro
               <p className="text-sm text-muted-foreground mb-4">
                 These are suggested questions you can ask your therapist during your session:
               </p>
-              {getDisplayedPrePrompts().map((prompt, index) => (
-                <div key={index} className="p-4 bg-gradient-soft rounded-lg border border-primary/10">
-                  <p className="text-sm text-foreground font-medium mb-3">{prompt}</p>
-                  
-                  {/* Context explanation instead of input field */}
-                  <div className="p-3 bg-primary/5 rounded-lg border border-primary/10 mb-3">
-                    <p className="text-xs font-medium text-primary mb-2">Why this helps your Self-Love Journey:</p>
-                    <p className="text-sm text-muted-foreground">
-                      {getPostPromptExplanation(prompt)}
-                    </p>
-                  </div>
-                  
-                  <div className="flex space-x-2">
-                    <Button
-                      variant="soft"
-                      size="sm"
-                      onClick={() => handleAskPurposely(index, prompt, true)}
-                      disabled={loadingPreTherapyAI[index]}
-                      className="flex-1"
-                    >
-                      {loadingPreTherapyAI[index] ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Asking Purposely...
-                        </>
-                      ) : (
-                        <>
-                          <Sparkles className="w-4 h-4 mr-2" />
-                          Ask Purposely
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                  {preTherapyAIResponses[index] && (
-                    <div className="mt-3 p-3 bg-primary/5 rounded-lg border border-primary/10">
-                      <p className="text-xs font-medium text-primary mb-2">Purposely's Insight:</p>
-                      <p className="text-sm text-muted-foreground">
-                        {preTherapyAIResponses[index]}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              ))}
               
-              {/* See More button for Pre-Therapy */}
-              {!showMorePreTherapy && (
-                <div className="text-center pt-4">
+              {/* Single Pre-Therapy Question Display with Swipeable Navigation */}
+              <div className="p-4 bg-gradient-soft rounded-lg border border-primary/10">
+                <p className="text-sm text-foreground font-medium mb-3">{getCurrentPrePrompt()}</p>
+                
+                {/* Context explanation instead of input field */}
+                <div className="p-3 bg-primary/5 rounded-lg border border-primary/10 mb-3">
+                  <p className="text-xs font-medium text-primary mb-2">Why this helps your Self-Love Journey:</p>
+                  <p className="text-sm text-muted-foreground">
+                    {getPostPromptExplanation(getCurrentPrePrompt())}
+                  </p>
+                </div>
+                
+                <div className="flex space-x-2">
                   <Button
                     variant="soft"
-                    onClick={() => setShowMorePreTherapy(true)}
-                    className="flex items-center"
+                    size="sm"
+                    onClick={() => handleAskPurposely(currentPreTherapyIndex, getCurrentPrePrompt(), true)}
+                    disabled={loadingPreTherapyAI[currentPreTherapyIndex]}
+                    className="flex-1"
                   >
-                    See More Questions
-                    <ChevronRight className="w-4 h-4 ml-1" />
+                    {loadingPreTherapyAI[currentPreTherapyIndex] ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Asking Purposely...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-4 h-4 mr-2" />
+                        Ask Purposely
+                      </>
+                    )}
                   </Button>
                 </div>
-              )}
+                {preTherapyAIResponses[currentPreTherapyIndex] && (
+                  <div className="mt-3 p-3 bg-primary/5 rounded-lg border border-primary/10">
+                    <p className="text-xs font-medium text-primary mb-2">Purposely's Insight:</p>
+                    <p className="text-sm text-muted-foreground">
+                      {preTherapyAIResponses[currentPreTherapyIndex]}
+                    </p>
+                  </div>
+                )}
+              </div>
+              
+              {/* Swipeable Navigation buttons for Pre-Therapy */}
+              <div className="flex justify-between items-center pt-4">
+                <Button
+                  variant="soft"
+                  onClick={() => setCurrentPreTherapyIndex(Math.max(0, currentPreTherapyIndex - 1))}
+                  disabled={currentPreTherapyIndex === 0}
+                  className="flex items-center"
+                >
+                  <ChevronLeft className="w-4 h-4 mr-1" />
+                  Previous
+                </Button>
+                
+                <Button
+                  variant="soft"
+                  onClick={() => {
+                    // Expand array if needed for unlimited questions
+                    if (currentPreTherapyIndex >= personalizedPrompts.pre.length - 1) {
+                      // For unlimited questions, we cycle back to beginning
+                      setCurrentPreTherapyIndex((currentPreTherapyIndex + 1) % personalizedPrompts.pre.length);
+                    } else {
+                      setCurrentPreTherapyIndex(currentPreTherapyIndex + 1);
+                    }
+                  }}
+                  className="flex items-center"
+                >
+                  Next
+                  <ChevronRight className="w-4 h-4 ml-1" />
+                </Button>
+              </div>
             </CardContent>
           </Card>
 
@@ -458,8 +471,8 @@ const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userPro
                     size="sm"
                     onClick={() => addToJournal(currentPostTherapyIndex, postTherapyInputs[currentPostTherapyIndex] || '')}
                   >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add to Journal
+                    <Plus className="w-4 h-4 mr-1" />
+                    +Journal
                   </Button>
                 </div>
                 {postTherapyAIResponses[currentPostTherapyIndex] && (
