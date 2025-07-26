@@ -34,9 +34,10 @@ const Index = () => {
       setUserProfile(JSON.parse(savedProfile));
       setHasCompletedOnboarding(true);
     }
-    if (savedPaywall) {
-      setHasCompletedPaywall(true);
-    }
+    // Temporarily comment out paywall check so you can preview it
+    // if (savedPaywall) {
+    //   setHasCompletedPaywall(true);
+    // }
   }, []);
 
   const handleOnboardingComplete = (data: OnboardingData) => {
