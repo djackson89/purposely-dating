@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Send, Mic, Camera, Image, ChevronDown, ChevronUp, Copy } from 'lucide-react';
+import { Send, Mic, Camera, Image, ChevronDown, ChevronUp, Copy, RotateCcw } from 'lucide-react';
 import { useRelationshipAI } from '@/hooks/useRelationshipAI';
 import { useCamera } from '@/hooks/useCamera';
 import { useToast } from '@/components/ui/use-toast';
@@ -22,10 +22,18 @@ interface TextGenieModuleProps {
 }
 
 interface ReplyOption {
-  text: string;
-  context: string;
-  situation: string;
-  outcome: string;
+  sweet: {
+    text: string;
+    perspective: string;
+  };
+  mild: {
+    text: string;
+    perspective: string;
+  };
+  spicy: {
+    text: string;
+    perspective: string;
+  };
 }
 
 interface ConversationAnalysis {
@@ -44,6 +52,7 @@ const TextGenieModule: React.FC<TextGenieModuleProps> = ({ userProfile }) => {
     clap: []
   });
   const [expandedContext, setExpandedContext] = useState<{ [key: string]: boolean }>({});
+  const [loadingMessage, setLoadingMessage] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -56,105 +65,147 @@ const TextGenieModule: React.FC<TextGenieModuleProps> = ({ userProfile }) => {
 
   const hasInput = inputText.trim() || attachedImages.length > 0;
 
+  const getLoadingMessages = () => [
+    "One sec, I've got just the reply for this…",
+    "Hmm..interesting. Give me a second to think about this..",
+    "Thinking.."
+  ];
+
   const getFallbackReplies = (replyType: 'flirt' | 'reply' | 'clap'): ReplyOption[] => {
     switch (replyType) {
       case 'flirt':
         return [
           {
-            text: "Interesting... tell me more 😏",
-            context: "Shows intrigue while maintaining mystery",
-            situation: "When you want to keep the conversation playful and engaging",
-            outcome: "Encourages them to elaborate while showing interest"
+            sweet: {
+              text: "That's really sweet of you to say 😊",
+              perspective: "This gentle response acknowledges their compliment while keeping things light and friendly. Perfect when you want to show appreciation without escalating too quickly."
+            },
+            mild: {
+              text: "Interesting... tell me more 😏",
+              perspective: "Shows intrigue while maintaining mystery. This balanced approach keeps them talking while showing you're engaged and confident."
+            },
+            spicy: {
+              text: "You're going to have to try harder than that 🔥",
+              perspective: "A bold challenge that tests their confidence. This reply shows you have high standards and aren't easily impressed - use when you want to see if they can step up their game."
+            }
           },
           {
-            text: "I like where this is going 💕",
-            context: "Direct positive reinforcement with flirty energy",
-            situation: "When the conversation has romantic potential",
-            outcome: "Escalates romantic tension in a confident way"
+            sweet: {
+              text: "You always know what to say 💕",
+              perspective: "A warm, appreciative response that builds connection. This works well when they've been consistently thoughtful and you want to encourage more of that energy."
+            },
+            mild: {
+              text: "I like where this is going 💫",
+              perspective: "Direct positive reinforcement that shows interest without giving everything away. This signals you're open to more while maintaining your position of power."
+            },
+            spicy: {
+              text: "Keep talking like that and see what happens 🔥",
+              perspective: "Creates anticipation and sexual tension. This daring response shows confidence and hints at possibilities while keeping them wanting more."
+            }
           },
           {
-            text: "You're smooth, I'll give you that 😉",
-            context: "Acknowledges their effort while maintaining your power",
-            situation: "When they're trying to impress you",
-            outcome: "Shows appreciation while staying in control"
-          },
-          {
-            text: "Is that so? I'm intrigued... 💋",
-            context: "Playful challenge that invites elaboration",
-            situation: "When you want to test their confidence level",
-            outcome: "Creates sexual tension while maintaining mystery"
-          },
-          {
-            text: "Mmm, keep talking like that 🔥",
-            context: "Encourages their current energy and escalates flirtation",
-            situation: "When they're being flirty and you want more",
-            outcome: "Signals clear interest and permission to continue"
+            sweet: {
+              text: "That made me smile ☺️",
+              perspective: "Simple and genuine, this response shares your positive reaction. Great for when their message genuinely brightened your mood and you want to let them know."
+            },
+            mild: {
+              text: "You're smooth, I'll give you that 😉",
+              perspective: "Acknowledges their effort while maintaining your power. This shows you recognize game when you see it, but you're not easily swayed."
+            },
+            spicy: {
+              text: "Is that your best line? I'm not that easy 😈",
+              perspective: "A playful rejection that challenges them to do better. Use this when they're being lazy with their approach and you want to see real effort."
+            }
           }
         ];
       case 'reply':
         return [
           {
-            text: "That's really interesting! What made you think about that?",
-            context: "Shows genuine interest and asks for deeper insight",
-            situation: "When you want to keep the conversation flowing naturally",
-            outcome: "Encourages them to share more and deepens the connection"
+            sweet: {
+              text: "That's such a thoughtful way to look at it",
+              perspective: "Validates their perspective warmly. This response shows you appreciate their depth and creates space for meaningful conversation."
+            },
+            mild: {
+              text: "That's really interesting! What made you think about that?",
+              perspective: "Shows genuine interest and asks for deeper insight. This keeps the conversation flowing naturally while encouraging them to share more."
+            },
+            spicy: {
+              text: "Finally, someone with an actual brain. Tell me more.",
+              perspective: "A direct compliment that sets high standards. This response rewards intelligence while implying many others don't meet your intellectual expectations."
+            }
           },
           {
-            text: "I can relate to that. Have you experienced something similar before?",
-            context: "Creates connection through shared experience",
-            situation: "When you want to build rapport and understanding",
-            outcome: "Establishes common ground and emotional connection"
+            sweet: {
+              text: "I love hearing your thoughts on this",
+              perspective: "Encouraging and warm, this makes them feel valued for their mind. Perfect when you want to build emotional connection and show appreciation."
+            },
+            mild: {
+              text: "I can relate to that. Have you experienced something similar before?",
+              perspective: "Creates connection through shared experience. This builds rapport while opening up space for them to be more vulnerable."
+            },
+            spicy: {
+              text: "Most people don't think that deeply. I'm impressed.",
+              perspective: "Separates them from the crowd while giving a rare compliment. This makes them feel special while establishing your high standards."
+            }
           },
           {
-            text: "Tell me more about your perspective on this",
-            context: "Shows you value their thoughts and opinions",
-            situation: "When you want to understand them better",
-            outcome: "Makes them feel heard and valued"
-          },
-          {
-            text: "I love how your mind works! What else are you passionate about?",
-            context: "Celebrates their thinking while expanding the topic",
-            situation: "When they've shared something thoughtful or creative",
-            outcome: "Builds their confidence and opens new conversation paths"
-          },
-          {
-            text: "That's such a refreshing take. Most people don't think that deeply about it.",
-            context: "Validates their uniqueness and intelligence",
-            situation: "When they've offered an insightful or unique perspective",
-            outcome: "Makes them feel special and encourages more sharing"
+            sweet: {
+              text: "You have such a unique perspective on things",
+              perspective: "Celebrates their individuality in a gentle way. This builds their confidence while showing you pay attention to what makes them different."
+            },
+            mild: {
+              text: "Tell me more about your perspective on this",
+              perspective: "Shows you value their thoughts and opinions. This response demonstrates respect for their mind while keeping the conversation going."
+            },
+            spicy: {
+              text: "I don't usually meet people who think like this. Keep going.",
+              perspective: "A powerful statement that makes them feel rare and valuable. This implies most people bore you, but they've captured your attention."
+            }
           }
         ];
       case 'clap':
         return [
           {
-            text: "I'm not comfortable with that tone. Let's keep this respectful.",
-            context: "Sets clear boundaries while remaining professional",
-            situation: "When someone crosses a line but you want to give them a chance",
-            outcome: "Establishes your standards without ending the conversation"
+            sweet: {
+              text: "I'd prefer if we could keep this conversation respectful",
+              perspective: "A gentle but firm boundary. This gives them a chance to correct course while making your standards clear without being harsh."
+            },
+            mild: {
+              text: "That's not how I operate. I expect better communication than that.",
+              perspective: "Firmly communicates your standards without room for misinterpretation. This shows you won't tolerate poor treatment while staying professional."
+            },
+            spicy: {
+              text: "Try that approach with someone else. I'm not the one.",
+              perspective: "A definitive shutdown that leaves no room for negotiation. This response makes it crystal clear you won't tolerate disrespect or manipulation."
+            }
           },
           {
-            text: "That's not how I operate. I expect better communication than that.",
-            context: "Firmly communicates your standards and expectations",
-            situation: "When someone is being disrespectful or manipulative",
-            outcome: "Shows you won't tolerate poor treatment"
+            sweet: {
+              text: "I don't think that's the energy I'm looking for right now",
+              perspective: "A diplomatic way to redirect unwanted behavior. This allows them to save face while making your boundaries clear."
+            },
+            mild: {
+              text: "I value myself too much to engage with that energy. Try again.",
+              perspective: "Demonstrates self-worth while giving them an opportunity to correct course. This teaches them how you expect to be treated."
+            },
+            spicy: {
+              text: "The audacity. Do better or don't bother.",
+              perspective: "A sharp response that calls out inappropriate behavior directly. This shows you won't tolerate disrespect and have zero patience for poor treatment."
+            }
           },
           {
-            text: "I value myself too much to engage with that energy. Try again.",
-            context: "Demonstrates self-worth while giving them an opportunity to correct course",
-            situation: "When someone needs a reality check about their approach",
-            outcome: "Teaches them how you expect to be treated"
-          },
-          {
-            text: "That approach doesn't work with me. I prefer authentic connection.",
-            context: "Redirects them toward better behavior while staying open",
-            situation: "When they're being fake, pushy, or using poor tactics",
-            outcome: "Educates them on what actually attracts you"
-          },
-          {
-            text: "I'm worth more than low-effort conversation. Show me you can do better.",
-            context: "Challenges them to step up their game",
-            situation: "When they're being lazy, boring, or not putting in effort",
-            outcome: "Either filters them out or motivates them to improve"
+            sweet: {
+              text: "I think we might be looking for different things",
+              perspective: "A kind but clear way to establish incompatibility. This response protects your peace while being considerate of their feelings."
+            },
+            mild: {
+              text: "That approach doesn't work with me. I prefer authentic connection.",
+              perspective: "Redirects them toward better behavior while staying open to improvement. This educates them on what actually attracts you."
+            },
+            spicy: {
+              text: "I'm worth more than low-effort conversation. Level up or log off.",
+              perspective: "A fierce response that demands excellence. This either filters them out completely or motivates them to bring their A-game."
+            }
           }
         ];
       default:
@@ -217,22 +268,30 @@ const TextGenieModule: React.FC<TextGenieModuleProps> = ({ userProfile }) => {
   };
 
   const generateReplies = async (content: string, replyType: 'flirt' | 'reply' | 'clap', analysis: ConversationAnalysis) => {
+    const userName = userProfile.firstName || 'love';
     let prompt = '';
     
     switch (replyType) {
       case 'flirt':
-        prompt = `Generate 3 flirty, playful text responses to this conversation context: "${content}"
+        prompt = `Generate 3 flirty text responses to this conversation context: "${content}"
         
         Analysis: ${analysis.interpretation}
         Message type: ${analysis.messageType}
         
-        Create responses that are confident, fun, and engage with any flirtatious energy while maintaining your standards. Each response should include the message text and explain the strategy behind it.
+        Create 3 responses with different tones:
+        1. Sweet (passive, gentle, warm)
+        2. Mild (assertive, confident, balanced)  
+        3. Spicy (aggressive, bold, challenging)
         
-        Format each as:
-        TEXT: [message]
-        CONTEXT: [why this works]
-        SITUATION: [when to use this]
-        OUTCOME: [what this achieves]`;
+        For each response, provide the message text and a warm, personable explanation of how it should land given the scenario. Address ${userName} directly in the explanations.
+        
+        Format as:
+        SWEET: [message]
+        SWEET_PERSPECTIVE: [warm explanation for ${userName}]
+        MILD: [message]
+        MILD_PERSPECTIVE: [warm explanation for ${userName}]
+        SPICY: [message]
+        SPICY_PERSPECTIVE: [warm explanation for ${userName}]`;
         break;
         
       case 'reply':
@@ -241,28 +300,42 @@ const TextGenieModule: React.FC<TextGenieModuleProps> = ({ userProfile }) => {
         Analysis: ${analysis.interpretation}
         Message type: ${analysis.messageType}
         
-        Create responses that keep the conversation flowing naturally, show interest, and ask engaging questions. The user is a confident, intelligent woman.
+        Create 3 responses with different tones:
+        1. Sweet (passive, gentle, warm)
+        2. Mild (assertive, confident, balanced)
+        3. Spicy (aggressive, bold, direct)
         
-        Format each as:
-        TEXT: [message]
-        CONTEXT: [why this works]
-        SITUATION: [when to use this]
-        OUTCOME: [what this achieves]`;
+        For each response, provide the message text and a warm, personable explanation of how it should land. Address ${userName} directly in the explanations.
+        
+        Format as:
+        SWEET: [message]
+        SWEET_PERSPECTIVE: [warm explanation for ${userName}]
+        MILD: [message]
+        MILD_PERSPECTIVE: [warm explanation for ${userName}]
+        SPICY: [message]
+        SPICY_PERSPECTIVE: [warm explanation for ${userName}]`;
         break;
         
       case 'clap':
-        prompt = `Generate 3 firm boundary-setting responses to this context: "${content}"
+        prompt = `Generate 3 boundary-setting responses to this context: "${content}"
         
         Analysis: ${analysis.interpretation}
         Message type: ${analysis.messageType}
         
-        Create responses that set clear boundaries, assert standards, and communicate self-respect. The user is a confident, intelligent woman who won't tolerate disrespect.
+        Create 3 responses with different tones:
+        1. Sweet (passive but firm, gentle boundary)
+        2. Mild (assertive, clear standards)
+        3. Spicy (aggressive, no-nonsense shutdown)
         
-        Format each as:
-        TEXT: [message]
-        CONTEXT: [why this works]
-        SITUATION: [when to use this]
-        OUTCOME: [what this achieves]`;
+        For each response, provide the message text and a warm, personable explanation of how it should land. Address ${userName} directly in the explanations.
+        
+        Format as:
+        SWEET: [message]
+        SWEET_PERSPECTIVE: [warm explanation for ${userName}]
+        MILD: [message]  
+        MILD_PERSPECTIVE: [warm explanation for ${userName}]
+        SPICY: [message]
+        SPICY_PERSPECTIVE: [warm explanation for ${userName}]`;
         break;
     }
 
@@ -271,23 +344,33 @@ const TextGenieModule: React.FC<TextGenieModuleProps> = ({ userProfile }) => {
       
       // Parse the response into structured options
       const options: ReplyOption[] = [];
-      const sections = response.split('TEXT:').slice(1);
+      const sections = response.split(/(?=SWEET:|MILD:|SPICY:)/);
       
-      sections.forEach(section => {
-        const textMatch = section.match(/^([^]*?)(?=CONTEXT:|$)/);
-        const contextMatch = section.match(/CONTEXT:\s*([^]*?)(?=SITUATION:|$)/);
-        const situationMatch = section.match(/SITUATION:\s*([^]*?)(?=OUTCOME:|$)/);
-        const outcomeMatch = section.match(/OUTCOME:\s*([^]*?)$/);
+      for (let i = 0; i < sections.length; i += 6) {
+        const sweetMatch = sections[i]?.match(/SWEET:\s*(.+?)(?=SWEET_PERSPECTIVE:|$)/s);
+        const sweetPerspectiveMatch = sections[i + 1]?.match(/SWEET_PERSPECTIVE:\s*(.+?)(?=MILD:|$)/s);
+        const mildMatch = sections[i + 2]?.match(/MILD:\s*(.+?)(?=MILD_PERSPECTIVE:|$)/s);
+        const mildPerspectiveMatch = sections[i + 3]?.match(/MILD_PERSPECTIVE:\s*(.+?)(?=SPICY:|$)/s);
+        const spicyMatch = sections[i + 4]?.match(/SPICY:\s*(.+?)(?=SPICY_PERSPECTIVE:|$)/s);
+        const spicyPerspectiveMatch = sections[i + 5]?.match(/SPICY_PERSPECTIVE:\s*(.+?)$/s);
         
-        if (textMatch) {
+        if (sweetMatch && mildMatch && spicyMatch) {
           options.push({
-            text: textMatch[1].trim(),
-            context: contextMatch?.[1]?.trim() || '',
-            situation: situationMatch?.[1]?.trim() || '',
-            outcome: outcomeMatch?.[1]?.trim() || ''
+            sweet: {
+              text: sweetMatch[1].trim(),
+              perspective: sweetPerspectiveMatch?.[1]?.trim() || ''
+            },
+            mild: {
+              text: mildMatch[1].trim(),
+              perspective: mildPerspectiveMatch?.[1]?.trim() || ''
+            },
+            spicy: {
+              text: spicyMatch[1].trim(),
+              perspective: spicyPerspectiveMatch?.[1]?.trim() || ''
+            }
           });
         }
-      });
+      }
       
       return options.length >= 3 ? options.slice(0, 3) : [...options, ...getFallbackReplies(replyType)].slice(0, 3);
     } catch (error) {
@@ -300,6 +383,11 @@ const TextGenieModule: React.FC<TextGenieModuleProps> = ({ userProfile }) => {
     if (!hasInput) return;
     
     setIsLoading(true);
+    
+    // Set random loading message
+    const messages = getLoadingMessages();
+    const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+    setLoadingMessage(randomMessage);
     
     try {
       let content = inputText;
@@ -337,6 +425,17 @@ const TextGenieModule: React.FC<TextGenieModuleProps> = ({ userProfile }) => {
       
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleRetry = async () => {
+    // Find which reply types have existing options and regenerate them
+    const activeTypes = Object.entries(replyOptions).filter(([_, options]) => options.length > 0);
+    
+    if (activeTypes.length > 0) {
+      // Regenerate the first active type (or you could regenerate all)
+      const [firstActiveType] = activeTypes[0];
+      await handleGenerateReplies(firstActiveType as 'flirt' | 'reply' | 'clap');
     }
   };
 
@@ -448,8 +547,8 @@ const TextGenieModule: React.FC<TextGenieModuleProps> = ({ userProfile }) => {
     return types[type as keyof typeof types] || types.casual;
   };
 
-  const toggleContext = (type: string, index: number) => {
-    const key = `${type}-${index}`;
+  const toggleContext = (type: string, index: number, tone: string) => {
+    const key = `${type}-${index}-${tone}`;
     setExpandedContext(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
@@ -584,26 +683,29 @@ const TextGenieModule: React.FC<TextGenieModuleProps> = ({ userProfile }) => {
           <CardHeader>
             <CardTitle className="text-lg">Send This</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-6">
             {Object.entries(replyOptions).map(([type, options]) =>
               options.length > 0 && (
-                <div key={type} className="space-y-3">
+                <div key={type} className="space-y-4">
                   <h4 className="font-medium capitalize text-primary">
                     {type === 'flirt' ? 'Flirt Back' : type === 'reply' ? 'Reply Back' : 'Clap Back'} Options
                   </h4>
-                  {options.map((option, index) => {
-                    const isExpanded = expandedContext[`${type}-${index}`];
-                    return (
-                      <div key={index} className="bg-muted/30 rounded-lg p-4 space-y-3">
+                  {options.map((option, index) => (
+                    <div key={index} className="space-y-4">
+                      {/* Sweet Option */}
+                      <div className="bg-muted/30 rounded-lg p-4 space-y-3">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Badge variant="secondary" className="text-xs bg-green-100 text-green-700">Sweet</Badge>
+                        </div>
                         <div className="flex items-start justify-between gap-3">
                           <p className="flex-1 font-medium text-sm leading-relaxed">
-                            "{option.text}"
+                            "{option.sweet.text}"
                           </p>
                           <div className="flex gap-1">
                             <Button
                               size="sm"
                               variant="ghost"
-                              onClick={() => copyToClipboard(option.text)}
+                              onClick={() => copyToClipboard(option.sweet.text)}
                               className="p-2"
                             >
                               <Copy className="w-3 h-3" />
@@ -611,7 +713,7 @@ const TextGenieModule: React.FC<TextGenieModuleProps> = ({ userProfile }) => {
                             <Button
                               size="sm"
                               variant="ghost"
-                              onClick={() => shareMessage(option.text)}
+                              onClick={() => shareMessage(option.sweet.text)}
                               className="p-2"
                             >
                               <Send className="w-3 h-3" />
@@ -619,36 +721,141 @@ const TextGenieModule: React.FC<TextGenieModuleProps> = ({ userProfile }) => {
                           </div>
                         </div>
                         
-                        {option.context && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => toggleContext(type, index)}
-                            className="text-xs text-primary hover:text-primary/80 p-0 h-auto font-normal underline"
-                          >
-                            Context {isExpanded ? <ChevronUp className="w-3 h-3 ml-1" /> : <ChevronDown className="w-3 h-3 ml-1" />}
-                          </Button>
-                        )}
-                        
-                        {isExpanded && (
-                          <div className="text-xs text-muted-foreground space-y-2 pl-4 border-l-2 border-primary/20">
-                            <div>
-                              <strong>Why this works:</strong> {option.context}
-                            </div>
-                            <div>
-                              <strong>When to use:</strong> {option.situation}
-                            </div>
-                            <div>
-                              <strong>Expected outcome:</strong> {option.outcome}
-                            </div>
-                          </div>
+                        {option.sweet.perspective && (
+                          <>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => toggleContext(type, index, 'sweet')}
+                              className="text-xs text-primary hover:text-primary/80 p-0 h-auto font-normal underline"
+                            >
+                              Why this {expandedContext[`${type}-${index}-sweet`] ? <ChevronUp className="w-3 h-3 ml-1" /> : <ChevronDown className="w-3 h-3 ml-1" />}
+                            </Button>
+                            
+                            {expandedContext[`${type}-${index}-sweet`] && (
+                              <div className="text-xs text-muted-foreground pl-4 border-l-2 border-green-200">
+                                {option.sweet.perspective}
+                              </div>
+                            )}
+                          </>
                         )}
                       </div>
-                    );
-                  })}
+
+                      {/* Mild Option */}
+                      <div className="bg-muted/30 rounded-lg p-4 space-y-3">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-700">Mild</Badge>
+                        </div>
+                        <div className="flex items-start justify-between gap-3">
+                          <p className="flex-1 font-medium text-sm leading-relaxed">
+                            "{option.mild.text}"
+                          </p>
+                          <div className="flex gap-1">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => copyToClipboard(option.mild.text)}
+                              className="p-2"
+                            >
+                              <Copy className="w-3 h-3" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => shareMessage(option.mild.text)}
+                              className="p-2"
+                            >
+                              <Send className="w-3 h-3" />
+                            </Button>
+                          </div>
+                        </div>
+                        
+                        {option.mild.perspective && (
+                          <>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => toggleContext(type, index, 'mild')}
+                              className="text-xs text-primary hover:text-primary/80 p-0 h-auto font-normal underline"
+                            >
+                              Why this {expandedContext[`${type}-${index}-mild`] ? <ChevronUp className="w-3 h-3 ml-1" /> : <ChevronDown className="w-3 h-3 ml-1" />}
+                            </Button>
+                            
+                            {expandedContext[`${type}-${index}-mild`] && (
+                              <div className="text-xs text-muted-foreground pl-4 border-l-2 border-blue-200">
+                                {option.mild.perspective}
+                              </div>
+                            )}
+                          </>
+                        )}
+                      </div>
+
+                      {/* Spicy Option */}
+                      <div className="bg-muted/30 rounded-lg p-4 space-y-3">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Badge variant="secondary" className="text-xs bg-red-100 text-red-700">Spicy</Badge>
+                        </div>
+                        <div className="flex items-start justify-between gap-3">
+                          <p className="flex-1 font-medium text-sm leading-relaxed">
+                            "{option.spicy.text}"
+                          </p>
+                          <div className="flex gap-1">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => copyToClipboard(option.spicy.text)}
+                              className="p-2"
+                            >
+                              <Copy className="w-3 h-3" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => shareMessage(option.spicy.text)}
+                              className="p-2"
+                            >
+                              <Send className="w-3 h-3" />
+                            </Button>
+                          </div>
+                        </div>
+                        
+                        {option.spicy.perspective && (
+                          <>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => toggleContext(type, index, 'spicy')}
+                              className="text-xs text-primary hover:text-primary/80 p-0 h-auto font-normal underline"
+                            >
+                              Why this {expandedContext[`${type}-${index}-spicy`] ? <ChevronUp className="w-3 h-3 ml-1" /> : <ChevronDown className="w-3 h-3 ml-1" />}
+                            </Button>
+                            
+                            {expandedContext[`${type}-${index}-spicy`] && (
+                              <div className="text-xs text-muted-foreground pl-4 border-l-2 border-red-200">
+                                {option.spicy.perspective}
+                              </div>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )
             )}
+            
+            {/* Retry Button */}
+            <div className="pt-4 border-t border-border">
+              <Button
+                onClick={handleRetry}
+                variant="outline"
+                disabled={isLoading}
+                className="w-full"
+              >
+                <RotateCcw className="w-4 h-4 mr-2" />
+                Retry
+              </Button>
+            </div>
           </CardContent>
         </Card>
       )}
@@ -657,7 +864,7 @@ const TextGenieModule: React.FC<TextGenieModuleProps> = ({ userProfile }) => {
         <Card className="shadow-soft border-primary/10">
           <CardContent className="pt-6 text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Analyzing conversation and generating replies...</p>
+            <p className="text-muted-foreground">{loadingMessage}</p>
           </CardContent>
         </Card>
       )}
