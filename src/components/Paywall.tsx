@@ -3,8 +3,8 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { Check, Crown, Sparkles, Loader2 } from 'lucide-react';
-import { useSubscription } from '@/hooks/useSubscription';
+import { Check, Crown, Sparkles, Loader2, Smartphone, Globe } from 'lucide-react';
+import { usePlatformPayments } from '@/hooks/usePlatformPayments';
 
 interface PaywallProps {
   onPlanSelected: (plan: 'weekly' | 'yearly', hasTrial?: boolean) => void;
@@ -13,8 +13,14 @@ interface PaywallProps {
 const Paywall: React.FC<PaywallProps> = ({ onPlanSelected }) => {
   const [selectedPlan, setSelectedPlan] = useState<'weekly' | 'yearly'>('yearly');
   const [freeTrialEnabled, setFreeTrialEnabled] = useState(true);
-  const [isLoading, setIsLoading] = useState(false);
-  const { createCheckoutSession } = useSubscription();
+  const { 
+    isNativeMobile, 
+    isProcessing, 
+    processPayment, 
+    getPlatformPrices,
+    getPaymentButtonText,
+    currentPlatform 
+  } = usePlatformPayments();
 
   const features = [
     "Unlimited AI-powered relationship insights",
@@ -26,17 +32,19 @@ const Paywall: React.FC<PaywallProps> = ({ onPlanSelected }) => {
   ];
 
   const handleContinue = async () => {
-    setIsLoading(true);
     try {
-      await createCheckoutSession(selectedPlan, selectedPlan === 'yearly' ? freeTrialEnabled : false);
-      // For now, also call the original callback for demo purposes
-      onPlanSelected(selectedPlan, selectedPlan === 'yearly' ? freeTrialEnabled : false);
+      const result = await processPayment(selectedPlan, selectedPlan === 'yearly' ? freeTrialEnabled : false);
+      
+      if (result.success) {
+        // Call the original callback for demo purposes
+        onPlanSelected(selectedPlan, selectedPlan === 'yearly' ? freeTrialEnabled : false);
+      }
     } catch (error) {
       console.error('Payment flow error:', error);
-    } finally {
-      setIsLoading(false);
     }
   };
+
+  const prices = getPlatformPrices();
 
   return (
     <div className="min-h-screen bg-gradient-soft flex items-center justify-center p-4">
@@ -68,7 +76,7 @@ const Paywall: React.FC<PaywallProps> = ({ onPlanSelected }) => {
             <div className="text-center">
               <h3 className="text-xl font-semibold mb-2">Weekly Plan</h3>
               <div className="mb-4">
-                <span className="text-3xl font-bold">$3.99</span>
+                <span className="text-3xl font-bold">{prices.weekly}</span>
                 <span className="text-muted-foreground">/week</span>
               </div>
               <p className="text-sm text-muted-foreground mb-4">
@@ -104,7 +112,7 @@ const Paywall: React.FC<PaywallProps> = ({ onPlanSelected }) => {
             <div className="text-center">
               <h3 className="text-xl font-semibold mb-2">Yearly Plan</h3>
               <div className="mb-2">
-                <span className="text-3xl font-bold">$49.99</span>
+                <span className="text-3xl font-bold">{prices.yearly}</span>
                 <span className="text-muted-foreground">/year</span>
               </div>
               <div className="text-sm text-primary font-medium mb-4">
@@ -145,23 +153,38 @@ const Paywall: React.FC<PaywallProps> = ({ onPlanSelected }) => {
           </Card>
         )}
 
+        {/* Platform Indicator */}
+        <div className="text-center mb-4">
+          <Badge variant="outline" className="bg-background/80">
+            {isNativeMobile ? (
+              <>
+                <Smartphone className="h-3 w-3 mr-1" />
+                {currentPlatform === 'ios' ? 'App Store' : 'Google Play'} Payment
+              </>
+            ) : (
+              <>
+                <Globe className="h-3 w-3 mr-1" />
+                Web Payment
+              </>
+            )}
+          </Badge>
+        </div>
+
         {/* CTA Button */}
         <div className="text-center">
           <Button 
             onClick={handleContinue}
-            disabled={isLoading}
+            disabled={isProcessing}
             size="lg"
             className="w-full md:w-auto px-12 py-6 text-lg font-semibold bg-gradient-to-r from-primary to-accent hover:opacity-90 transition-opacity disabled:opacity-50"
           >
-            {isLoading ? (
+            {isProcessing ? (
               <>
                 <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                Setting up payment...
+                {isNativeMobile ? 'Processing purchase...' : 'Setting up payment...'}
               </>
             ) : (
-              selectedPlan === 'yearly' && freeTrialEnabled 
-                ? 'Start Free Trial' 
-                : `Continue with ${selectedPlan === 'weekly' ? 'Weekly' : 'Yearly'} Plan`
+              getPaymentButtonText(selectedPlan, selectedPlan === 'yearly' ? freeTrialEnabled : false)
             )}
           </Button>
           
