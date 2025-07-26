@@ -3,7 +3,7 @@ import OnboardingFlow from '@/components/OnboardingFlow';
 import Paywall from '@/components/Paywall';
 import Navigation from '@/components/Navigation';
 import Home from '@/pages/Home';
-import FlirtFuelModule from '@/components/modules/FlirtFuelModule';
+import TextGenieModule from '@/components/modules/TextGenieModule';
 import DateConciergeModule from '@/components/modules/DateConciergeModule';
 import TherapyCompanionModule from '@/components/modules/TherapyCompanionModule';
 import ProfileModule from '@/components/modules/ProfileModule';
@@ -21,7 +21,7 @@ const Index = () => {
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
   const [hasCompletedPaywall, setHasCompletedPaywall] = useState(false);
   const [userProfile, setUserProfile] = useState<OnboardingData | null>(null);
-  const [activeModule, setActiveModule] = useState<'home' | 'flirtfuel' | 'concierge' | 'therapy' | 'profile'>('home');
+  const [activeModule, setActiveModule] = useState<'home' | 'textgenie' | 'concierge' | 'therapy' | 'profile'>('home');
   
   // Initialize native app features
   const { isNative, isOnline } = useAppInitialization(userProfile);
@@ -70,16 +70,16 @@ const Index = () => {
     localStorage.setItem('relationshipCompanionProfile', JSON.stringify(updatedProfile));
   };
 
-  const handleNavigateToFlirtFuel = () => {
-    setActiveModule('flirtfuel');
+  const handleNavigateToTextGenie = () => {
+    setActiveModule('textgenie');
   };
 
   const renderActiveModule = () => {
     switch (activeModule) {
       case 'home':
-        return <Home userProfile={userProfile} onNavigateToFlirtFuel={handleNavigateToFlirtFuel} />;
-      case 'flirtfuel':
-        return <FlirtFuelModule userProfile={userProfile} />;
+        return <Home userProfile={userProfile} onNavigateToTextGenie={handleNavigateToTextGenie} />;
+      case 'textgenie':
+        return <TextGenieModule userProfile={userProfile} />;
       case 'concierge':
         return <DateConciergeModule userProfile={userProfile} />;
       case 'therapy':
@@ -87,7 +87,7 @@ const Index = () => {
       case 'profile':
         return <ProfileModule userProfile={userProfile} onProfileUpdate={handleProfileUpdate} />;
       default:
-        return <Home userProfile={userProfile} onNavigateToFlirtFuel={handleNavigateToFlirtFuel} />;
+        return <Home userProfile={userProfile} onNavigateToTextGenie={handleNavigateToTextGenie} />;
     }
   };
 
