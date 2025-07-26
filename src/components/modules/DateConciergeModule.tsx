@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, MapPin, Sparkles, Heart, Users, Coffee } from 'lucide-react';
+import { FTUETooltip } from '@/components/ui/ftue-tooltip';
 
 interface OnboardingData {
   loveLanguage: string;
@@ -109,14 +110,15 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
       {/* AI Date Suggestions */}
       {activeSection === 'suggestions' && (
         <div className="space-y-4 animate-fade-in-up">
-          {/* Descriptive One-liner */}
-          <Card className="shadow-soft border-primary/10">
-            <CardContent className="pt-6">
-              <p className="text-sm text-muted-foreground text-center leading-relaxed">
-                Get personalized date ideas perfectly tailored to your love language, personality, and relationship goals.
-              </p>
-            </CardContent>
-          </Card>
+          {/* Section Heading */}
+          <div className="flex items-center justify-center space-x-2">
+            <h2 className="text-xl font-semibold text-primary">Dating Planner</h2>
+            <FTUETooltip
+              id="dating-planner"
+              title="Dating Planner"
+              description="Get personalized date ideas perfectly tailored to your love language, personality, and relationship goals."
+            />
+          </div>
           <Card className="shadow-romance border-primary/20">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
@@ -169,14 +171,15 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
       {/* Local Experiences */}
       {activeSection === 'local' && (
         <div className="space-y-4 animate-fade-in-up">
-          {/* Descriptive One-liner */}
-          <Card className="shadow-soft border-primary/10">
-            <CardContent className="pt-6">
-              <p className="text-sm text-muted-foreground text-center leading-relaxed">
-                Discover exciting activities and hidden gems in your area to create unforgettable experiences together.
-              </p>
-            </CardContent>
-          </Card>
+          {/* Section Heading */}
+          <div className="flex items-center justify-center space-x-2">
+            <h2 className="text-xl font-semibold text-primary">Local Events</h2>
+            <FTUETooltip
+              id="local-events"
+              title="Local Events"
+              description="Discover exciting activities and hidden gems in your area to create unforgettable experiences together."
+            />
+          </div>
           <Card className="shadow-romance border-primary/20">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
@@ -222,14 +225,15 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
       {/* Shared Planning Board */}
       {activeSection === 'planning' && (
         <div className="space-y-4 animate-fade-in-up">
-          {/* Descriptive One-liner */}
-          <Card className="shadow-soft border-primary/10">
-            <CardContent className="pt-6">
-              <p className="text-sm text-muted-foreground text-center leading-relaxed">
-                Collaborate with your partner to plan the perfect date night and keep track of who's doing what.
-              </p>
-            </CardContent>
-          </Card>
+          {/* Section Heading */}
+          <div className="flex items-center justify-center space-x-2">
+            <h2 className="text-xl font-semibold text-primary">Planning Board</h2>
+            <FTUETooltip
+              id="planning-board"
+              title="Planning Board"
+              description="Collaborate with your partner to plan the perfect date night and keep track of who's doing what."
+            />
+          </div>
           <Card className="shadow-romance border-primary/20">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">

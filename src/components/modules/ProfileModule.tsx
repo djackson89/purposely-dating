@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { User, Camera, Edit, Heart, Calendar, MessageCircle, LogOut, Settings } from 'lucide-react';
+import { FTUETooltip } from '@/components/ui/ftue-tooltip';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/components/ui/use-toast';
 import { useCamera } from '@/hooks/useCamera';
@@ -85,20 +86,18 @@ const ProfileModule: React.FC<ProfileModuleProps> = ({ userProfile, onProfileUpd
     <div className="pb-20 pt-6 px-4 space-y-6 bg-gradient-soft min-h-screen">
       {/* Header */}
       <div className="text-center space-y-2">
-        <h1 className="text-2xl font-bold bg-gradient-romance bg-clip-text text-transparent">
-          Profile 💕
-        </h1>
+        <div className="flex items-center justify-center space-x-2">
+          <h1 className="text-2xl font-bold bg-gradient-romance bg-clip-text text-transparent">
+            Profile 💕
+          </h1>
+          <FTUETooltip
+            id="profile"
+            title="Profile"
+            description="Track your growth, celebrate your progress, and personalize your Purposely Dating experience."
+          />
+        </div>
         <p className="text-muted-foreground">Your relationship journey</p>
       </div>
-
-      {/* Descriptive One-liner */}
-      <Card className="shadow-soft border-primary/10">
-        <CardContent className="pt-6">
-          <p className="text-sm text-muted-foreground text-center leading-relaxed">
-            Track your growth, celebrate your progress, and personalize your Purposely Dating experience.
-          </p>
-        </CardContent>
-      </Card>
 
       {/* Profile Picture & Name */}
       <Card className="shadow-romance border-primary/20">

@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Heart, MessageCircle, Zap, Users, Share, Plus, ChevronDown, ChevronUp, Eye, EyeOff, ThumbsUp, ThumbsDown, HelpCircle, Trash2, Wand2 } from 'lucide-react';
+import { FTUETooltip } from '@/components/ui/ftue-tooltip';
 import { Share as CapacitorShare } from '@capacitor/share';
 import { useRelationshipAI } from '@/hooks/useRelationshipAI';
 import TextGenie from '@/components/TextGenie';
@@ -533,6 +534,7 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
               variant={activeSection === section.id ? "romance" : "soft"}
               size="sm"
               className="flex items-center justify-center p-3 h-12 w-12 mx-auto"
+              title={section.label}
             >
               <IconComponent className="w-5 h-5" />
             </Button>
@@ -544,8 +546,13 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
       {activeSection === 'prospects' && (
         <div className="space-y-4 animate-fade-in-up">
           {/* Section Heading */}
-          <div className="text-center">
+          <div className="flex items-center justify-center space-x-2">
             <h2 className="text-xl font-semibold text-primary">Dating Prospects</h2>
+            <FTUETooltip
+              id="dating-prospects"
+              title="Dating Prospects"
+              description="Organize and track the people you're interested in dating. Rate their compatibility, flag important qualities, and get AI insights to help you make better dating decisions."
+            />
           </div>
           {/* Add New Prospect Button */}
           <Card className="shadow-soft border-primary/10">
@@ -779,8 +786,13 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
       {activeSection === 'starters' && (
         <div className="space-y-4 animate-fade-in-up">
           {/* Section Heading */}
-          <div className="text-center">
+          <div className="flex items-center justify-center space-x-2">
             <h2 className="text-xl font-semibold text-primary">Conversation Starters</h2>
+            <FTUETooltip
+              id="conversation-starters"
+              title="Conversation Starters"
+              description="Discover engaging questions and topics that spark meaningful conversations. Swipe through cards or use our AI to generate custom questions based on your interests and dating style."
+            />
           </div>
 
           {/* Category Dropdown */}
@@ -971,8 +983,13 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
       {activeSection === 'textgenie' && (
         <div className="animate-fade-in-up">
           {/* Section Heading */}
-          <div className="text-center mb-6">
+          <div className="flex items-center justify-center space-x-2 mb-6">
             <h2 className="text-xl font-semibold text-primary">Text Genie</h2>
+            <FTUETooltip
+              id="text-genie"
+              title="Text Genie"
+              description="Get AI-powered help crafting the perfect text message replies. Share context through text, photos, or voice recordings, and receive personalized response suggestions with different tones and explanations."
+            />
           </div>
           <TextGenie userProfile={userProfile} />
         </div>
@@ -982,8 +999,13 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
       {activeSection === 'practice' && (
         <div className="space-y-4 animate-fade-in-up">
           {/* Section Heading */}
-          <div className="text-center">
+          <div className="flex items-center justify-center space-x-2">
             <h2 className="text-xl font-semibold text-primary">AI Practice</h2>
+            <FTUETooltip
+              id="ai-practice"
+              title="AI Practice"
+              description="Practice conversations with AI partners in a safe, judgment-free space. Build confidence and improve your communication skills before real dates."
+            />
           </div>
         <Card className="shadow-romance border-primary/20">
           <CardHeader>

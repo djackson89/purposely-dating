@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Slider } from '@/components/ui/slider';
 import { Heart, BookOpen, TrendingUp, Sparkles, Brain, MessageSquare, Loader2, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
+import { FTUETooltip } from '@/components/ui/ftue-tooltip';
 import { useRelationshipAI } from '@/hooks/useRelationshipAI';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -316,14 +317,15 @@ const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userPro
       {/* Therapy Reflection */}
       {activeSection === 'reflection' && (
         <div className="space-y-4 animate-fade-in-up">
-          {/* Descriptive One-liner */}
-          <Card className="shadow-soft border-primary/10">
-            <CardContent className="pt-6">
-              <p className="text-sm text-muted-foreground text-center leading-relaxed">
-                Prepare thoughtful questions for therapy and reflect on your insights to maximize your relationship growth.
-              </p>
-            </CardContent>
-          </Card>
+          {/* Section Heading */}
+          <div className="flex items-center justify-center space-x-2">
+            <h2 className="text-xl font-semibold text-primary">Therapy Reflection</h2>
+            <FTUETooltip
+              id="therapy-reflection"
+              title="Therapy Reflection"
+              description="Prepare thoughtful questions for therapy and reflect on your insights to maximize your relationship growth."
+            />
+          </div>
           <Card className="shadow-romance border-primary/20">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
@@ -499,14 +501,15 @@ const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userPro
       {/* Growth Journal */}
       {activeSection === 'journal' && (
         <div className="space-y-4 animate-fade-in-up">
-          {/* Descriptive One-liner */}
-          <Card className="shadow-soft border-primary/10">
-            <CardContent className="pt-6">
-              <p className="text-sm text-muted-foreground text-center leading-relaxed">
-                Document your relationship journey, capture breakthrough moments, and track your emotional growth over time.
-              </p>
-            </CardContent>
-          </Card>
+          {/* Section Heading */}
+          <div className="flex items-center justify-center space-x-2">
+            <h2 className="text-xl font-semibold text-primary">Growth Journal</h2>
+            <FTUETooltip
+              id="growth-journal"
+              title="Growth Journal"
+              description="Document your relationship journey, capture breakthrough moments, and track your emotional growth over time."
+            />
+          </div>
           <Card className="shadow-romance border-primary/20">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
@@ -563,14 +566,15 @@ const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userPro
       {/* Mental Health Check-In */}
       {activeSection === 'insights' && (
         <div className="space-y-4 animate-fade-in-up">
-          {/* Descriptive One-liner */}
-          <Card className="shadow-soft border-primary/10">
-            <CardContent className="pt-6">
-              <p className="text-sm text-muted-foreground text-center leading-relaxed">
-                Track your daily mental health and receive personalized recommendations to support your emotional well-being.
-              </p>
-            </CardContent>
-          </Card>
+          {/* Section Heading */}
+          <div className="flex items-center justify-center space-x-2">
+            <h2 className="text-xl font-semibold text-primary">Mental Health Check-In</h2>
+            <FTUETooltip
+              id="mental-health-checkin"
+              title="Mental Health Check-In"
+              description="Track your daily mental health and receive personalized recommendations to support your emotional well-being."
+            />
+          </div>
           
           <Card className="shadow-romance border-primary/20">
             <CardHeader>
