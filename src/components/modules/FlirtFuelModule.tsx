@@ -38,6 +38,10 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
   const [showRename, setShowRename] = useState(false);
   const [showManage, setShowManage] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
+  const [practicePartnerActive, setPracticePartnerActive] = useState(false);
+  const [practiceMessages, setPracticeMessages] = useState<Array<{ role: 'user' | 'ai'; message: string }>>([]);
+  const [currentPracticeMessage, setCurrentPracticeMessage] = useState('');
+  const [practiceScenario, setPracticeScenario] = useState('first_date');
   const { getFlirtSuggestion, isLoading } = useRelationshipAI();
 
   const handleShare = async (text: string) => {
@@ -388,6 +392,63 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
     }
   };
 
+  // AI Practice Partner methods
+  const practiceScenarios = [
+    { id: 'first_date', name: 'First Date', description: 'Practice conversation for a first date scenario' },
+    { id: 'relationship_talk', name: 'Relationship Talk', description: 'Practice discussing relationship topics' },
+    { id: 'conflict_resolution', name: 'Conflict Resolution', description: 'Practice handling disagreements constructively' },
+    { id: 'flirting', name: 'Flirting', description: 'Practice playful and romantic conversation' },
+    { id: 'vulnerable_sharing', name: 'Vulnerable Sharing', description: 'Practice sharing deeper feelings and thoughts' }
+  ];
+
+  const startPracticeSession = async () => {
+    setPracticePartnerActive(true);
+    setPracticeMessages([]);
+    
+    const scenario = practiceScenarios.find(s => s.id === practiceScenario);
+    const welcomeMessage = `Hi! I'm your AI practice partner. We're going to practice ${scenario?.name.toLowerCase()} conversation. I'll respond as someone you might be dating. Feel free to start the conversation naturally, and I'll help you practice! What would you like to say?`;
+    
+    setPracticeMessages([{ role: 'ai', message: welcomeMessage }]);
+  };
+
+  const sendPracticeMessage = async () => {
+    if (!currentPracticeMessage.trim()) return;
+    
+    const userMessage = currentPracticeMessage.trim();
+    const updatedMessages = [...practiceMessages, { role: 'user' as const, message: userMessage }];
+    setPracticeMessages(updatedMessages);
+    setCurrentPracticeMessage('');
+    
+    try {
+      const scenario = practiceScenarios.find(s => s.id === practiceScenario);
+      const conversationHistory = updatedMessages.map(m => 
+        `${m.role === 'user' ? 'User' : 'Practice Partner'}: ${m.message}`
+      ).join('\n');
+      
+      const prompt = `You are an AI practice partner helping someone improve their dating conversation skills. You're roleplaying as a potential romantic partner in a ${scenario?.name.toLowerCase()} scenario.
+
+Context: ${scenario?.description}
+User Profile: Love Language: ${userProfile.loveLanguage}, Personality: ${userProfile.personalityType}
+
+Conversation so far:
+${conversationHistory}
+
+Respond naturally as someone they might be dating. Be engaging, realistic, and provide subtle feedback through your responses. Keep responses conversational and authentic. If they say something particularly good or something that needs improvement, respond naturally as a real person would.`;
+
+      const response = await getFlirtSuggestion(prompt, userProfile);
+      setPracticeMessages(prev => [...prev, { role: 'ai', message: response }]);
+    } catch (error) {
+      console.error('Error getting AI response:', error);
+      setPracticeMessages(prev => [...prev, { role: 'ai', message: "Sorry, I'm having trouble responding right now. Let's try again!" }]);
+    }
+  };
+
+  const endPracticeSession = () => {
+    setPracticePartnerActive(false);
+    setPracticeMessages([]);
+    setCurrentPracticeMessage('');
+  };
+
   const sections = [
     { id: 'starters', label: 'Conversation Starters', icon: MessageCircle },
     { id: 'textgenie', label: 'Text Genie', icon: Wand2 },
@@ -714,29 +775,117 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
               />
             </div>
           </div>
-        <Card className="shadow-romance border-primary/20">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Users className="w-5 h-5 text-primary animate-heart-pulse" />
-              <span>AI Practice Partner</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="p-4 bg-gradient-soft rounded-lg border border-primary/10 text-center">
-              <p className="text-muted-foreground mb-4">
-                Practice conversations with AI partners in a safe, judgment-free space
-              </p>
-              <Button variant="romance" className="w-full">
-                Start Practice Session ✨
+        {!practicePartnerActive ? (
+          <Card className="shadow-romance border-primary/20">
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Users className="w-5 h-5 text-primary animate-heart-pulse" />
+                <span>AI Practice Partner</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-3">
+                <Label htmlFor="scenario-select" className="text-sm font-medium">Choose Practice Scenario:</Label>
+                <Select value={practiceScenario} onValueChange={setPracticeScenario}>
+                  <SelectTrigger className="w-full bg-card">
+                    <SelectValue placeholder="Select a scenario" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-card border border-border shadow-lg">
+                    {practiceScenarios.map((scenario) => (
+                      <SelectItem 
+                        key={scenario.id} 
+                        value={scenario.id}
+                        className="bg-card hover:bg-muted cursor-pointer"
+                      >
+                        {scenario.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  {practiceScenarios.find(s => s.id === practiceScenario)?.description}
+                </p>
+              </div>
+              
+              <Button 
+                onClick={startPracticeSession}
+                disabled={isLoading}
+                variant="romance" 
+                className="w-full"
+              >
+                {isLoading ? 'Starting...' : 'Start Practice Session ✨'}
               </Button>
-            </div>
-            <div className="text-center">
-              <p className="text-xs text-muted-foreground">
-                AI feature requires backend integration
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card className="shadow-romance border-primary/20">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="flex items-center space-x-2">
+                <Users className="w-5 h-5 text-primary animate-heart-pulse" />
+                <span>Practice Session</span>
+              </CardTitle>
+              <Button 
+                onClick={endPracticeSession}
+                variant="outline"
+                size="sm"
+              >
+                End Session
+              </Button>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Chat Messages */}
+              <div className="space-y-3 max-h-96 overflow-y-auto p-4 bg-muted/20 rounded-lg border">
+                {practiceMessages.map((message, index) => (
+                  <div
+                    key={index}
+                    className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div
+                      className={`max-w-[80%] p-3 rounded-lg ${
+                        message.role === 'user'
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-card border border-border'
+                      }`}
+                    >
+                      <p className="text-sm">{message.message}</p>
+                    </div>
+                  </div>
+                ))}
+                {isLoading && (
+                  <div className="flex justify-start">
+                    <div className="bg-card border border-border p-3 rounded-lg">
+                      <p className="text-sm text-muted-foreground">Practice partner is typing...</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+              
+              {/* Message Input */}
+              <div className="flex gap-2">
+                <Textarea
+                  value={currentPracticeMessage}
+                  onChange={(e) => setCurrentPracticeMessage(e.target.value)}
+                  placeholder="Type your message..."
+                  className="flex-1 min-h-[60px] resize-none"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      sendPracticeMessage();
+                    }
+                  }}
+                />
+                <Button
+                  onClick={sendPracticeMessage}
+                  disabled={isLoading || !currentPracticeMessage.trim()}
+                  variant="romance"
+                  className="h-auto self-end"
+                >
+                  Send
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
         </div>
       )}
     </div>
