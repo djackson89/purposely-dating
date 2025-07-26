@@ -3,7 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Send, Mic, Camera, Image, ChevronDown, ChevronUp, Copy, RotateCcw } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Send, Mic, Camera, Image, ChevronDown, ChevronUp, Copy, RotateCcw, Heart, MessageCircle, TrendingUp, Star } from 'lucide-react';
 import { useRelationshipAI } from '@/hooks/useRelationshipAI';
 import { useCamera } from '@/hooks/useCamera';
 import { useToast } from '@/components/ui/use-toast';
@@ -44,6 +45,7 @@ interface ConversationAnalysis {
 }
 
 const TextGenieModule: React.FC<TextGenieModuleProps> = ({ userProfile }) => {
+  const [activeTab, setActiveTab] = useState('analyze');
   const [inputText, setInputText] = useState('');
   const [attachedImages, setAttachedImages] = useState<string[]>([]);
   const [analysis, setAnalysis] = useState<ConversationAnalysis | null>(null);
@@ -58,6 +60,8 @@ const TextGenieModule: React.FC<TextGenieModuleProps> = ({ userProfile }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [prospectAnalysis, setProspectAnalysis] = useState<string>('');
+  const [conversationStarters, setConversationStarters] = useState<string[]>([]);
   
   const { getAIResponse } = useRelationshipAI();
   const { selectPhoto, showPhotoOptions } = useCamera();
@@ -383,6 +387,66 @@ const TextGenieModule: React.FC<TextGenieModuleProps> = ({ userProfile }) => {
     }
   };
 
+  const generateProspectRanking = async () => {
+    if (!inputText.trim()) return;
+    
+    setIsLoading(true);
+    const userName = userProfile.firstName || 'love';
+    
+    const prompt = `You are a direct, no-nonsense dating coach helping ${userName} evaluate a dating prospect. Based on this conversation context: "${inputText}"
+    
+    Analyze this person's dating potential and give them a brutally honest ranking from 1-10 (where 10 is "marriage material" and 1 is "run away"). Consider:
+    - Communication style and effort
+    - Respect level and boundaries
+    - Emotional maturity
+    - Red flags vs green flags
+    - Long-term potential
+    
+    Give a score and explain your reasoning in 2-3 sentences with your signature tough-love style. Address ${userName} directly.`;
+
+    try {
+      const response = await getAIResponse(prompt, userProfile, 'general');
+      setProspectAnalysis(response);
+    } catch (error) {
+      console.error('Error generating prospect ranking:', error);
+      toast({
+        title: "AI Error",
+        description: "Failed to generate prospect ranking. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const generateConversationStarters = async () => {
+    setIsLoading(true);
+    const userName = userProfile.firstName || 'love';
+    
+    const prompt = `Generate 5 conversation starters for ${userName} based on their profile:
+    - Love Language: ${userProfile.loveLanguage}
+    - Age: ${userProfile.age}
+    - Personality: ${userProfile.personalityType}
+    - Relationship Status: ${userProfile.relationshipStatus}
+    
+    Create engaging, personality-appropriate conversation starters that feel natural and help build connection. Make them specific to their love language and personality type. Format as a simple list.`;
+
+    try {
+      const response = await getAIResponse(prompt, userProfile, 'general');
+      const starters = response.split('\n').filter(line => line.trim()).map(line => line.replace(/^\d+\.?\s*/, '').trim());
+      setConversationStarters(starters);
+    } catch (error) {
+      console.error('Error generating conversation starters:', error);
+      toast({
+        title: "AI Error", 
+        description: "Failed to generate conversation starters. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleRetry = async () => {
     // Find which reply types have existing options and regenerate them
     const activeTypes = Object.entries(replyOptions).filter(([_, options]) => options.length > 0);
@@ -516,6 +580,29 @@ const TextGenieModule: React.FC<TextGenieModuleProps> = ({ userProfile }) => {
         </h1>
         <p className="text-muted-foreground">Send texts with confidence - flirt or set boundaries</p>
       </div>
+
+      {/* Tabs */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="analyze" className="flex items-center gap-2">
+            <MessageCircle className="w-4 h-4" />
+            <span className="hidden sm:inline">Analyze & Reply</span>
+            <span className="sm:hidden">Reply</span>
+          </TabsTrigger>
+          <TabsTrigger value="ranking" className="flex items-center gap-2">
+            <TrendingUp className="w-4 h-4" />
+            <span className="hidden sm:inline">Prospect Ranking</span>
+            <span className="sm:hidden">Ranking</span>
+          </TabsTrigger>
+          <TabsTrigger value="starters" className="flex items-center gap-2">
+            <Star className="w-4 h-4" />
+            <span className="hidden sm:inline">Conversation Starters</span>
+            <span className="sm:hidden">Starters</span>
+          </TabsTrigger>
+        </TabsList>
+
+        {/* Analyze & Reply Tab */}
+        <TabsContent value="analyze" className="space-y-6 mt-6">
 
       {/* Input Section */}
       <Card className="shadow-soft border-primary/10">
@@ -817,6 +904,128 @@ const TextGenieModule: React.FC<TextGenieModuleProps> = ({ userProfile }) => {
           </CardContent>
         </Card>
       )}
+
+        </TabsContent>
+
+        {/* Prospect Ranking Tab */}
+        <TabsContent value="ranking" className="space-y-6 mt-6">
+          <Card className="shadow-soft border-primary/10">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <TrendingUp className="w-5 h-5" />
+                Dating Prospect Ranking
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Textarea
+                placeholder="Paste your conversation or describe this person's behavior to get a brutally honest ranking of their dating potential..."
+                value={inputText}
+                onChange={(e) => setInputText(e.target.value)}
+                className="min-h-[100px]"
+              />
+              
+              <Button
+                onClick={generateProspectRanking}
+                disabled={!inputText.trim() || isLoading}
+                variant={!inputText.trim() ? "outline" : "default"}
+                className="w-full"
+              >
+                <TrendingUp className="w-4 h-4 mr-2" />
+                Rank This Prospect
+              </Button>
+              
+              {prospectAnalysis && (
+                <Card className="bg-muted/30 border-primary/20">
+                  <CardContent className="pt-6">
+                    <div className="space-y-3">
+                      <h4 className="font-semibold flex items-center gap-2">
+                        <Star className="w-4 h-4" />
+                        Prospect Analysis
+                      </h4>
+                      <p className="text-sm leading-relaxed">{prospectAnalysis}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Conversation Starters Tab */}
+        <TabsContent value="starters" className="space-y-6 mt-6">
+          <Card className="shadow-soft border-primary/10">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Star className="w-5 h-5" />
+                Conversation Starters
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-muted-foreground text-sm">
+                Get personalized conversation starters based on your profile and love language.
+              </p>
+              
+              <Button
+                onClick={generateConversationStarters}
+                disabled={isLoading}
+                variant="default"
+                className="w-full"
+              >
+                <Star className="w-4 h-4 mr-2" />
+                Generate Conversation Starters
+              </Button>
+              
+              {conversationStarters.length > 0 && (
+                <Card className="bg-muted/30 border-primary/20">
+                  <CardContent className="pt-6">
+                    <div className="space-y-3">
+                      <h4 className="font-semibold flex items-center gap-2">
+                        <MessageCircle className="w-4 h-4" />
+                        Your Personalized Starters
+                      </h4>
+                      <div className="space-y-3">
+                        {conversationStarters.map((starter, index) => (
+                          <div key={index} className="bg-background rounded-lg p-3 space-y-2">
+                            <p className="text-sm leading-relaxed">"{starter}"</p>
+                            <div className="flex gap-1 justify-end">
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => copyToClipboard(starter)}
+                                className="p-2"
+                              >
+                                <Copy className="w-3 h-3" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => shareMessage(starter)}
+                                className="p-2"
+                              >
+                                <Send className="w-3 h-3" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Loading State */}
+        {isLoading && (
+          <Card className="shadow-soft border-primary/10 mt-6">
+            <CardContent className="pt-6 text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+              <p className="text-muted-foreground">{loadingMessage || "Generating..."}</p>
+            </CardContent>
+          </Card>
+        )}
+      </Tabs>
     </div>
   );
 };
