@@ -182,12 +182,24 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
   ];
 
 
-  // Initialize current starters with default category
+  // Initialize current starters with default category and daily shuffling
   React.useEffect(() => {
     const defaultCategory = conversationStarters.find(cat => cat.category === selectedCategory);
     if (defaultCategory && !isCustom) {
       setCurrentStarters(defaultCategory.prompts);
-      setCurrentQuestionIndex(0); // Reset to first question when category changes
+      
+      // Get or set daily question index
+      const today = new Date().toDateString();
+      const savedQuestionIndex = localStorage.getItem(`dailyQuestionIndex_${selectedCategory}_${today}`);
+      
+      if (savedQuestionIndex) {
+        setCurrentQuestionIndex(parseInt(savedQuestionIndex, 10));
+      } else {
+        // Generate new daily question index
+        const randomIndex = Math.floor(Math.random() * defaultCategory.prompts.length);
+        setCurrentQuestionIndex(randomIndex);
+        localStorage.setItem(`dailyQuestionIndex_${selectedCategory}_${today}`, randomIndex.toString());
+      }
     }
   }, [selectedCategory, isCustom]);
 
@@ -453,8 +465,21 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
     };
 
     const templates = scenarioTemplates[scenarioType as keyof typeof scenarioTemplates] || scenarioTemplates.first_date;
-    const randomScenario = templates[Math.floor(Math.random() * templates.length)];
-    return randomScenario;
+    
+    // Get or set daily scenario index for this scenario type
+    const today = new Date().toDateString();
+    const savedScenarioIndex = localStorage.getItem(`dailyScenarioIndex_${scenarioType}_${today}`);
+    
+    let scenarioIndex;
+    if (savedScenarioIndex) {
+      scenarioIndex = parseInt(savedScenarioIndex, 10);
+    } else {
+      // Generate new daily scenario index
+      scenarioIndex = Math.floor(Math.random() * templates.length);
+      localStorage.setItem(`dailyScenarioIndex_${scenarioType}_${today}`, scenarioIndex.toString());
+    }
+    
+    return templates[scenarioIndex];
   };
 
   const startPracticeSession = async () => {
