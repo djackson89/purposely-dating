@@ -4,6 +4,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useReviewTracking } from "@/hooks/useReviewTracking";
+import ReviewRequestModal from "@/components/ReviewRequestModal";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
@@ -12,6 +14,7 @@ const queryClient = new QueryClient();
 
 const AppContent = () => {
   const { user, loading } = useAuth();
+  const { shouldShowReview, hideReviewModal, markReviewAsShown } = useReviewTracking();
 
   if (loading) {
     return (
@@ -28,14 +31,27 @@ const AppContent = () => {
     return <Auth onAuthSuccess={() => window.location.reload()} />;
   }
 
+  const handleCloseReviewModal = () => {
+    markReviewAsShown();
+    hideReviewModal();
+  };
+
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Index />} />
-        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </BrowserRouter>
+    <>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Index />} />
+          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </BrowserRouter>
+      
+      {/* Review Request Modal */}
+      <ReviewRequestModal 
+        isOpen={shouldShowReview} 
+        onClose={handleCloseReviewModal}
+      />
+    </>
   );
 };
 
