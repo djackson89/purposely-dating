@@ -301,37 +301,33 @@ const TextGenieModule: React.FC<TextGenieModuleProps> = ({ userProfile }) => {
       const response = await getAIResponse(prompt, userProfile, 'general');
       
       // Parse the response into structured options
-      const options: ReplyOption[] = [];
-      const sections = response.split(/(?=SWEET:|MILD:|SPICY:)/);
+      const sweetMatch = response.match(/SWEET:\s*(.+?)(?=SWEET_PERSPECTIVE:|$)/s);
+      const sweetPerspectiveMatch = response.match(/SWEET_PERSPECTIVE:\s*(.+?)(?=MILD:|$)/s);
+      const mildMatch = response.match(/MILD:\s*(.+?)(?=MILD_PERSPECTIVE:|$)/s);
+      const mildPerspectiveMatch = response.match(/MILD_PERSPECTIVE:\s*(.+?)(?=SPICY:|$)/s);
+      const spicyMatch = response.match(/SPICY:\s*(.+?)(?=SPICY_PERSPECTIVE:|$)/s);
+      const spicyPerspectiveMatch = response.match(/SPICY_PERSPECTIVE:\s*(.+?)$/s);
       
-      for (let i = 0; i < sections.length; i += 6) {
-        const sweetMatch = sections[i]?.match(/SWEET:\s*(.+?)(?=SWEET_PERSPECTIVE:|$)/s);
-        const sweetPerspectiveMatch = sections[i + 1]?.match(/SWEET_PERSPECTIVE:\s*(.+?)(?=MILD:|$)/s);
-        const mildMatch = sections[i + 2]?.match(/MILD:\s*(.+?)(?=MILD_PERSPECTIVE:|$)/s);
-        const mildPerspectiveMatch = sections[i + 3]?.match(/MILD_PERSPECTIVE:\s*(.+?)(?=SPICY:|$)/s);
-        const spicyMatch = sections[i + 4]?.match(/SPICY:\s*(.+?)(?=SPICY_PERSPECTIVE:|$)/s);
-        const spicyPerspectiveMatch = sections[i + 5]?.match(/SPICY_PERSPECTIVE:\s*(.+?)$/s);
-        
-        if (sweetMatch && mildMatch && spicyMatch) {
-          options.push({
-            sweet: {
-              text: sweetMatch[1].trim(),
-              perspective: sweetPerspectiveMatch?.[1]?.trim() || ''
-            },
-            mild: {
-              text: mildMatch[1].trim(),
-              perspective: mildPerspectiveMatch?.[1]?.trim() || ''
-            },
-            spicy: {
-              text: spicyMatch[1].trim(),
-              perspective: spicyPerspectiveMatch?.[1]?.trim() || ''
-            }
-          });
-        }
+      if (sweetMatch && mildMatch && spicyMatch) {
+        const option: ReplyOption = {
+          sweet: {
+            text: sweetMatch[1].trim().replace(/^["']|["']$/g, ''), // Remove quotes
+            perspective: sweetPerspectiveMatch?.[1]?.trim() || ''
+          },
+          mild: {
+            text: mildMatch[1].trim().replace(/^["']|["']$/g, ''), // Remove quotes
+            perspective: mildPerspectiveMatch?.[1]?.trim() || ''
+          },
+          spicy: {
+            text: spicyMatch[1].trim().replace(/^["']|["']$/g, ''), // Remove quotes
+            perspective: spicyPerspectiveMatch?.[1]?.trim() || ''
+          }
+        };
+        return [option];
       }
       
-      // Return only one set of options (Sweet, Mild, Spicy)
-      return options.length > 0 ? [options[0]] : [getFallbackReplies(replyType)[0]];
+      // Return fallback if parsing fails
+      return [getFallbackReplies(replyType)[0]];
     } catch (error) {
       console.error('Error generating replies:', error);
       return [];
@@ -496,14 +492,14 @@ const TextGenieModule: React.FC<TextGenieModuleProps> = ({ userProfile }) => {
 
   const getMessageTypeDisplay = (type: string) => {
     const types = {
-      manipulation: { label: 'Manipulation', color: 'destructive' },
-      attraction: { label: 'Secret Attraction', color: 'romance' },
-      deep_feelings: { label: 'Deep Feelings', color: 'primary' },
-      disrespect: { label: 'Disrespect', color: 'destructive' },
-      casual: { label: 'Casual Chat', color: 'secondary' },
-      flirty: { label: 'Flirty Vibes', color: 'romance' }
+      manipulation: { label: 'Red Flag', color: 'destructive' },
+      disrespect: { label: 'Red Flag', color: 'destructive' },
+      attraction: { label: 'Possible Red Flag', color: 'default' },
+      deep_feelings: { label: 'Green Flag', color: 'secondary' },
+      casual: { label: '', color: 'secondary' },
+      flirty: { label: 'Green Flag', color: 'secondary' }
     };
-    return types[type as keyof typeof types] || types.casual;
+    return types[type as keyof typeof types] || { label: '', color: 'secondary' };
   };
 
   const toggleContext = (type: string, index: number, tone: string) => {
@@ -598,9 +594,11 @@ const TextGenieModule: React.FC<TextGenieModuleProps> = ({ userProfile }) => {
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <h3 className="font-medium">Purposely Perspective</h3>
-                <Badge variant={getMessageTypeDisplay(analysis.messageType).color as any}>
-                  {getMessageTypeDisplay(analysis.messageType).label}
-                </Badge>
+                {getMessageTypeDisplay(analysis.messageType).label && (
+                  <Badge variant={getMessageTypeDisplay(analysis.messageType).color as any}>
+                    {getMessageTypeDisplay(analysis.messageType).label}
+                  </Badge>
+                )}
               </div>
                <p className="text-sm text-muted-foreground leading-relaxed">
                  {analysis.interpretation.split('.')[0]}.
