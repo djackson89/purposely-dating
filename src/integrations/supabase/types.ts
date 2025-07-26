@@ -14,6 +14,147 @@ export type Database = {
   }
   public: {
     Tables: {
+      conversation_usage: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          question: string
+          used_with: string | null
+          user_id: string
+          was_helpful: boolean | null
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          id?: string
+          question: string
+          used_with?: string | null
+          user_id: string
+          was_helpful?: boolean | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          question?: string
+          used_with?: string | null
+          user_id?: string
+          was_helpful?: boolean | null
+        }
+        Relationships: []
+      }
+      dating_prospects: {
+        Row: {
+          attractiveness_rating: number | null
+          created_at: string
+          flags: Json | null
+          id: string
+          is_active: boolean | null
+          nickname: string
+          notes: string | null
+          overall_ranking: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          attractiveness_rating?: number | null
+          created_at?: string
+          flags?: Json | null
+          id?: string
+          is_active?: boolean | null
+          nickname: string
+          notes?: string | null
+          overall_ranking?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          attractiveness_rating?: number | null
+          created_at?: string
+          flags?: Json | null
+          id?: string
+          is_active?: boolean | null
+          nickname?: string
+          notes?: string | null
+          overall_ranking?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      journal_entries: {
+        Row: {
+          content: string
+          created_at: string
+          entry_type: string | null
+          id: string
+          mood_rating: number | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          entry_type?: string | null
+          id?: string
+          mood_rating?: number | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          entry_type?: string | null
+          id?: string
+          mood_rating?: number | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      mental_health_checkins: {
+        Row: {
+          ai_recommendation: string | null
+          anxious_thoughts: number
+          checkin_date: string
+          created_at: string
+          depressive_thoughts: number
+          energy_level: number
+          id: string
+          mental_clarity: number
+          stress_level: number
+          user_id: string
+        }
+        Insert: {
+          ai_recommendation?: string | null
+          anxious_thoughts: number
+          checkin_date?: string
+          created_at?: string
+          depressive_thoughts: number
+          energy_level: number
+          id?: string
+          mental_clarity: number
+          stress_level: number
+          user_id: string
+        }
+        Update: {
+          ai_recommendation?: string | null
+          anxious_thoughts?: number
+          checkin_date?: string
+          created_at?: string
+          depressive_thoughts?: number
+          energy_level?: number
+          id?: string
+          mental_clarity?: number
+          stress_level?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           age: string | null
@@ -53,6 +194,42 @@ export type Database = {
           personality_type?: string | null
           relationship_status?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      user_settings: {
+        Row: {
+          created_at: string
+          daily_reminders: boolean | null
+          id: string
+          onboarding_completed: boolean | null
+          push_notifications: boolean | null
+          theme_preference: string | null
+          therapy_reminders: boolean | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          daily_reminders?: boolean | null
+          id?: string
+          onboarding_completed?: boolean | null
+          push_notifications?: boolean | null
+          theme_preference?: string | null
+          therapy_reminders?: boolean | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          daily_reminders?: boolean | null
+          id?: string
+          onboarding_completed?: boolean | null
+          push_notifications?: boolean | null
+          theme_preference?: string | null
+          therapy_reminders?: boolean | null
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
