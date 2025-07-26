@@ -14,6 +14,7 @@ interface OnboardingData {
   age: string;
   gender: string;
   personalityType: string;
+  firstName?: string;
 }
 
 interface TextGenieModuleProps {
@@ -62,7 +63,7 @@ const TextGenieModule: React.FC<TextGenieModuleProps> = ({ userProfile }) => {
           {
             text: "Interesting... tell me more 😏",
             context: "Shows intrigue while maintaining mystery",
-            situation: "When you want to keep the conversation playful",
+            situation: "When you want to keep the conversation playful and engaging",
             outcome: "Encourages them to elaborate while showing interest"
           },
           {
@@ -76,6 +77,18 @@ const TextGenieModule: React.FC<TextGenieModuleProps> = ({ userProfile }) => {
             context: "Acknowledges their effort while maintaining your power",
             situation: "When they're trying to impress you",
             outcome: "Shows appreciation while staying in control"
+          },
+          {
+            text: "Is that so? I'm intrigued... 💋",
+            context: "Playful challenge that invites elaboration",
+            situation: "When you want to test their confidence level",
+            outcome: "Creates sexual tension while maintaining mystery"
+          },
+          {
+            text: "Mmm, keep talking like that 🔥",
+            context: "Encourages their current energy and escalates flirtation",
+            situation: "When they're being flirty and you want more",
+            outcome: "Signals clear interest and permission to continue"
           }
         ];
       case 'reply':
@@ -97,6 +110,18 @@ const TextGenieModule: React.FC<TextGenieModuleProps> = ({ userProfile }) => {
             context: "Shows you value their thoughts and opinions",
             situation: "When you want to understand them better",
             outcome: "Makes them feel heard and valued"
+          },
+          {
+            text: "I love how your mind works! What else are you passionate about?",
+            context: "Celebrates their thinking while expanding the topic",
+            situation: "When they've shared something thoughtful or creative",
+            outcome: "Builds their confidence and opens new conversation paths"
+          },
+          {
+            text: "That's such a refreshing take. Most people don't think that deeply about it.",
+            context: "Validates their uniqueness and intelligence",
+            situation: "When they've offered an insightful or unique perspective",
+            outcome: "Makes them feel special and encourages more sharing"
           }
         ];
       case 'clap':
@@ -118,6 +143,18 @@ const TextGenieModule: React.FC<TextGenieModuleProps> = ({ userProfile }) => {
             context: "Demonstrates self-worth while giving them an opportunity to correct course",
             situation: "When someone needs a reality check about their approach",
             outcome: "Teaches them how you expect to be treated"
+          },
+          {
+            text: "That approach doesn't work with me. I prefer authentic connection.",
+            context: "Redirects them toward better behavior while staying open",
+            situation: "When they're being fake, pushy, or using poor tactics",
+            outcome: "Educates them on what actually attracts you"
+          },
+          {
+            text: "I'm worth more than low-effort conversation. Show me you can do better.",
+            context: "Challenges them to step up their game",
+            situation: "When they're being lazy, boring, or not putting in effort",
+            outcome: "Either filters them out or motivates them to improve"
           }
         ];
       default:
@@ -126,17 +163,18 @@ const TextGenieModule: React.FC<TextGenieModuleProps> = ({ userProfile }) => {
   };
 
   const analyzeConversation = async (content: string): Promise<ConversationAnalysis> => {
-    const prompt = `Analyze this conversation context and identify the underlying message type. Content: "${content}"
+    const userName = userProfile.firstName || 'love';
+    const prompt = `You are a supportive, no-nonsense relationship coach speaking to ${userName}. Analyze this conversation context and identify the underlying message type. Content: "${content}"
 
     Determine:
     1. The message type (manipulation, attraction, deep_feelings, disrespect, casual, flirty)
     2. Your confidence level (1-10)
-    3. A brief interpretation explaining what's really happening
+    3. A brief interpretation explaining what's really happening - address ${userName} directly and speak like a warm but direct relationship coach
 
     Respond in this exact format:
     TYPE: [message_type]
     CONFIDENCE: [1-10]
-    INTERPRETATION: [your analysis]`;
+    INTERPRETATION: [your analysis addressing ${userName} personally]`;
 
     try {
       const response = await getAIResponse(prompt, userProfile, 'general');
@@ -145,10 +183,18 @@ const TextGenieModule: React.FC<TextGenieModuleProps> = ({ userProfile }) => {
       const confidenceMatch = response.match(/CONFIDENCE:\s*(\d+)/i);
       const interpretationMatch = response.match(/INTERPRETATION:\s*(.+)/is);
       
+      const userName = userProfile.firstName || 'love';
+      let interpretation = interpretationMatch?.[1]?.trim() || 'Unable to analyze conversation fully.';
+      
+      // Make the interpretation more personable
+      if (!interpretation.toLowerCase().includes(userName.toLowerCase())) {
+        interpretation = `${userName}, here's what I'm seeing: ${interpretation}`;
+      }
+      
       return {
         messageType: (typeMatch?.[1] || 'casual') as any,
         confidence: parseInt(confidenceMatch?.[1] || '5'),
-        interpretation: interpretationMatch?.[1]?.trim() || 'Unable to analyze conversation fully.'
+        interpretation
       };
     } catch (error) {
       console.error('Error analyzing conversation:', error);
@@ -160,11 +206,12 @@ const TextGenieModule: React.FC<TextGenieModuleProps> = ({ userProfile }) => {
         variant: "destructive",
       });
       
-      // Provide fallback analysis
+      // Provide fallback analysis with personable tone
+      const userName = userProfile.firstName || 'love';
       return {
         messageType: 'casual',
         confidence: 5,
-        interpretation: 'AI analysis temporarily unavailable due to quota limits. The conversation appears to be casual in nature.'
+        interpretation: `Hey ${userName}, while our AI is taking a quick break, I can still help you navigate this! From what I can see, this looks like a pretty standard casual conversation. Trust your instincts - you've got this! 💪`
       };
     }
   };
@@ -242,7 +289,7 @@ const TextGenieModule: React.FC<TextGenieModuleProps> = ({ userProfile }) => {
         }
       });
       
-      return options.slice(0, 3); // Ensure max 3 options
+      return options.length >= 3 ? options.slice(0, 3) : [...options, ...getFallbackReplies(replyType)].slice(0, 3);
     } catch (error) {
       console.error('Error generating replies:', error);
       return [];
