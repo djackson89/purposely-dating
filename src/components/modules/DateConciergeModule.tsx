@@ -112,11 +112,13 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
           {/* Section Heading */}
           <div className="flex items-center justify-center space-x-2">
             <h2 className="text-xl font-semibold text-primary">Dating Planner</h2>
-            <FTUETooltip
-              id="dating-planner"
-              title="Dating Planner"
-              description="Get personalized date ideas perfectly tailored to your love language, personality, and relationship goals."
-            />
+            <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center cursor-pointer hover:bg-primary/20 transition-colors">
+              <FTUETooltip
+                id="dating-planner"
+                title="Dating Planner"
+                description="Get personalized date ideas perfectly tailored to your love language, personality, and relationship goals."
+              />
+            </div>
           </div>
           <Card className="shadow-romance border-primary/20">
             <CardHeader>
@@ -173,11 +175,13 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
           {/* Section Heading */}
           <div className="flex items-center justify-center space-x-2">
             <h2 className="text-xl font-semibold text-primary">Local Events</h2>
-            <FTUETooltip
-              id="local-events"
-              title="Local Events"
-              description="Discover exciting activities and hidden gems in your area to create unforgettable experiences together."
-            />
+            <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center cursor-pointer hover:bg-primary/20 transition-colors">
+              <FTUETooltip
+                id="local-events"
+                title="Local Events"
+                description="Discover exciting activities and hidden gems in your area to create unforgettable experiences together."
+              />
+            </div>
           </div>
           <Card className="shadow-romance border-primary/20">
             <CardHeader>
@@ -227,11 +231,13 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
           {/* Section Heading */}
           <div className="flex items-center justify-center space-x-2">
             <h2 className="text-xl font-semibold text-primary">Planning Board</h2>
-            <FTUETooltip
-              id="planning-board"
-              title="Planning Board"
-              description="Collaborate with your partner to plan the perfect date night and keep track of who's doing what."
-            />
+            <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center cursor-pointer hover:bg-primary/20 transition-colors">
+              <FTUETooltip
+                id="planning-board"
+                title="Planning Board"
+                description="Collaborate with your partner to plan the perfect date night and keep track of who's doing what."
+              />
+            </div>
           </div>
           <Card className="shadow-romance border-primary/20">
             <CardHeader>

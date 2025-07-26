@@ -332,11 +332,13 @@ const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userPro
           {/* Section Heading */}
           <div className="flex items-center justify-center space-x-2">
             <h2 className="text-xl font-semibold text-primary">Therapy Reflection</h2>
-            <FTUETooltip
-              id="therapy-reflection"
-              title="Therapy Reflection"
-              description="Prepare thoughtful questions for therapy and reflect on your insights to maximize your relationship growth."
-            />
+            <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center cursor-pointer hover:bg-primary/20 transition-colors">
+              <FTUETooltip
+                id="therapy-reflection"
+                title="Therapy Reflection"
+                description="Prepare thoughtful questions for therapy and reflect on your insights to maximize your relationship growth."
+              />
+            </div>
           </div>
           <Card className="shadow-romance border-primary/20">
             <CardHeader>
@@ -525,11 +527,13 @@ const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userPro
           {/* Section Heading */}
           <div className="flex items-center justify-center space-x-2">
             <h2 className="text-xl font-semibold text-primary">Growth Journal</h2>
-            <FTUETooltip
-              id="growth-journal"
-              title="Growth Journal"
-              description="Document your relationship journey, capture breakthrough moments, and track your emotional growth over time."
-            />
+            <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center cursor-pointer hover:bg-primary/20 transition-colors">
+              <FTUETooltip
+                id="growth-journal"
+                title="Growth Journal"
+                description="Document your relationship journey, capture breakthrough moments, and track your emotional growth over time."
+              />
+            </div>
           </div>
           <Card className="shadow-romance border-primary/20">
             <CardHeader>
@@ -590,11 +594,13 @@ const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userPro
           {/* Section Heading */}
           <div className="flex items-center justify-center space-x-2">
             <h2 className="text-xl font-semibold text-primary">Mental Health Check-In</h2>
-            <FTUETooltip
-              id="mental-health-checkin"
-              title="Mental Health Check-In"
-              description="Track your daily mental health and receive personalized recommendations to support your emotional well-being."
-            />
+            <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center cursor-pointer hover:bg-primary/20 transition-colors">
+              <FTUETooltip
+                id="mental-health-checkin"
+                title="Mental Health Check-In"
+                description="Track your daily mental health and receive personalized recommendations to support your emotional well-being."
+              />
+            </div>
           </div>
           
           <Card className="shadow-romance border-primary/20">

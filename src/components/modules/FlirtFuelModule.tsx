@@ -100,14 +100,14 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
       // Try Capacitor Share first (for mobile)
       if ((window as any).Capacitor) {
         await CapacitorShare.share({
-          title: 'Conversation Starter from FlirtFuel',
+          title: 'Conversation Starter from Clarity Coach',
           text: text,
         });
       } else {
         // Fallback to Web Share API
         if (navigator.share) {
           await navigator.share({
-            title: 'Conversation Starter from FlirtFuel',
+            title: 'Conversation Starter from Clarity Coach',
             text: text,
           });
         } else {
@@ -461,7 +461,10 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
 
   const selectCategory = (categoryName: string) => {
     if (categoryName === 'Customize') {
-      // Show customize interface
+      // Set to custom mode and clear current starters
+      setSelectedCategory('Customize');
+      setIsCustom(false); // Reset custom flag
+      setCurrentStarters([]); // Clear current starters to show customize interface
       setCustomKeywords('');
       return;
     }
@@ -518,9 +521,9 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
       {/* Header */}
       <div className="text-center space-y-2">
         <h1 className="text-2xl font-bold bg-gradient-romance bg-clip-text text-transparent">
-          FlirtFuel ✨
+          Clarity Coach ✨
         </h1>
-        <p className="text-muted-foreground">Build confidence & spark connections</p>
+        <p className="text-muted-foreground">No more second-guessing—just powerful connection</p>
       </div>
 
       {/* Section Tabs - Icons Only */}
@@ -548,11 +551,13 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
           {/* Section Heading */}
           <div className="flex items-center justify-center space-x-2">
             <h2 className="text-xl font-semibold text-primary">Dating Prospects</h2>
-            <FTUETooltip
-              id="dating-prospects"
-              title="Dating Prospects"
-              description="Organize and track the people you're interested in dating. Rate their compatibility, flag important qualities, and get AI insights to help you make better dating decisions."
-            />
+            <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center cursor-pointer hover:bg-primary/20 transition-colors">
+              <FTUETooltip
+                id="dating-prospects"
+                title="Dating Prospects"
+                description="Organize and track the people you're interested in dating. Rate their compatibility, flag important qualities, and get AI insights to help you make better dating decisions."
+              />
+            </div>
           </div>
           {/* Add New Prospect Button */}
           <Card className="shadow-soft border-primary/10">
@@ -788,11 +793,13 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
           {/* Section Heading */}
           <div className="flex items-center justify-center space-x-2">
             <h2 className="text-xl font-semibold text-primary">Conversation Starters</h2>
-            <FTUETooltip
-              id="conversation-starters"
-              title="Conversation Starters"
-              description="Discover engaging questions and topics that spark meaningful conversations. Swipe through cards or use our AI to generate custom questions based on your interests and dating style."
-            />
+            <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center cursor-pointer hover:bg-primary/20 transition-colors">
+              <FTUETooltip
+                id="conversation-starters"
+                title="Conversation Starters"
+                description="Discover engaging questions and topics that spark meaningful conversations. Swipe through cards or use our AI to generate custom questions based on your interests and dating style."
+              />
+            </div>
           </div>
 
           {/* Category Dropdown */}
@@ -985,11 +992,13 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
           {/* Section Heading */}
           <div className="flex items-center justify-center space-x-2 mb-6">
             <h2 className="text-xl font-semibold text-primary">Text Genie</h2>
-            <FTUETooltip
-              id="text-genie"
-              title="Text Genie"
-              description="Get AI-powered help crafting the perfect text message replies. Share context through text, photos, or voice recordings, and receive personalized response suggestions with different tones and explanations."
-            />
+            <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center cursor-pointer hover:bg-primary/20 transition-colors">
+              <FTUETooltip
+                id="text-genie"
+                title="Text Genie"
+                description="Get AI-powered help crafting the perfect text message replies. Share context through text, photos, or voice recordings, and receive personalized response suggestions with different tones and explanations."
+              />
+            </div>
           </div>
           <TextGenie userProfile={userProfile} />
         </div>
@@ -1001,11 +1010,13 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
           {/* Section Heading */}
           <div className="flex items-center justify-center space-x-2">
             <h2 className="text-xl font-semibold text-primary">AI Practice</h2>
-            <FTUETooltip
-              id="ai-practice"
-              title="AI Practice"
-              description="Practice conversations with AI partners in a safe, judgment-free space. Build confidence and improve your communication skills before real dates."
-            />
+            <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center cursor-pointer hover:bg-primary/20 transition-colors">
+              <FTUETooltip
+                id="ai-practice"
+                title="AI Practice"
+                description="Practice conversations with AI partners in a safe, judgment-free space. Build confidence and improve your communication skills before real dates."
+              />
+            </div>
           </div>
         <Card className="shadow-romance border-primary/20">
           <CardHeader>
