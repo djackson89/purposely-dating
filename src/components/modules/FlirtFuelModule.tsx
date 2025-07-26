@@ -76,7 +76,7 @@ const flagMetrics = [
 ];
 
 const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
-  const [activeSection, setActiveSection] = useState<'prospects' | 'starters' | 'messages' | 'practice'>('starters');
+  const [activeSection, setActiveSection] = useState<'prospects' | 'starters' | 'practice'>('starters');
   const [prospects, setProspects] = useState<DatingProspect[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [newProspectNickname, setNewProspectNickname] = useState('');
@@ -87,7 +87,6 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
   const [customKeywords, setCustomKeywords] = useState('');
   const [currentStarters, setCurrentStarters] = useState<string[]>([]);
   const [isCustom, setIsCustom] = useState(false);
-  const [assertivenessLevel, setAssertivenessLevel] = useState([5]); // 1-10 scale, 5 is middle
   const { getFlirtSuggestion, isLoading } = useRelationshipAI();
 
   const handleShare = async (text: string) => {
@@ -123,17 +122,6 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
     }
   };
   
-  const dailyChallenge = {
-    type: "Compliment Challenge",
-    text: userProfile.loveLanguage === "Words of Affirmation" 
-      ? "Give a heartfelt compliment about someone's character, not just their appearance"
-      : userProfile.loveLanguage === "Quality Time"
-      ? "Ask someone about their favorite childhood memory and really listen"
-      : "Leave a sweet note for someone special today",
-    difficulty: "Gentle",
-    points: 10
-  };
-
   const conversationStarters = [
     {
       category: "First Date Fun",
@@ -234,111 +222,6 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
     }
   ];
 
-  const getFlirtyMessages = () => {
-    const level = assertivenessLevel[0];
-    
-    if (level <= 3) {
-      // Passive (1-3)
-      return [
-        {
-          text: "Hope you're having a good day 😊",
-          explanation: "Gentle and sweet, shows care without being overwhelming.",
-          goodFor: "Early stages when testing the waters or with shy personalities",
-          avoidWhen: "When you want to escalate romantic tension quickly",
-          familiarityLevel: "After a few conversations or early dating"
-        },
-        {
-          text: "You crossed my mind today... 💭",
-          explanation: "Subtle hint of interest that's easy to respond to without pressure.",
-          goodFor: "Building gentle romantic awareness and creating soft connection",
-          avoidWhen: "When they've shown they prefer more direct communication",
-          familiarityLevel: "After establishing mutual interest"
-        },
-        {
-          text: "That smile of yours is pretty special ☺️",
-          explanation: "Complimentary but not overly intense, focuses on something sweet.",
-          goodFor: "Making them feel good about themselves without overwhelming pressure",
-          avoidWhen: "If they're uncomfortable with appearance-based compliments",
-          familiarityLevel: "After you've seen them smile in person"
-        }
-      ];
-    } else if (level <= 7) {
-      // Moderate (4-7) 
-      return [
-        {
-          text: "You've been on my mind all day... 💕",
-          explanation: "Creates romantic tension and shows they're a priority in your thoughts.",
-          goodFor: "Building romantic momentum and showing serious interest",
-          avoidWhen: "Very early dating stages or if they're not ready for emotional intensity",
-          familiarityLevel: "After physical chemistry is established and mutual interest is clear"
-        },
-        {
-          text: "Missing that gorgeous smile of yours",
-          explanation: "Combines physical compliment with emotional longing, creating connection.",
-          goodFor: "When you haven't seen them recently and want to express attraction",
-          avoidWhen: "If they're insecure about their appearance or prefer non-physical compliments",
-          familiarityLevel: "After you've established physical attraction and comfort"
-        },
-        {
-          text: "Planning something special for us 😉",
-          explanation: "Creates anticipation and mystery while implying future together.",
-          goodFor: "Building excitement before dates or special occasions",
-          avoidWhen: "If they prefer direct communication or are anxious about surprises",
-          familiarityLevel: "After establishing trust and knowing their preferences"
-        }
-      ];
-    } else {
-      // Assertive (8-10)
-      return [
-        {
-          text: "Can't stop thinking about how amazing you looked last night 🔥",
-          explanation: "Direct physical appreciation with intensity that shows strong attraction.",
-          goodFor: "When there's established mutual attraction and you want to be bold",
-          avoidWhen: "Early dating stages or if they prefer subtle compliments",
-          familiarityLevel: "After physical intimacy or very strong mutual attraction is established"
-        },
-        {
-          text: "You drive me absolutely crazy in the best way 😍",
-          explanation: "Expresses intense attraction and desire in a playful but direct manner.",
-          goodFor: "Escalating romantic tension and expressing passionate interest",
-          avoidWhen: "If they prefer gentle romance or are overwhelmed by intensity",
-          familiarityLevel: "In an established romantic relationship or very strong connection"
-        },
-        {
-          text: "I want you. Can't wait to see you tonight 💋",
-          explanation: "Very direct expression of desire that leaves no doubt about intentions.",
-          goodFor: "When you have an established intimate relationship and strong chemistry",
-          avoidWhen: "Early dating, uncertain relationships, or with reserved personalities",
-          familiarityLevel: "In committed relationships or after establishing intimate boundaries"
-        }
-      ];
-    }
-  };
-
-  const loadMoreFlirtyMessages = async () => {
-    const level = assertivenessLevel[0];
-    let styleDescription = '';
-    
-    if (level <= 3) {
-      styleDescription = 'passive, gentle, and sweet. They should be perfect for early relationship stages and shy personalities.';
-    } else if (level <= 7) {
-      styleDescription = 'moderately flirty with romantic tension. They should build attraction while being confident but not overwhelming.';
-    } else {
-      styleDescription = 'assertive, bold, and direct. They should express strong desire and passion for established intimate relationships.';
-    }
-    
-    const prompt = `Generate 3 new flirty text message suggestions that are ${styleDescription} Include the message text and brief explanations of why they work, when to use them, when to avoid them, and what level of familiarity is needed. Format each as a complete suggestion with explanations.`;
-    
-    try {
-      const response = await getFlirtSuggestion(prompt, userProfile);
-      
-      // This would ideally parse the AI response and add to existing messages
-      // For now, we'll show the response in an alert (you could enhance this with a modal)
-      alert(`New flirty message suggestions:\n\n${response}`);
-    } catch (error) {
-      console.error('Error generating more flirty messages:', error);
-    }
-  };
 
   const addNewProspect = () => {
     if (!newProspectNickname.trim()) return;
@@ -517,7 +400,6 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
   const sections = [
     { id: 'starters', label: 'Conversation Starters', icon: MessageCircle },
     { id: 'prospects', label: 'Dating Prospects', icon: Users },
-    { id: 'messages', label: 'Flirty Texts', icon: Heart },
     { id: 'practice', label: 'AI Practice', icon: Zap }
   ];
 
@@ -892,132 +774,6 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
         </div>
       )}
 
-      {/* Flirty Texts */}
-      {activeSection === 'messages' && (
-        <div className="space-y-4 animate-fade-in-up">
-          {/* Descriptive One-liner */}
-          <Card className="shadow-soft border-primary/10">
-            <CardContent className="pt-6">
-              <p className="text-sm text-muted-foreground text-center leading-relaxed">
-                Keep the spark alive with sweet messages and daily challenges that build deeper connection and confidence.
-              </p>
-            </CardContent>
-          </Card>
-          {/* Daily Challenge moved here */}
-          <Card className="shadow-romance border-primary/20">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Zap className="w-5 h-5 text-primary animate-heart-pulse" />
-                <span>Today's Challenge</span>
-                <Badge variant="secondary">{dailyChallenge.difficulty}</Badge>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="p-4 bg-gradient-soft rounded-lg border border-primary/10">
-                <h3 className="font-medium text-primary mb-2">{dailyChallenge.type}</h3>
-                <p className="text-foreground leading-relaxed">{dailyChallenge.text}</p>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">+{dailyChallenge.points} confidence points</span>
-                <Button variant="romance" size="sm">
-                  Mark Complete 💕
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-          
-          {/* Text Message Ideas */}
-          <Card className="shadow-soft border-primary/10">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Heart className="w-5 h-5 text-primary" />
-                <span>Flirty Messages</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Assertiveness Slider */}
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium">Flirt Style</span>
-                  <span className="text-sm text-muted-foreground">
-                    {assertivenessLevel[0] <= 3 ? 'Passive' : 
-                     assertivenessLevel[0] <= 7 ? 'Moderate' : 'Assertive'}
-                  </span>
-                </div>
-                <Slider
-                  value={assertivenessLevel}
-                  onValueChange={setAssertivenessLevel}
-                  max={10}
-                  min={1}
-                  step={1}
-                  className="w-full"
-                />
-                <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>Passive</span>
-                  <span>Assertive</span>
-                </div>
-              </div>
-
-              {/* Messages based on assertiveness level */}
-              {getFlirtyMessages().map((message, messageIndex) => (
-                <div 
-                  key={messageIndex}
-                  className="p-4 bg-gradient-soft rounded-lg border border-primary/10 hover:shadow-soft transition-all"
-                >
-                  <div className="space-y-3">
-                    <p className="text-sm text-foreground font-medium">{message.text}</p>
-                    
-                    <div className="space-y-2 text-xs text-muted-foreground">
-                      <div>
-                        <span className="font-medium text-primary">Why it works: </span>
-                        {message.explanation}
-                      </div>
-                      
-                      <div>
-                        <span className="font-medium text-green-600">Good for: </span>
-                        {message.goodFor}
-                      </div>
-                      
-                      <div>
-                        <span className="font-medium text-red-600">Avoid when: </span>
-                        {message.avoidWhen}
-                      </div>
-                      
-                      <div>
-                        <span className="font-medium text-blue-600">Familiarity needed: </span>
-                        {message.familiarityLevel}
-                      </div>
-                    </div>
-
-                    <div className="flex justify-end pt-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleShare(message.text)}
-                        className="p-1 h-auto"
-                      >
-                        <Share className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-
-          {/* See More Button */}
-          <div className="text-center">
-            <Button
-              onClick={loadMoreFlirtyMessages}
-              disabled={isLoading}
-              variant="outline"
-              className="w-full"
-            >
-              {isLoading ? 'Loading...' : 'See More'}
-            </Button>
-          </div>
-        </div>
-      )}
 
       {/* AI Practice */}
       {activeSection === 'practice' && (
