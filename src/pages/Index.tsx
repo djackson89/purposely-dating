@@ -47,12 +47,12 @@ const Index = () => {
     localStorage.setItem('relationshipCompanionProfile', JSON.stringify(data));
   };
 
-  const handlePlanSelected = (plan: 'weekly' | 'yearly', hasTrial?: boolean) => {
+  const handlePlanSelected = () => {
     // For now, just complete the paywall flow
     // In a real implementation, this would integrate with Stripe
-    console.log('Plan selected:', plan, 'Has trial:', hasTrial);
+    console.log('Premium plan selected with 7-day trial');
     setHasCompletedPaywall(true);
-    localStorage.setItem('relationshipCompanionPaywall', JSON.stringify({ plan, hasTrial, completedAt: new Date().toISOString() }));
+    localStorage.setItem('relationshipCompanionPaywall', JSON.stringify({ plan: 'premium', hasTrial: true, completedAt: new Date().toISOString() }));
   };
 
   // Show onboarding if not completed
