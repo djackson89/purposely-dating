@@ -472,9 +472,10 @@ const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userPro
                     variant="romance"
                     size="sm"
                     onClick={() => addToJournal(currentPostTherapyIndex, postTherapyInputs[currentPostTherapyIndex] || '')}
+                    disabled={!postTherapyInputs[currentPostTherapyIndex]?.trim()}
                   >
                     <Plus className="w-4 h-4 mr-1" />
-                    +Journal
+                    Journal
                   </Button>
                 </div>
                 {postTherapyAIResponses[currentPostTherapyIndex] && (
