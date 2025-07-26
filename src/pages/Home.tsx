@@ -14,10 +14,10 @@ interface OnboardingData {
 
 interface HomeProps {
   userProfile: OnboardingData;
-  onNavigateToTextGenie: () => void;
+  onNavigateToFlirtFuel: () => void;
 }
 
-const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToTextGenie }) => {
+const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel }) => {
   const [dailyQuestion, setDailyQuestion] = useState('');
   const [funFact, setFunFact] = useState('');
   const [factVote, setFactVote] = useState<'up' | 'down' | null>(null);
@@ -144,7 +144,7 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToTextGenie }) => {
             <p className="text-foreground leading-relaxed">{dailyQuestion}</p>
           </div>
           <Button
-            onClick={onNavigateToTextGenie}
+            onClick={onNavigateToFlirtFuel}
             variant="romance"
             className="w-full"
           >

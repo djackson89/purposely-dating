@@ -4,8 +4,8 @@ import { cn } from '@/lib/utils';
 import { useHaptics } from '@/hooks/useHaptics';
 
 interface NavigationProps {
-  activeModule: 'home' | 'textgenie' | 'concierge' | 'therapy' | 'profile';
-  onModuleChange: (module: 'home' | 'textgenie' | 'concierge' | 'therapy' | 'profile') => void;
+  activeModule: 'home' | 'flirtfuel' | 'concierge' | 'therapy' | 'profile';
+  onModuleChange: (module: 'home' | 'flirtfuel' | 'concierge' | 'therapy' | 'profile') => void;
 }
 
 const Navigation: React.FC<NavigationProps> = ({ activeModule, onModuleChange }) => {
@@ -18,7 +18,7 @@ const Navigation: React.FC<NavigationProps> = ({ activeModule, onModuleChange })
       color: 'text-blue-500'
     },
     {
-      id: 'textgenie' as const,
+      id: 'flirtfuel' as const,
       icon: MessageCircleHeart,
       color: 'text-rose-500'
     },
