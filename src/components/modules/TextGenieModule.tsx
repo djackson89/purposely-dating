@@ -55,6 +55,76 @@ const TextGenieModule: React.FC<TextGenieModuleProps> = ({ userProfile }) => {
 
   const hasInput = inputText.trim() || attachedImages.length > 0;
 
+  const getFallbackReplies = (replyType: 'flirt' | 'reply' | 'clap'): ReplyOption[] => {
+    switch (replyType) {
+      case 'flirt':
+        return [
+          {
+            text: "Interesting... tell me more 😏",
+            context: "Shows intrigue while maintaining mystery",
+            situation: "When you want to keep the conversation playful",
+            outcome: "Encourages them to elaborate while showing interest"
+          },
+          {
+            text: "I like where this is going 💕",
+            context: "Direct positive reinforcement with flirty energy",
+            situation: "When the conversation has romantic potential",
+            outcome: "Escalates romantic tension in a confident way"
+          },
+          {
+            text: "You're smooth, I'll give you that 😉",
+            context: "Acknowledges their effort while maintaining your power",
+            situation: "When they're trying to impress you",
+            outcome: "Shows appreciation while staying in control"
+          }
+        ];
+      case 'reply':
+        return [
+          {
+            text: "That's really interesting! What made you think about that?",
+            context: "Shows genuine interest and asks for deeper insight",
+            situation: "When you want to keep the conversation flowing naturally",
+            outcome: "Encourages them to share more and deepens the connection"
+          },
+          {
+            text: "I can relate to that. Have you experienced something similar before?",
+            context: "Creates connection through shared experience",
+            situation: "When you want to build rapport and understanding",
+            outcome: "Establishes common ground and emotional connection"
+          },
+          {
+            text: "Tell me more about your perspective on this",
+            context: "Shows you value their thoughts and opinions",
+            situation: "When you want to understand them better",
+            outcome: "Makes them feel heard and valued"
+          }
+        ];
+      case 'clap':
+        return [
+          {
+            text: "I'm not comfortable with that tone. Let's keep this respectful.",
+            context: "Sets clear boundaries while remaining professional",
+            situation: "When someone crosses a line but you want to give them a chance",
+            outcome: "Establishes your standards without ending the conversation"
+          },
+          {
+            text: "That's not how I operate. I expect better communication than that.",
+            context: "Firmly communicates your standards and expectations",
+            situation: "When someone is being disrespectful or manipulative",
+            outcome: "Shows you won't tolerate poor treatment"
+          },
+          {
+            text: "I value myself too much to engage with that energy. Try again.",
+            context: "Demonstrates self-worth while giving them an opportunity to correct course",
+            situation: "When someone needs a reality check about their approach",
+            outcome: "Teaches them how you expect to be treated"
+          }
+        ];
+      default:
+        return [];
+    }
+  };
+
   const analyzeConversation = async (content: string): Promise<ConversationAnalysis> => {
     const prompt = `Analyze this conversation context and identify the underlying message type. Content: "${content}"
 
@@ -82,10 +152,19 @@ const TextGenieModule: React.FC<TextGenieModuleProps> = ({ userProfile }) => {
       };
     } catch (error) {
       console.error('Error analyzing conversation:', error);
+      
+      // Show user-friendly error message
+      toast({
+        title: "AI Service Unavailable",
+        description: "OpenAI quota exceeded. Please contact support or try again later.",
+        variant: "destructive",
+      });
+      
+      // Provide fallback analysis
       return {
         messageType: 'casual',
         confidence: 5,
-        interpretation: 'Analysis unavailable. Please try again.'
+        interpretation: 'AI analysis temporarily unavailable due to quota limits. The conversation appears to be casual in nature.'
       };
     }
   };
@@ -193,11 +272,22 @@ const TextGenieModule: React.FC<TextGenieModuleProps> = ({ userProfile }) => {
       
     } catch (error) {
       console.error('Error generating replies:', error);
+      
+      // Show specific error message
+      const errorMessage = error instanceof Error && error.message.includes('quota') 
+        ? "OpenAI quota exceeded. Please contact support to resolve billing issues."
+        : "Failed to generate replies. Please try again.";
+        
       toast({
-        title: "Error",
-        description: "Failed to generate replies. Please try again.",
+        title: "AI Error",
+        description: errorMessage,
         variant: "destructive",
       });
+      
+      // Provide fallback suggestions based on type
+      const fallbackOptions = getFallbackReplies(replyType);
+      setReplyOptions(prev => ({ ...prev, [replyType]: fallbackOptions }));
+      
     } finally {
       setIsLoading(false);
     }
