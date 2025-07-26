@@ -3,7 +3,8 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { Check, Crown, Sparkles } from 'lucide-react';
+import { Check, Crown, Sparkles, Loader2 } from 'lucide-react';
+import { useSubscription } from '@/hooks/useSubscription';
 
 interface PaywallProps {
   onPlanSelected: (plan: 'weekly' | 'yearly', hasTrial?: boolean) => void;
@@ -12,6 +13,8 @@ interface PaywallProps {
 const Paywall: React.FC<PaywallProps> = ({ onPlanSelected }) => {
   const [selectedPlan, setSelectedPlan] = useState<'weekly' | 'yearly'>('yearly');
   const [freeTrialEnabled, setFreeTrialEnabled] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const { createCheckoutSession } = useSubscription();
 
   const features = [
     "Unlimited AI-powered relationship insights",
@@ -22,8 +25,17 @@ const Paywall: React.FC<PaywallProps> = ({ onPlanSelected }) => {
     "Exclusive relationship masterclasses"
   ];
 
-  const handleContinue = () => {
-    onPlanSelected(selectedPlan, selectedPlan === 'yearly' ? freeTrialEnabled : false);
+  const handleContinue = async () => {
+    setIsLoading(true);
+    try {
+      await createCheckoutSession(selectedPlan, selectedPlan === 'yearly' ? freeTrialEnabled : false);
+      // For now, also call the original callback for demo purposes
+      onPlanSelected(selectedPlan, selectedPlan === 'yearly' ? freeTrialEnabled : false);
+    } catch (error) {
+      console.error('Payment flow error:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -137,13 +149,20 @@ const Paywall: React.FC<PaywallProps> = ({ onPlanSelected }) => {
         <div className="text-center">
           <Button 
             onClick={handleContinue}
+            disabled={isLoading}
             size="lg"
-            className="w-full md:w-auto px-12 py-6 text-lg font-semibold bg-gradient-to-r from-primary to-accent hover:opacity-90 transition-opacity"
+            className="w-full md:w-auto px-12 py-6 text-lg font-semibold bg-gradient-to-r from-primary to-accent hover:opacity-90 transition-opacity disabled:opacity-50"
           >
-            {selectedPlan === 'yearly' && freeTrialEnabled 
-              ? 'Start Free Trial' 
-              : `Continue with ${selectedPlan === 'weekly' ? 'Weekly' : 'Yearly'} Plan`
-            }
+            {isLoading ? (
+              <>
+                <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                Setting up payment...
+              </>
+            ) : (
+              selectedPlan === 'yearly' && freeTrialEnabled 
+                ? 'Start Free Trial' 
+                : `Continue with ${selectedPlan === 'weekly' ? 'Weekly' : 'Yearly'} Plan`
+            )}
           </Button>
           
           <p className="text-xs text-muted-foreground mt-4 max-w-md mx-auto">
