@@ -19,8 +19,8 @@ interface HomeProps {
 
 const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel }) => {
   const [dailyQuestion, setDailyQuestion] = useState('');
-  const [funFact, setFunFact] = useState('');
-  const [factVote, setFactVote] = useState<'up' | 'down' | null>(null);
+  const [dailyQuote, setDailyQuote] = useState('');
+  const [quoteVote, setQuoteVote] = useState<'agree' | 'disagree' | null>(null);
   const { toast } = useToast();
 
   // Relationship Talk conversation starters
@@ -42,18 +42,18 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel }) => {
     "How important is shared values versus shared interests in a partnership?"
   ];
 
-  // Fun facts about dating and relationships
-  const funFacts = [
-    "Did you know? Couples who laugh together are 5 times more likely to have a successful relationship.",
-    "Did you know? It takes an average of 7 minutes to decide if you're attracted to someone on a first date.",
-    "Did you know? People who express gratitude to their partner are 25% more likely to stay together long-term.",
-    "Did you know? Couples who share household chores are more satisfied in their relationships.",
-    "Did you know? Holding hands can actually sync your heartbeats and reduce stress levels.",
-    "Did you know? The average person falls in love 7 times before marriage.",
-    "Did you know? Couples who have been together for 2+ years have similar brain chemistry to people on cocaine.",
-    "Did you know? 40% of people have dated someone they met online.",
-    "Did you know? It takes 4 minutes of eye contact to potentially fall in love with someone.",
-    "Did you know? People are more attracted to others who have a positive outlook on life."
+  // Affirming relationship quotes for women with boundaries and high standards
+  const affirmingQuotes = [
+    "You don't need someone to complete you. You are already whole. The right person will celebrate your completeness.",
+    "Your standards aren't too high. You know your worth, and you refuse to settle for less than you deserve.",
+    "A healthy relationship adds to your life, it doesn't consume it. You maintain your identity while building together.",
+    "You deserve someone who chooses you every day, not someone who only shows up when it's convenient.",
+    "Protecting your energy isn't selfish—it's necessary. You can love deeply while maintaining your boundaries.",
+    "The right person will never make you feel like you're asking for too much when you ask for respect.",
+    "You're not difficult for having needs. You're self-aware and deserve a partner who honors those needs.",
+    "Your past taught you lessons, not limitations. You're allowed to want better because you've learned what you deserve.",
+    "A real connection doesn't require you to shrink yourself to make someone else comfortable.",
+    "You're not being picky—you're being selective. There's a difference between knowing what you want and settling."
   ];
 
   // Get or set daily question (changes at midnight)
@@ -71,21 +71,21 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel }) => {
       localStorage.setItem(`dailyQuestion_${today}`, newQuestion);
     }
 
-    // Get or set daily fun fact
-    const savedFact = localStorage.getItem(`dailyFact_${today}`);
-    if (savedFact) {
-      setFunFact(savedFact);
+    // Get or set daily affirming quote
+    const savedQuote = localStorage.getItem(`dailyQuote_${today}`);
+    if (savedQuote) {
+      setDailyQuote(savedQuote);
     } else {
-      const randomFactIndex = Math.floor(Math.random() * funFacts.length);
-      const newFact = funFacts[randomFactIndex];
-      setFunFact(newFact);
-      localStorage.setItem(`dailyFact_${today}`, newFact);
+      const randomQuoteIndex = Math.floor(Math.random() * affirmingQuotes.length);
+      const newQuote = affirmingQuotes[randomQuoteIndex];
+      setDailyQuote(newQuote);
+      localStorage.setItem(`dailyQuote_${today}`, newQuote);
     }
 
-    // Get saved vote for today's fact
-    const savedVote = localStorage.getItem(`factVote_${today}`);
+    // Get saved vote for today's quote
+    const savedVote = localStorage.getItem(`quoteVote_${today}`);
     if (savedVote) {
-      setFactVote(savedVote as 'up' | 'down');
+      setQuoteVote(savedVote as 'agree' | 'disagree');
     }
   }, []);
 
@@ -110,14 +110,14 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel }) => {
     }
   };
 
-  const handleFactVote = (vote: 'up' | 'down') => {
-    setFactVote(vote);
+  const handleQuoteVote = (vote: 'agree' | 'disagree') => {
+    setQuoteVote(vote);
     const today = new Date().toDateString();
-    localStorage.setItem(`factVote_${today}`, vote);
+    localStorage.setItem(`quoteVote_${today}`, vote);
     
     toast({
-      title: vote === 'up' ? "Thanks!" : "Noted!",
-      description: vote === 'up' ? "Glad you found that interesting!" : "We'll keep that in mind for future facts.",
+      title: vote === 'agree' ? "Beautiful!" : "Noted!",
+      description: vote === 'agree' ? "Thank you for affirming this truth!" : "We appreciate your perspective.",
     });
   };
 
@@ -136,7 +136,7 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel }) => {
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <MessageCircle className="w-5 h-5 text-primary animate-heart-pulse" />
-            <span>Purposely Dating Question of the Day</span>
+            <span>Question of the Day</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -176,41 +176,41 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel }) => {
         </CardContent>
       </Card>
 
-      {/* Did You Know Fun Fact */}
+      {/* Gentle Reminder */}
       <Card className="shadow-soft border-primary/10">
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <Heart className="w-5 h-5 text-primary" />
-            <span>Did You Know?</span>
+            <span>Gentle Reminder...</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="p-4 bg-gradient-soft rounded-lg border border-primary/10">
-            <p className="text-foreground leading-relaxed">{funFact}</p>
+            <p className="text-foreground leading-relaxed italic">{dailyQuote}</p>
           </div>
           <div className="flex space-x-3 justify-center">
             <Button
-              onClick={() => handleFactVote('up')}
-              variant={factVote === 'up' ? "romance" : "soft"}
+              onClick={() => handleQuoteVote('agree')}
+              variant={quoteVote === 'agree' ? "romance" : "soft"}
               size="sm"
-              disabled={factVote !== null}
+              disabled={quoteVote !== null}
             >
               <ThumbsUp className="w-4 h-4 mr-1" />
-              Interesting!
+              Agree
             </Button>
             <Button
-              onClick={() => handleFactVote('down')}
-              variant={factVote === 'down' ? "destructive" : "soft"}
+              onClick={() => handleQuoteVote('disagree')}
+              variant={quoteVote === 'disagree' ? "destructive" : "soft"}
               size="sm"
-              disabled={factVote !== null}
+              disabled={quoteVote !== null}
             >
               <ThumbsDown className="w-4 h-4 mr-1" />
-              Not for me
+              Disagree
             </Button>
           </div>
-          {factVote && (
+          {quoteVote && (
             <p className="text-xs text-muted-foreground text-center">
-              Thanks for your feedback!
+              Thanks for your response!
             </p>
           )}
         </CardContent>
