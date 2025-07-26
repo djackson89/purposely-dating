@@ -428,7 +428,7 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
               className="flex flex-col items-center p-3 h-auto"
             >
               <IconComponent className="w-4 h-4 mb-1" />
-              <span className="text-xs leading-tight text-center">{section.label}</span>
+              <span className="text-xs leading-tight text-center break-words">{section.label}</span>
             </Button>
           );
         })}

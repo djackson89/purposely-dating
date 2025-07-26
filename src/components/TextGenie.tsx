@@ -45,7 +45,7 @@ interface ReplySuggestion {
 
 const TextGenie: React.FC<TextGenieProps> = ({ userProfile }) => {
   const [description, setDescription] = useState('');
-  const [toneLevel, setToneLevel] = useState([1]); // 0=Sweet, 1=Mild, 2=Spicy
+  
   const [isProcessing, setIsProcessing] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [uploadedImages, setUploadedImages] = useState<PhotoResult[]>([]);
@@ -61,9 +61,9 @@ const TextGenie: React.FC<TextGenieProps> = ({ userProfile }) => {
   const audioChunksRef = useRef<Blob[]>([]);
 
   const loadingMessages = [
-    "One sec, I've got just the reply for this…",
-    "Hmm..interesting. Give me a second to think about this..",
-    "Thinking.."
+    "Generating personalized suggestions...",
+    "Analyzing conversation context...",
+    "Creating perfect replies..."
   ];
 
   useEffect(() => {
@@ -197,17 +197,12 @@ const TextGenie: React.FC<TextGenieProps> = ({ userProfile }) => {
         contextText += (contextText ? '\n\n' : '') + `From screenshots: ${extractedText}`;
       }
 
-      const toneNames = ['sweet', 'mild', 'spicy'];
-      const currentTone = toneNames[toneLevel[0]];
-      
-      const prompt = `Based on this context: "${contextText}"
+      const prompt = `Based on this context: ${contextText}
 
 Please generate 3 text message reply suggestions with these tones:
 1. Sweet (passive, fun, flirty, assuming best intentions)
 2. Mild (assertive/neutral, stoic, emotionally intelligent, curious)  
 3. Spicy (aggressive, direct, cut-throat, savage, for boundaries or flirty)
-
-Focus on tone level: ${currentTone}
 
 For each reply, also provide a brief "Purposely Perspective" explaining how the reply should land (max 2 sentences, warm and personable).
 
@@ -248,16 +243,22 @@ Keep replies concise (max 2 sentences each).`;
     
     sections.forEach(section => {
       if (section.includes('Sweet:')) {
-        const text = section.match(/Sweet:\s*(.+?)(?=Perspective:|$)/s)?.[1]?.trim() || '';
+        let text = section.match(/Sweet:\s*(.+?)(?=Perspective:|$)/s)?.[1]?.trim() || '';
         const perspective = section.match(/Perspective:\s*(.+?)(?=\n\n|$)/s)?.[1]?.trim() || '';
+        // Remove quotation marks from the text
+        text = text.replace(/^["']|["']$/g, '');
         if (text) suggestions.push({ text, tone: 'sweet', perspective });
       } else if (section.includes('Mild:')) {
-        const text = section.match(/Mild:\s*(.+?)(?=Perspective:|$)/s)?.[1]?.trim() || '';
+        let text = section.match(/Mild:\s*(.+?)(?=Perspective:|$)/s)?.[1]?.trim() || '';
         const perspective = section.match(/Perspective:\s*(.+?)(?=\n\n|$)/s)?.[1]?.trim() || '';
+        // Remove quotation marks from the text
+        text = text.replace(/^["']|["']$/g, '');
         if (text) suggestions.push({ text, tone: 'mild', perspective });
       } else if (section.includes('Spicy:')) {
-        const text = section.match(/Spicy:\s*(.+?)(?=Perspective:|$)/s)?.[1]?.trim() || '';
+        let text = section.match(/Spicy:\s*(.+?)(?=Perspective:|$)/s)?.[1]?.trim() || '';
         const perspective = section.match(/Perspective:\s*(.+?)(?=\n\n|$)/s)?.[1]?.trim() || '';
+        // Remove quotation marks from the text
+        text = text.replace(/^["']|["']$/g, '');
         if (text) suggestions.push({ text, tone: 'spicy', perspective });
       }
     });
@@ -373,48 +374,6 @@ Keep replies concise (max 2 sentences each).`;
         </CardContent>
       </Card>
 
-      {/* Tone Slider */}
-      <Card className="shadow-soft border-primary/10">
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <Flame className="w-5 h-5 text-primary" />
-            <span>Response Tone</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-4">
-            <div className="flex justify-between text-sm">
-              <span className="flex items-center space-x-1">
-                <Heart className="w-4 h-4 text-pink-500" />
-                <span>Sweet</span>
-              </span>
-              <span className="flex items-center space-x-1">
-                <MessageSquare className="w-4 h-4 text-blue-500" />
-                <span>Mild</span>
-              </span>
-              <span className="flex items-center space-x-1">
-                <Flame className="w-4 h-4 text-red-500" />
-                <span>Spicy</span>
-              </span>
-            </div>
-            
-            <Slider
-              value={toneLevel}
-              onValueChange={setToneLevel}
-              max={2}
-              min={0}
-              step={1}
-              className="w-full"
-            />
-            
-            <div className="text-center">
-              <Badge variant="secondary" className="text-sm">
-                Current: {getToneLabel(toneLevel[0])}
-              </Badge>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Generate Button */}
       <Button
