@@ -4,7 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { User, Camera, Edit, Heart, Calendar, MessageCircle } from 'lucide-react';
+import { User, Camera, Edit, Heart, Calendar, MessageCircle, LogOut } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/components/ui/use-toast';
 
 interface OnboardingData {
   loveLanguage: string;
@@ -24,11 +26,29 @@ const ProfileModule: React.FC<ProfileModuleProps> = ({ userProfile, onProfileUpd
   const [editedProfile, setEditedProfile] = useState(userProfile);
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [userName, setUserName] = useState('Your Name');
+  const { user, signOut } = useAuth();
+  const { toast } = useToast();
 
   const handleSaveProfile = () => {
     onProfileUpdate(editedProfile);
     setIsEditing(false);
     // Here you would typically save to backend
+  };
+
+  const handleSignOut = async () => {
+    const { error } = await signOut();
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to sign out. Please try again.",
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Signed Out",
+        description: "You've been successfully signed out.",
+      });
+    }
   };
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -248,9 +268,17 @@ const ProfileModule: React.FC<ProfileModuleProps> = ({ userProfile, onProfileUpd
           <Button variant="soft" className="w-full justify-start">
             About & Support
           </Button>
+          <Button 
+            variant="destructive" 
+            className="w-full justify-start"
+            onClick={handleSignOut}
+          >
+            <LogOut className="w-4 h-4 mr-2" />
+            Sign Out
+          </Button>
           <div className="pt-4 text-center">
             <p className="text-xs text-muted-foreground">
-              Advanced features require backend integration
+              User: {user?.email}
             </p>
           </div>
         </CardContent>
