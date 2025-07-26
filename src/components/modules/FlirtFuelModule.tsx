@@ -89,6 +89,9 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
   const [currentStarters, setCurrentStarters] = useState<string[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [isCustom, setIsCustom] = useState(false);
+  const [customCategories, setCustomCategories] = useState<{[key: string]: string[]}>({});
+  const [showRename, setShowRename] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
   const { getFlirtSuggestion, isLoading } = useRelationshipAI();
 
   const handleShare = async (text: string) => {
@@ -347,7 +350,7 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
     if (!customKeywords.trim()) return;
     
     try {
-      const prompt = `Generate 6 conversation starter questions based on these keywords: ${customKeywords}. The questions should be engaging, thoughtful, and incorporate the mood/themes of the keywords provided.`;
+      const prompt = `Generate 8 conversation starter questions based on these keywords: ${customKeywords}. The questions should be engaging, thoughtful, and incorporate the mood/themes of the keywords provided.`;
       const response = await getFlirtSuggestion(prompt, userProfile);
       
       // Parse the response into an array of questions
@@ -356,25 +359,87 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
         (line.includes('?') || line.match(/^\d+\.?/))
       ).map(line => 
         line.replace(/^\d+\.?\s*/, '').trim()
-      ).slice(0, 6);
+      ).slice(0, 8);
+      
+      // Generate unique custom category name
+      const customIndex = Object.keys(customCategories).length + 1;
+      const categoryName = `Custom${customIndex}`;
+      
+      // Save to custom categories
+      setCustomCategories(prev => ({
+        ...prev,
+        [categoryName]: questions
+      }));
       
       setCurrentStarters(questions);
-      setCurrentQuestionIndex(0); // Reset to first question
+      setCurrentQuestionIndex(0);
       setIsCustom(true);
-      setSelectedCategory('Custom');
+      setSelectedCategory(categoryName);
+      setCustomKeywords(''); // Clear input after generating
     } catch (error) {
       console.error('Error generating custom starters:', error);
     }
   };
 
+  const saveCurrentCustom = () => {
+    if (!isCustom || currentStarters.length === 0) return;
+    
+    const customIndex = Object.keys(customCategories).length + 1;
+    const categoryName = `Custom${customIndex}`;
+    
+    setCustomCategories(prev => ({
+      ...prev,
+      [categoryName]: currentStarters
+    }));
+    
+    setSelectedCategory(categoryName);
+  };
+
+  const renameCustomCategory = () => {
+    if (!newCategoryName.trim() || !isCustom) return;
+    
+    const oldName = selectedCategory;
+    const questions = customCategories[oldName];
+    
+    if (questions) {
+      setCustomCategories(prev => {
+        const newCategories = { ...prev };
+        delete newCategories[oldName];
+        newCategories[newCategoryName.trim()] = questions;
+        return newCategories;
+      });
+      
+      setSelectedCategory(newCategoryName.trim());
+    }
+    
+    setShowRename(false);
+    setNewCategoryName('');
+  };
+
   const loadMoreStarters = async () => {
-    if (isCustom) {
-      await generateCustomStarters();
+    if (isCustom && customCategories[selectedCategory]) {
+      // Generate more questions for custom category
+      const existingQuestions = customCategories[selectedCategory];
+      const prompt = `Generate 8 new conversation starter questions similar to these but completely different: ${existingQuestions.join(', ')}`;
+      try {
+        const response = await getFlirtSuggestion(prompt, userProfile);
+        const questions = response.split('\n').filter(line => 
+          line.trim() && 
+          (line.includes('?') || line.match(/^\d+\.?/))
+        ).map(line => 
+          line.replace(/^\d+\.?\s*/, '').trim()
+        ).slice(0, 8);
+        
+        setCurrentStarters(questions);
+        setCurrentQuestionIndex(0);
+      } catch (error) {
+        console.error('Error loading more starters:', error);
+      }
     } else {
       const category = conversationStarters.find(cat => cat.category === selectedCategory);
       if (category) {
         // Generate more questions for the same category
-        const prompt = `Generate 6 new conversation starter questions in the style of "${selectedCategory}" category. They should be similar to these examples but completely different: ${category.prompts.join(', ')}`;
+        const prompt = `Generate 8 new conversation starter questions in the style of "${selectedCategory}" category. They should be similar to these examples but completely different: ${category.prompts.join(', ')}`;
         try {
           const response = await getFlirtSuggestion(prompt, userProfile);
           const questions = response.split('\n').filter(line => 
@@ -382,10 +447,10 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
             (line.includes('?') || line.match(/^\d+\.?/))
           ).map(line => 
             line.replace(/^\d+\.?\s*/, '').trim()
-          ).slice(0, 6);
+          ).slice(0, 8);
           
           setCurrentStarters(questions);
-          setCurrentQuestionIndex(0); // Reset to first question
+          setCurrentQuestionIndex(0);
         } catch (error) {
           console.error('Error loading more starters:', error);
         }
@@ -394,18 +459,35 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
   };
 
   const selectCategory = (categoryName: string) => {
+    if (categoryName === 'Customize') {
+      // Show customize interface
+      setCustomKeywords('');
+      return;
+    }
+    
     setSelectedCategory(categoryName);
-    setIsCustom(false);
-    const category = conversationStarters.find(cat => cat.category === categoryName);
-    if (category) {
-      setCurrentStarters(category.prompts);
-      setCurrentQuestionIndex(0); // Reset to first question
+    
+    // Check if it's a custom category
+    if (customCategories[categoryName]) {
+      setIsCustom(true);
+      setCurrentStarters(customCategories[categoryName]);
+      setCurrentQuestionIndex(0);
+    } else {
+      setIsCustom(false);
+      const category = conversationStarters.find(cat => cat.category === categoryName);
+      if (category) {
+        setCurrentStarters(category.prompts);
+        setCurrentQuestionIndex(0);
+      }
     }
   };
 
-  const nextQuestion = () => {
+  const nextQuestion = async () => {
     if (currentQuestionIndex < currentStarters.length - 1) {
       setCurrentQuestionIndex(prev => prev + 1);
+    } else {
+      // Load more questions when reaching the end
+      await loadMoreStarters();
     }
   };
 
@@ -711,6 +793,12 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
                     <SelectValue placeholder="Select a category" />
                   </SelectTrigger>
                   <SelectContent className="bg-card border border-border shadow-lg z-50">
+                    <SelectItem 
+                      value="Customize"
+                      className="bg-card hover:bg-muted cursor-pointer font-medium text-primary"
+                    >
+                      ✨ Customize
+                    </SelectItem>
                     {conversationStarters.map((category) => (
                       <SelectItem 
                         key={category.category} 
@@ -720,42 +808,92 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
                         {category.category}
                       </SelectItem>
                     ))}
+                    {Object.keys(customCategories).map((categoryName) => (
+                      <SelectItem 
+                        key={categoryName} 
+                        value={categoryName}
+                        className="bg-card hover:bg-muted cursor-pointer"
+                      >
+                        {categoryName} (Custom)
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
+                
+                {/* Rename button for custom categories */}
+                {isCustom && customCategories[selectedCategory] && (
+                  <Button
+                    onClick={() => setShowRename(true)}
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                  >
+                    Rename Category
+                  </Button>
+                )}
               </div>
             </CardContent>
           </Card>
 
-          {/* Custom Input */}
-          <Card className="shadow-soft border-primary/10">
-            <CardContent className="pt-6 space-y-3">
-              <div className="flex space-x-2">
-                <Input
-                  placeholder="Enter keywords (e.g., sexy, deep, funny)"
-                  value={customKeywords}
-                  onChange={(e) => setCustomKeywords(e.target.value)}
-                  className="flex-1"
-                />
-                <Button
-                  onClick={generateCustomStarters}
-                  disabled={isLoading || !customKeywords.trim()}
-                  variant="romance"
-                >
-                  {isLoading ? '...' : 'Customize'}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Custom Input - Only show when Customize is selected */}
+          {selectedCategory === 'Customize' && (
+            <Card className="shadow-soft border-primary/10">
+              <CardContent className="pt-6 space-y-3">
+                <div className="flex space-x-2">
+                  <Input
+                    placeholder="Enter keywords (e.g., sexy, deep, funny)"
+                    value={customKeywords}
+                    onChange={(e) => setCustomKeywords(e.target.value)}
+                    className="flex-1"
+                  />
+                  <Button
+                    onClick={generateCustomStarters}
+                    disabled={isLoading || !customKeywords.trim()}
+                    variant="romance"
+                  >
+                    {isLoading ? '...' : 'Generate'}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Rename Dialog */}
+          {showRename && (
+            <Card className="shadow-soft border-primary/10">
+              <CardContent className="pt-6 space-y-3">
+                <Label className="text-sm font-medium">Rename Category:</Label>
+                <div className="flex space-x-2">
+                  <Input
+                    placeholder="Enter new name"
+                    value={newCategoryName}
+                    onChange={(e) => setNewCategoryName(e.target.value)}
+                    className="flex-1"
+                  />
+                  <Button
+                    onClick={renameCustomCategory}
+                    disabled={!newCategoryName.trim()}
+                    variant="romance"
+                  >
+                    Save
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setShowRename(false);
+                      setNewCategoryName('');
+                    }}
+                    variant="outline"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Question Card Game */}
           {currentStarters.length > 0 && (
             <div className="space-y-4">
-              {/* Question Counter Only */}
-              <div className="text-center">
-                <p className="text-sm text-muted-foreground">
-                  Question {currentQuestionIndex + 1} of {currentStarters.length}
-                </p>
-              </div>
 
               {/* Question Card */}
               <div className="relative min-h-[300px] flex items-center justify-center">
@@ -801,12 +939,12 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
 
                 <Button
                   onClick={nextQuestion}
-                  disabled={currentQuestionIndex === currentStarters.length - 1}
+                  disabled={isLoading}
                   variant="soft"
                   size="lg"
                   className="flex items-center space-x-2"
                 >
-                  <span>Next</span>
+                  <span>{isLoading ? '...' : 'Next'}</span>
                   <span>→</span>
                 </Button>
               </div>
