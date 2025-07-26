@@ -237,7 +237,7 @@ const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userPro
   ];
 
   const sections = [
-    { id: 'reflection', label: 'Therapy Reflection', icon: Sparkles },
+    { id: 'reflection', label: 'Therapy Companion', icon: Sparkles },
     { id: 'journal', label: 'Growth Journal', icon: BookOpen },
     { id: 'insights', label: 'Mental Health Check-In', icon: TrendingUp }
   ];
@@ -331,11 +331,11 @@ const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userPro
         <div className="space-y-4 animate-fade-in-up">
           {/* Section Heading */}
           <div className="flex items-center justify-center space-x-2">
-            <h2 className="text-xl font-semibold text-primary">Therapy Reflection</h2>
+            <h2 className="text-xl font-semibold text-primary">Therapy Companion</h2>
             <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center cursor-pointer hover:bg-primary/20 transition-colors">
               <FTUETooltip
                 id="therapy-reflection"
-                title="Therapy Reflection"
+                title="Therapy Companion"
                 description="Prepare thoughtful questions for therapy and reflect on your insights to maximize your relationship growth."
               />
             </div>

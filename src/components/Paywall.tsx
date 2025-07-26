@@ -48,7 +48,7 @@ const Paywall: React.FC<PaywallProps> = ({ onPlanSelected, onSkipToFree, isModal
     "Unlimited conversation starters",
     "AI-powered text message help",
     "Dating prospects tracker", 
-    "Therapy reflection tools",
+    "Therapy companion tools",
     "Mental health check-ins",
     "Growth journal",
     "Premium AI insights",
