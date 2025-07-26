@@ -87,6 +87,7 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
   const [selectedCategory, setSelectedCategory] = useState('Relationship Talk');
   const [customKeywords, setCustomKeywords] = useState('');
   const [currentStarters, setCurrentStarters] = useState<string[]>([]);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [isCustom, setIsCustom] = useState(false);
   const { getFlirtSuggestion, isLoading } = useRelationshipAI();
 
@@ -338,6 +339,7 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
     const defaultCategory = conversationStarters.find(cat => cat.category === selectedCategory);
     if (defaultCategory && !isCustom) {
       setCurrentStarters(defaultCategory.prompts);
+      setCurrentQuestionIndex(0); // Reset to first question when category changes
     }
   }, [selectedCategory, isCustom]);
 
@@ -357,6 +359,7 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
       ).slice(0, 6);
       
       setCurrentStarters(questions);
+      setCurrentQuestionIndex(0); // Reset to first question
       setIsCustom(true);
       setSelectedCategory('Custom');
     } catch (error) {
@@ -382,6 +385,7 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
           ).slice(0, 6);
           
           setCurrentStarters(questions);
+          setCurrentQuestionIndex(0); // Reset to first question
         } catch (error) {
           console.error('Error loading more starters:', error);
         }
@@ -395,6 +399,27 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
     const category = conversationStarters.find(cat => cat.category === categoryName);
     if (category) {
       setCurrentStarters(category.prompts);
+      setCurrentQuestionIndex(0); // Reset to first question
+    }
+  };
+
+  const nextQuestion = () => {
+    if (currentQuestionIndex < currentStarters.length - 1) {
+      setCurrentQuestionIndex(prev => prev + 1);
+    }
+  };
+
+  const previousQuestion = () => {
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex(prev => prev - 1);
+    }
+  };
+
+  const handleCardSwipe = (direction: 'left' | 'right') => {
+    if (direction === 'left') {
+      nextQuestion();
+    } else {
+      previousQuestion();
     }
   };
 
@@ -722,48 +747,96 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
             </CardContent>
           </Card>
 
-          {/* Current Category Name */}
-          <div className="text-center">
-            <h3 className="text-lg font-semibold text-primary">
-              {isCustom ? 'Custom' : selectedCategory}
-            </h3>
-          </div>
+          {/* Question Card Game */}
+          {currentStarters.length > 0 && (
+            <div className="space-y-4">
+              {/* Current Category Name */}
+              <div className="text-center">
+                <h3 className="text-lg font-semibold text-primary">
+                  {isCustom ? 'Custom' : selectedCategory}
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  Question {currentQuestionIndex + 1} of {currentStarters.length}
+                </p>
+              </div>
 
-          {/* Questions with Share Icons */}
-          <Card className="shadow-soft border-primary/10">
-            <CardContent className="pt-6 space-y-3">
-              {currentStarters.map((prompt, index) => (
-                <div 
-                  key={index}
-                  className="p-3 bg-muted/50 rounded-lg hover:bg-primary/5 transition-colors group"
+              {/* Question Card */}
+              <div className="relative min-h-[300px] flex items-center justify-center">
+                <Card 
+                  className="w-full max-w-md mx-auto shadow-elegant border-primary/20 bg-gradient-romance transform transition-all duration-300 hover:scale-105"
+                  style={{ minHeight: '250px' }}
                 >
-                  <div className="flex justify-between items-start space-x-3">
-                    <p className="text-sm text-foreground flex-1">{prompt}</p>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleShare(prompt)}
-                      className="opacity-0 group-hover:opacity-100 transition-opacity p-1 h-auto"
-                    >
-                      <Share className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
+                  <CardContent className="p-8 flex flex-col justify-center items-center text-center h-full">
+                    <div className="space-y-4">
+                      <div className="text-2xl mb-4">💭</div>
+                      <p className="text-lg font-bold text-white leading-relaxed">
+                        {currentStarters[currentQuestionIndex]}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
 
-          {/* See More Button */}
-          <div className="text-center">
-            <Button
-              onClick={loadMoreStarters}
-              disabled={isLoading}
-              variant="outline"
-              className="w-full"
-            >
-              {isLoading ? 'Loading...' : 'See More'}
-            </Button>
-          </div>
+              {/* Navigation Controls */}
+              <div className="flex justify-between items-center px-4">
+                <Button
+                  onClick={previousQuestion}
+                  disabled={currentQuestionIndex === 0}
+                  variant="soft"
+                  size="lg"
+                  className="flex items-center space-x-2"
+                >
+                  <span>←</span>
+                  <span>Previous</span>
+                </Button>
+
+                <div className="flex space-x-2">
+                  {currentStarters.map((_, index) => (
+                    <div
+                      key={index}
+                      className={`w-2 h-2 rounded-full transition-colors ${
+                        index === currentQuestionIndex 
+                          ? 'bg-primary' 
+                          : 'bg-muted-foreground/30'
+                      }`}
+                    />
+                  ))}
+                </div>
+
+                <Button
+                  onClick={nextQuestion}
+                  disabled={currentQuestionIndex === currentStarters.length - 1}
+                  variant="soft"
+                  size="lg"
+                  className="flex items-center space-x-2"
+                >
+                  <span>Next</span>
+                  <span>→</span>
+                </Button>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="space-y-3">
+                <Button
+                  onClick={() => handleShare(currentStarters[currentQuestionIndex])}
+                  variant="outline"
+                  className="w-full"
+                >
+                  <Share className="w-4 h-4 mr-2" />
+                  Share This Question
+                </Button>
+
+                <Button
+                  onClick={loadMoreStarters}
+                  disabled={isLoading}
+                  variant="romance"
+                  className="w-full"
+                >
+                  {isLoading ? 'Loading...' : 'Get New Questions'}
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
