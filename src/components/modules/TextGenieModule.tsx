@@ -38,6 +38,7 @@ interface ReplyOption {
 
 interface ConversationAnalysis {
   interpretation: string;
+  detailedAnalysis?: string;
   messageType: 'manipulation' | 'attraction' | 'deep_feelings' | 'disrespect' | 'casual' | 'flirty';
   confidence: number;
 }
@@ -52,6 +53,7 @@ const TextGenieModule: React.FC<TextGenieModuleProps> = ({ userProfile }) => {
     clap: []
   });
   const [expandedContext, setExpandedContext] = useState<{ [key: string]: boolean }>({});
+  const [expandedAnalysis, setExpandedAnalysis] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
@@ -220,22 +222,26 @@ const TextGenieModule: React.FC<TextGenieModuleProps> = ({ userProfile }) => {
     Determine:
     1. The message type (manipulation, attraction, deep_feelings, disrespect, casual, flirty)
     2. Your confidence level (1-10)
-    3. A brief interpretation explaining what's really happening - address ${userName} directly and speak like a warm but direct relationship coach
+    3. A brief interpretation (maximum 2 sentences) explaining what's really happening - address ${userName} directly
+    4. A detailed analysis for when they want more insight
 
     Respond in this exact format:
     TYPE: [message_type]
     CONFIDENCE: [1-10]
-    INTERPRETATION: [your analysis addressing ${userName} personally]`;
+    INTERPRETATION: [brief 2-sentence analysis addressing ${userName} personally]
+    DETAILED: [comprehensive analysis with deeper insights for ${userName}]`;
 
     try {
       const response = await getAIResponse(prompt, userProfile, 'general');
       
       const typeMatch = response.match(/TYPE:\s*(\w+)/i);
       const confidenceMatch = response.match(/CONFIDENCE:\s*(\d+)/i);
-      const interpretationMatch = response.match(/INTERPRETATION:\s*(.+)/is);
+      const interpretationMatch = response.match(/INTERPRETATION:\s*(.+?)(?=DETAILED:|$)/is);
+      const detailedMatch = response.match(/DETAILED:\s*(.+)$/is);
       
       const userName = userProfile.firstName || 'love';
       let interpretation = interpretationMatch?.[1]?.trim() || 'Unable to analyze conversation fully.';
+      let detailedAnalysis = detailedMatch?.[1]?.trim() || '';
       
       // Make the interpretation more personable
       if (!interpretation.toLowerCase().includes(userName.toLowerCase())) {
@@ -245,7 +251,8 @@ const TextGenieModule: React.FC<TextGenieModuleProps> = ({ userProfile }) => {
       return {
         messageType: (typeMatch?.[1] || 'casual') as any,
         confidence: parseInt(confidenceMatch?.[1] || '5'),
-        interpretation
+        interpretation,
+        detailedAnalysis
       };
     } catch (error) {
       console.error('Error analyzing conversation:', error);
@@ -262,7 +269,8 @@ const TextGenieModule: React.FC<TextGenieModuleProps> = ({ userProfile }) => {
       return {
         messageType: 'casual',
         confidence: 5,
-        interpretation: `Hey ${userName}, while our AI is taking a quick break, I can still help you navigate this! From what I can see, this looks like a pretty standard casual conversation. Trust your instincts - you've got this! 💪`
+        interpretation: `Hey ${userName}, while our AI is taking a quick break, I can still help you navigate this! From what I can see, this looks like a pretty standard casual conversation.`,
+        detailedAnalysis: `Trust your instincts - you've got this! While our AI service is temporarily unavailable, remember that most conversations fall into predictable patterns. This seems like casual, friendly communication without any red flags. Stay confident in your responses and remember that authentic communication usually works best. You know yourself and your boundaries better than anyone! 💪`
       };
     }
   };
@@ -372,7 +380,8 @@ const TextGenieModule: React.FC<TextGenieModuleProps> = ({ userProfile }) => {
         }
       }
       
-      return options.length >= 3 ? options.slice(0, 3) : [...options, ...getFallbackReplies(replyType)].slice(0, 3);
+      // Return only one set of options (Sweet, Mild, Spicy)
+      return options.length > 0 ? [options[0]] : [getFallbackReplies(replyType)[0]];
     } catch (error) {
       console.error('Error generating replies:', error);
       return [];
@@ -632,6 +641,26 @@ const TextGenieModule: React.FC<TextGenieModuleProps> = ({ userProfile }) => {
               <p className="text-sm text-muted-foreground leading-relaxed">
                 {analysis.interpretation}
               </p>
+              
+              {analysis.detailedAnalysis && (
+                <>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setExpandedAnalysis(!expandedAnalysis)}
+                    className="text-xs text-primary hover:text-primary/80 p-0 h-auto font-normal underline"
+                  >
+                    Tell Me More {expandedAnalysis ? <ChevronUp className="w-3 h-3 ml-1" /> : <ChevronDown className="w-3 h-3 ml-1" />}
+                  </Button>
+                  
+                  {expandedAnalysis && (
+                    <div className="text-xs text-muted-foreground pl-4 border-l-2 border-primary/20 bg-muted/20 rounded-r p-3">
+                      {analysis.detailedAnalysis}
+                    </div>
+                  )}
+                </>
+              )}
+              
               <div className="text-xs text-muted-foreground">
                 Confidence: {analysis.confidence}/10
               </div>
