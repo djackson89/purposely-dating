@@ -7,9 +7,10 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Heart, MessageCircle, Zap, Users, Share, Plus, ChevronDown, ChevronUp, Eye, EyeOff, ThumbsUp, ThumbsDown, HelpCircle, Trash2 } from 'lucide-react';
+import { Heart, MessageCircle, Zap, Users, Share, Plus, ChevronDown, ChevronUp, Eye, EyeOff, ThumbsUp, ThumbsDown, HelpCircle, Trash2, Wand2 } from 'lucide-react';
 import { Share as CapacitorShare } from '@capacitor/share';
 import { useRelationshipAI } from '@/hooks/useRelationshipAI';
+import TextGenie from '@/components/TextGenie';
 
 interface OnboardingData {
   loveLanguage: string;
@@ -76,7 +77,7 @@ const flagMetrics = [
 ];
 
 const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
-  const [activeSection, setActiveSection] = useState<'prospects' | 'starters' | 'practice'>('starters');
+  const [activeSection, setActiveSection] = useState<'prospects' | 'starters' | 'practice' | 'textgenie'>('starters');
   const [prospects, setProspects] = useState<DatingProspect[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [newProspectNickname, setNewProspectNickname] = useState('');
@@ -399,6 +400,7 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
 
   const sections = [
     { id: 'starters', label: 'Conversation Starters', icon: MessageCircle },
+    { id: 'textgenie', label: 'Text Genie', icon: Wand2 },
     { id: 'prospects', label: 'Dating Prospects', icon: Users },
     { id: 'practice', label: 'AI Practice', icon: Zap }
   ];
@@ -774,6 +776,13 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
         </div>
       )}
 
+
+      {/* Text Genie */}
+      {activeSection === 'textgenie' && (
+        <div className="animate-fade-in-up">
+          <TextGenie userProfile={userProfile} />
+        </div>
+      )}
 
       {/* AI Practice */}
       {activeSection === 'practice' && (
