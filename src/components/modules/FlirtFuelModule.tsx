@@ -415,7 +415,7 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
         <p className="text-muted-foreground">Build confidence & spark connections</p>
       </div>
 
-      {/* Section Tabs - Stacked and Visible */}
+      {/* Section Tabs - Icons Only */}
       <div className="grid grid-cols-4 gap-2 mb-6">
         {sections.map((section) => {
           const IconComponent = section.icon;
@@ -425,10 +425,9 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
               onClick={() => setActiveSection(section.id as any)}
               variant={activeSection === section.id ? "romance" : "soft"}
               size="sm"
-              className="flex flex-col items-center p-3 h-auto"
+              className="flex items-center justify-center p-3 h-12 w-12 mx-auto"
             >
-              <IconComponent className="w-4 h-4 mb-1" />
-              <span className="text-xs leading-tight text-center break-words">{section.label}</span>
+              <IconComponent className="w-5 h-5" />
             </Button>
           );
         })}
@@ -437,14 +436,10 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
       {/* Dating Prospects */}
       {activeSection === 'prospects' && (
         <div className="space-y-4 animate-fade-in-up">
-          {/* Descriptive One-liner */}
-          <Card className="shadow-soft border-primary/10">
-            <CardContent className="pt-6">
-              <p className="text-sm text-muted-foreground text-center leading-relaxed">
-                Whether building a roster or evaluating a potential soulmate, keep track of the red flags, green flags, and even let Purposely tell you the best way to move forward towards your Happily Ever After!
-              </p>
-            </CardContent>
-          </Card>
+          {/* Section Heading */}
+          <div className="text-center">
+            <h2 className="text-xl font-semibold text-primary">Dating Prospects</h2>
+          </div>
           {/* Add New Prospect Button */}
           <Card className="shadow-soft border-primary/10">
             <CardContent className="pt-6">
@@ -676,14 +671,10 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
       {/* Conversation Starters */}
       {activeSection === 'starters' && (
         <div className="space-y-4 animate-fade-in-up">
-          {/* Descriptive One-liner */}
-          <Card className="shadow-soft border-primary/10">
-            <CardContent className="pt-6">
-              <p className="text-sm text-muted-foreground text-center leading-relaxed">
-                Break the ice and dive deep with thoughtfully curated questions for every stage of your relationship journey.
-              </p>
-            </CardContent>
-          </Card>
+          {/* Section Heading */}
+          <div className="text-center">
+            <h2 className="text-xl font-semibold text-primary">Conversation Starters</h2>
+          </div>
 
           {/* Category Dropdown */}
           <Card className="shadow-soft border-primary/10">
@@ -780,6 +771,10 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
       {/* Text Genie */}
       {activeSection === 'textgenie' && (
         <div className="animate-fade-in-up">
+          {/* Section Heading */}
+          <div className="text-center mb-6">
+            <h2 className="text-xl font-semibold text-primary">Text Genie</h2>
+          </div>
           <TextGenie userProfile={userProfile} />
         </div>
       )}
@@ -787,14 +782,10 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
       {/* AI Practice */}
       {activeSection === 'practice' && (
         <div className="space-y-4 animate-fade-in-up">
-          {/* Descriptive One-liner */}
-          <Card className="shadow-soft border-primary/10">
-            <CardContent className="pt-6">
-              <p className="text-sm text-muted-foreground text-center leading-relaxed">
-                Practice conversations and build your confidence in a safe, judgment-free space before the real deal.
-              </p>
-            </CardContent>
-          </Card>
+          {/* Section Heading */}
+          <div className="text-center">
+            <h2 className="text-xl font-semibold text-primary">AI Practice</h2>
+          </div>
         <Card className="shadow-romance border-primary/20">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">

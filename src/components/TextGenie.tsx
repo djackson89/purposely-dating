@@ -292,15 +292,6 @@ Keep replies concise (max 2 sentences each).`;
 
   return (
     <div className="space-y-6">
-      {/* Description */}
-      <Card className="shadow-soft border-primary/10">
-        <CardContent className="pt-6">
-          <p className="text-sm text-muted-foreground text-center leading-relaxed">
-            Get perfect text reply suggestions whether you're being flirtatious or firmly setting boundaries. 
-            Describe the situation or upload screenshots.
-          </p>
-        </CardContent>
-      </Card>
 
       {/* Input Section */}
       <Card className="shadow-soft border-primary/10">
