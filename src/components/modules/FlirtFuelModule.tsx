@@ -750,11 +750,8 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
           {/* Question Card Game */}
           {currentStarters.length > 0 && (
             <div className="space-y-4">
-              {/* Current Category Name */}
+              {/* Question Counter Only */}
               <div className="text-center">
-                <h3 className="text-lg font-semibold text-primary">
-                  {isCustom ? 'Custom' : selectedCategory}
-                </h3>
                 <p className="text-sm text-muted-foreground">
                   Question {currentQuestionIndex + 1} of {currentStarters.length}
                 </p>
@@ -767,9 +764,8 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
                   style={{ minHeight: '250px' }}
                 >
                   <CardContent className="p-8 flex flex-col justify-center items-center text-center h-full">
-                    <div className="space-y-4">
-                      <div className="text-2xl mb-4">💭</div>
-                      <p className="text-lg font-bold text-white leading-relaxed">
+                    <div className="flex items-center justify-center h-full w-full">
+                      <p className="text-2xl font-bold text-white leading-relaxed">
                         {currentStarters[currentQuestionIndex]}
                       </p>
                     </div>
