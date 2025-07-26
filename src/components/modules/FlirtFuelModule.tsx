@@ -42,6 +42,8 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
   const [practiceMessages, setPracticeMessages] = useState<Array<{ role: 'user' | 'ai'; message: string }>>([]);
   const [currentPracticeMessage, setCurrentPracticeMessage] = useState('');
   const [practiceScenario, setPracticeScenario] = useState('first_date');
+  const [showPracticeInput, setShowPracticeInput] = useState(false);
+  const [currentScenarioText, setCurrentScenarioText] = useState('');
   const { getFlirtSuggestion, isLoading } = useRelationshipAI();
 
   const handleShare = async (text: string) => {
@@ -401,14 +403,70 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
     { id: 'vulnerable_sharing', name: 'Vulnerable Sharing', description: 'Practice sharing deeper feelings and thoughts' }
   ];
 
+  const generateScenario = async (scenarioType: string) => {
+    const scenarioTemplates = {
+      first_date: [
+        "Hi! Let's practice first date conversation. The scenario is that we just sat down at a cozy coffee shop for our first date. You seem a bit nervous, which is endearing. I smile warmly and say, 'I'm so glad we finally got to meet in person! How has your day been so far?'",
+        "Hi! Let's practice first date conversation. The scenario is that we're walking through a park after dinner on our first date. There's a comfortable silence, and then I point to a street musician and say, 'Oh, I love this song! Do you have any musicians or artists you're really into lately?'",
+        "Hi! Let's practice first date conversation. We're at a bookstore café for our first date, and I notice you looking at the book section. I approach with our drinks and say, 'I see you eyeing those books! Are you much of a reader? I'd love to know what kind of stories you're drawn to.'"
+      ],
+      relationship_talk: [
+        "Hi! Let's practice relationship conversation. The scenario is that we've been dating for a few months, and we're having a quiet evening at home. I look over at you while we're watching TV and say, 'I've been thinking... I really appreciate how you always make me laugh when I'm stressed. What's something I do that you appreciate?'",
+        "Hi! Let's practice relationship conversation. We're lying in bed on a Sunday morning, and I turn to you with a thoughtful expression and say, 'I feel like we have such good chemistry. What do you think makes us work so well together?'",
+        "Hi! Let's practice relationship conversation. We're cooking dinner together and I pause, looking at you with a smile, and say, 'You know, I feel really comfortable with you. Is there anything you'd like us to talk about more or do differently together?'"
+      ],
+      conflict_resolution: [
+        "Hi! Let's practice conflict resolution. The scenario is that I said something that deeply offended you a week ago, but it's still on your mind. You feel resentful towards me but I'm pretending everything is normal which makes you feel even more upset. I just got home and asked you, 'Something seems off about you. You okay?'",
+        "Hi! Let's practice conflict resolution. We had plans to spend the weekend together, but I canceled last minute to hang out with friends instead. You felt like I prioritized them over you. Now it's Monday evening and there's tension between us. I finally bring it up: 'I feel like you've been distant since the weekend. Can we talk about what's going on?'",
+        "Hi! Let's practice conflict resolution. We've been disagreeing about how much time we spend together - you want more quality time, but I've been saying I need more space. It's created tension for weeks. I sit down next to you and say, 'I know we've been going in circles about this. Help me understand what you're really feeling.'"
+      ],
+      flirting: [
+        "Hi! Let's practice flirting. The scenario is that we're at a party and have been chatting and laughing all evening. We're in a quieter corner now, and I lean in closer with a playful smile and say, 'I have to admit, you're much more charming than I expected. Are you always this good at making conversation?'",
+        "Hi! Let's practice flirting. We're on our third date, walking along the beach at sunset. I stop walking and turn to face you with a mischievous grin and say, 'You know, I keep finding myself thinking about you when we're apart. Should I be worried about that?'",
+        "Hi! Let's practice flirting. We're cooking together in your kitchen, and I keep catching you looking at me. I brush past you to reach for something, then turn around with a teasing smile and say, 'You seem distracted. Is the cooking really that interesting, or is it something else?'"
+      ],
+      vulnerable_sharing: [
+        "Hi! Let's practice vulnerable conversation. The scenario is that we've been dating for a while and are getting more serious. We're cuddled up on the couch, and I take a deep breath and say, 'I want to share something with you that I don't usually talk about. I sometimes struggle with anxiety, especially in relationships. I wanted you to know because I trust you.'",
+        "Hi! Let's practice vulnerable conversation. We're having a deep late-night conversation, and I look at you with uncertainty and say, 'Can I tell you something that scares me? I'm really starting to fall for you, and that terrifies me because I've been hurt before. How are you feeling about us?'",
+        "Hi! Let's practice vulnerable conversation. We're walking together after a difficult family dinner I invited you to. I stop and say, 'I'm sorry if tonight was awkward. My family can be... complicated. I wanted you to see that part of my life, but I'm worried about what you think now.'"
+      ]
+    };
+
+    const templates = scenarioTemplates[scenarioType as keyof typeof scenarioTemplates] || scenarioTemplates.first_date;
+    const randomScenario = templates[Math.floor(Math.random() * templates.length)];
+    return randomScenario;
+  };
+
   const startPracticeSession = async () => {
     setPracticePartnerActive(true);
     setPracticeMessages([]);
+    setShowPracticeInput(false);
     
-    const scenario = practiceScenarios.find(s => s.id === practiceScenario);
-    const welcomeMessage = `Hi! I'm your AI practice partner. We're going to practice ${scenario?.name.toLowerCase()} conversation. I'll respond as someone you might be dating. Feel free to start the conversation naturally, and I'll help you practice! What would you like to say?`;
-    
-    setPracticeMessages([{ role: 'ai', message: welcomeMessage }]);
+    try {
+      const scenarioText = await generateScenario(practiceScenario);
+      setCurrentScenarioText(scenarioText);
+      setPracticeMessages([{ role: 'ai', message: scenarioText }]);
+    } catch (error) {
+      console.error('Error generating scenario:', error);
+      const fallbackMessage = "Hi! I'm your AI practice partner. Let's practice some conversation skills together!";
+      setCurrentScenarioText(fallbackMessage);
+      setPracticeMessages([{ role: 'ai', message: fallbackMessage }]);
+    }
+  };
+
+  const tryDifferentScenario = async () => {
+    setShowPracticeInput(false);
+    try {
+      const scenarioText = await generateScenario(practiceScenario);
+      setCurrentScenarioText(scenarioText);
+      setPracticeMessages([{ role: 'ai', message: scenarioText }]);
+    } catch (error) {
+      console.error('Error generating new scenario:', error);
+    }
+  };
+
+  const handleReplyToScenario = () => {
+    setShowPracticeInput(true);
   };
 
   const sendPracticeMessage = async () => {
@@ -860,29 +918,67 @@ Respond naturally as someone they might be dating. Be engaging, realistic, and p
                 )}
               </div>
               
-              {/* Message Input */}
-              <div className="flex gap-2">
-                <Textarea
-                  value={currentPracticeMessage}
-                  onChange={(e) => setCurrentPracticeMessage(e.target.value)}
-                  placeholder="Type your message..."
-                  className="flex-1 min-h-[60px] resize-none"
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      sendPracticeMessage();
-                    }
-                  }}
-                />
-                <Button
-                  onClick={sendPracticeMessage}
-                  disabled={isLoading || !currentPracticeMessage.trim()}
-                  variant="romance"
-                  className="h-auto self-end"
-                >
-                  Send
-                </Button>
-              </div>
+              {/* Initial Scenario Buttons */}
+              {!showPracticeInput && practiceMessages.length === 1 && (
+                <div className="flex flex-col gap-3">
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={handleReplyToScenario}
+                      variant="romance"
+                      className="flex-1"
+                    >
+                      Reply
+                    </Button>
+                    <Button
+                      onClick={tryDifferentScenario}
+                      disabled={isLoading}
+                      variant="outline"
+                      className="flex-1"
+                    >
+                      {isLoading ? 'Loading...' : 'Try a Different Scenario'}
+                    </Button>
+                  </div>
+                </div>
+              )}
+              
+              {/* Message Input - Only show after Reply is clicked or during conversation */}
+              {showPracticeInput && (
+                <div className="space-y-3">
+                  <div className="flex gap-2">
+                    <Textarea
+                      value={currentPracticeMessage}
+                      onChange={(e) => setCurrentPracticeMessage(e.target.value)}
+                      placeholder="Type your message..."
+                      className="flex-1 min-h-[60px] resize-none"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault();
+                          sendPracticeMessage();
+                        }
+                      }}
+                    />
+                    <Button
+                      onClick={sendPracticeMessage}
+                      disabled={isLoading || !currentPracticeMessage.trim()}
+                      variant="romance"
+                      className="h-auto self-end"
+                    >
+                      Send
+                    </Button>
+                  </div>
+                  
+                  {/* Persistent Try Another Scenario Button */}
+                  <Button
+                    onClick={tryDifferentScenario}
+                    disabled={isLoading}
+                    variant="soft"
+                    size="sm"
+                    className="w-full"
+                  >
+                    {isLoading ? 'Loading...' : 'Try Another Scenario'}
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         )}
