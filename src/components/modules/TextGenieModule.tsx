@@ -553,29 +553,43 @@ const TextGenieModule: React.FC<TextGenieModuleProps> = ({ userProfile }) => {
             </div>
           )}
           
-          {/* Input Controls */}
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleImageUpload}
-              className="flex-1"
-            >
-              <Camera className="w-4 h-4 mr-2" />
-              Add Screenshot
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={isRecording ? stopRecording : startRecording}
-              className={`flex-1 ${isRecording ? 'bg-red-100 border-red-300' : ''}`}
-            >
-              <Mic className={`w-4 h-4 mr-2 ${isRecording ? 'text-red-600' : ''}`} />
-              {isRecording ? 'Stop Recording' : 'Voice Input'}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+           {/* Input Controls */}
+           <div className="flex gap-2">
+             <Button
+               variant="outline"
+               size="sm"
+               onClick={handleImageUpload}
+               className="flex-1"
+             >
+               <Camera className="w-4 h-4 mr-2" />
+               Add Screenshot
+             </Button>
+             <Button
+               variant="outline"
+               size="sm"
+               onClick={isRecording ? stopRecording : startRecording}
+               className={`flex-1 ${isRecording ? 'bg-red-100 border-red-300' : ''}`}
+             >
+               <Mic className={`w-4 h-4 mr-2 ${isRecording ? 'text-red-600' : ''}`} />
+               {isRecording ? 'Stop Recording' : 'Voice Input'}
+             </Button>
+           </div>
+           
+           {/* Generate Response Button - moved directly below input */}
+           <div className="pt-4">
+             <Button
+               onClick={() => handleGenerateReplies('reply')}
+               disabled={!hasInput || isLoading}
+               variant={!hasInput ? "outline" : "default"}
+               className={`w-full px-8 py-4 h-auto ${
+                 hasInput ? 'bg-primary hover:bg-primary/90 text-primary-foreground' : ''
+               }`}
+             >
+               <span className="font-medium">Generate Response</span>
+             </Button>
+           </div>
+         </CardContent>
+       </Card>
 
       {/* Analysis Section */}
       {analysis && (
@@ -588,9 +602,9 @@ const TextGenieModule: React.FC<TextGenieModuleProps> = ({ userProfile }) => {
                   {getMessageTypeDisplay(analysis.messageType).label}
                 </Badge>
               </div>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                {analysis.interpretation}
-              </p>
+               <p className="text-sm text-muted-foreground leading-relaxed">
+                 {analysis.interpretation.split('.')[0]}.
+               </p>
               
               {analysis.detailedAnalysis && (
                 <>
@@ -616,33 +630,17 @@ const TextGenieModule: React.FC<TextGenieModuleProps> = ({ userProfile }) => {
         </Card>
       )}
 
-      {/* Generate Response Button */}
-      <div className="flex justify-center">
-        <Button
-          onClick={() => handleGenerateReplies('reply')}
-          disabled={!hasInput || isLoading}
-          variant={!hasInput ? "outline" : "default"}
-          className={`px-8 py-4 h-auto ${
-            hasInput ? 'bg-primary hover:bg-primary/90 text-primary-foreground' : ''
-          }`}
-        >
-          <span className="font-medium">Generate Response</span>
-        </Button>
-      </div>
 
       {/* Send This Section */}
       {(replyOptions.flirt.length > 0 || replyOptions.reply.length > 0 || replyOptions.clap.length > 0) && (
         <Card className="shadow-soft border-primary/10">
           <CardHeader>
-            <CardTitle className="text-lg">Send This</CardTitle>
+            <CardTitle className="text-lg">Response Options</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             {Object.entries(replyOptions).map(([type, options]) =>
               options.length > 0 && (
                 <div key={type} className="space-y-4">
-                   <h4 className="font-medium text-primary">
-                    Response Options
-                  </h4>
                   {options.map((option, index) => (
                     <div key={index} className="space-y-4">
                       {/* Sweet Option */}
