@@ -32,6 +32,8 @@ const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userPro
   const [loadingPostTherapyAI, setLoadingPostTherapyAI] = useState<{[key: number]: boolean}>({});
   const [preTherapyPage, setPreTherapyPage] = useState(0);
   const [postTherapyPage, setPostTherapyPage] = useState(0);
+  const [showMorePreTherapy, setShowMorePreTherapy] = useState(false);
+  const [currentPostTherapyIndex, setCurrentPostTherapyIndex] = useState(0);
   const [savedJournalEntries, setSavedJournalEntries] = useState<{[key: string]: string[]}>({});
   
   // Mental Health Check-In state
@@ -54,75 +56,89 @@ const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userPro
   const { getTherapyInsight, isLoading } = useRelationshipAI();
   const { toast } = useToast();
   
-  // Personalized therapy prompts based on user profile with multiple sets
+  // Personalized therapy prompts based on user profile
   const getPersonalizedPrompts = () => {
-    const allPrompts = {
+    const basePrompts = {
       pre: [
-        // Set 1
-        [
-          "Can you help me identify unhealthy relationship patterns based on my past relationships?",
-          "How can I improve my communication style to better connect with my partner?",
-          "What tools can you teach me to better process difficult emotions in my relationship?",
-          "Can we work through some specific conflicts I've been having with my partner?",
-          "How is my attachment style affecting my current relationship, and what can I do about it?"
-        ],
-        // Set 2
-        [
-          "How can I better understand and meet my partner's emotional needs?",
-          "What boundaries do I need to work on establishing in my relationship?",
-          "Can you help me process feelings of jealousy or insecurity?",
-          "How do I handle disagreements without escalating into arguments?",
-          "What role does my family background play in my current relationship?"
-        ],
-        // Set 3
-        [
-          "How can I rebuild trust after it's been damaged in my relationship?",
-          "What strategies can help me be more emotionally available to my partner?",
-          "How do I balance independence and togetherness in my relationship?",
-          "Can we explore how stress affects my relationship dynamics?",
-          "What does healthy intimacy look like for me and my partner?"
-        ]
+        "Can you help me identify unhealthy relationship patterns based on my past relationships?",
+        "How can I improve my communication style to better connect with my partner?",
+        "What tools can you teach me to better process difficult emotions in my relationship?",
+        "Can we work through some specific conflicts I've been having with my partner?",
+        "How is my attachment style affecting my current relationship, and what can I do about it?",
+        "How can I better understand and meet my partner's emotional needs?",
+        "What boundaries do I need to work on establishing in my relationship?",
+        "Can you help me process feelings of jealousy or insecurity?",
+        "How do I handle disagreements without escalating into arguments?",
+        "What role does my family background play in my current relationship?",
+        "How can I rebuild trust after it's been damaged in my relationship?",
+        "What strategies can help me be more emotionally available to my partner?",
+        "How do I balance independence and togetherness in my relationship?",
+        "Can we explore how stress affects my relationship dynamics?",
+        "What does healthy intimacy look like for me and my partner?",
+        "How can I work on being more vulnerable in my relationship?",
+        "What are some healthy ways to express anger in my relationship?",
+        "How can I better support my partner during difficult times?",
+        "What role does physical affection play in our relationship?",
+        "How can we create more meaningful rituals and traditions together?"
       ],
       post: [
-        // Set 1
-        [
-          "Share a key takeaway from your therapy session today",
-          "What insight resonated most with you?",
-          "Describe any 'aha' moments you experienced",
-          "What homework or actions did your therapist suggest?"
-        ],
-        // Set 2
-        [
-          "What patterns did you become aware of during today's session?",
-          "How did discussing your relationship make you feel?",
-          "What challenged you most in today's conversation?",
-          "What tools or strategies will you try this week?"
-        ],
-        // Set 3
-        [
-          "What emotions came up for you during therapy today?",
-          "How has your perspective on your relationship shifted?",
-          "What breakthrough moment did you experience?",
-          "What commitment are you making to yourself moving forward?"
-        ]
+        "Share a key takeaway from your therapy session today",
+        "What insight resonated most with you?",
+        "Describe any 'aha' moments you experienced",
+        "What homework or actions did your therapist suggest?",
+        "What patterns did you become aware of during today's session?",
+        "How did discussing your relationship make you feel?",
+        "What challenged you most in today's conversation?",
+        "What tools or strategies will you try this week?",
+        "What emotions came up for you during therapy today?",
+        "How has your perspective on your relationship shifted?",
+        "What breakthrough moment did you experience?",
+        "What commitment are you making to yourself moving forward?",
+        "What surprised you most about today's session?",
+        "How will you apply what you learned this week?",
+        "What resistance came up during the session and why?",
+        "What healing moment did you experience today?",
+        "How has your understanding of love evolved?",
+        "What self-compassion practice will you implement?",
+        "What boundary will you set based on today's insights?",
+        "How will you honor your growth moving forward?"
       ]
     };
 
     // Add personalized questions based on love language
     if (userProfile.loveLanguage === "Words of Affirmation") {
-      allPrompts.pre[0].push("Can you help me learn how to better express my emotional needs verbally?");
+      basePrompts.pre.push("Can you help me learn how to better express my emotional needs verbally?");
     } else if (userProfile.loveLanguage === "Quality Time") {
-      allPrompts.pre[0].push("How can my partner and I create more meaningful intimate moments together?");
+      basePrompts.pre.push("How can my partner and I create more meaningful intimate moments together?");
     }
 
-    return allPrompts;
+    return basePrompts;
   };
 
   const personalizedPrompts = getPersonalizedPrompts();
   
-  // Get current set of prompts based on page
-  const currentPrePrompts = personalizedPrompts.pre[preTherapyPage] || [];
-  const currentPostPrompts = personalizedPrompts.post[postTherapyPage] || [];
+  // Get current prompts - show only one by default unless "see more" is clicked
+  const getDisplayedPrePrompts = () => {
+    if (showMorePreTherapy) {
+      return personalizedPrompts.pre.slice(0, 5); // Show 5 questions when "see more"
+    }
+    return [personalizedPrompts.pre[0]]; // Show only first question by default
+  };
+
+  const getCurrentPostPrompt = () => {
+    return personalizedPrompts.post[currentPostTherapyIndex] || personalizedPrompts.post[0];
+  };
+
+  const getPostPromptExplanation = (prompt: string) => {
+    const explanations: {[key: string]: string} = {
+      "Can you help me identify unhealthy relationship patterns based on my past relationships?": "Understanding your relationship patterns is crucial for your self-love journey. This question helps you recognize cycles that may be holding you back from the love you deserve, empowering you to break free from limiting beliefs and create healthier connections.",
+      "How can I improve my communication style to better connect with my partner?": "Communication is the bridge to deeper intimacy and self-understanding. Exploring your communication style helps you express your authentic self more clearly and creates space for genuine connection in your relationships.",
+      "What tools can you teach me to better process difficult emotions in my relationship?": "Learning to process emotions healthily is an act of self-love. This question helps you develop emotional intelligence and resilience, allowing you to navigate relationship challenges while staying true to yourself."
+    };
+    
+    // Default explanation for questions not in the map
+    return explanations[prompt] || "This question helps you explore important aspects of your relationships and personal growth, supporting your journey toward greater self-awareness and love.";
+  };
 
   const handlePreTherapyInput = (index: number, value: string) => {
     setPreTherapyInputs(prev => ({ ...prev, [index]: value }));
@@ -336,20 +352,23 @@ const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userPro
               <p className="text-sm text-muted-foreground mb-4">
                 These are suggested questions you can ask your therapist during your session:
               </p>
-              {currentPrePrompts.map((prompt, index) => (
+              {getDisplayedPrePrompts().map((prompt, index) => (
                 <div key={index} className="p-4 bg-gradient-soft rounded-lg border border-primary/10">
                   <p className="text-sm text-foreground font-medium mb-3">{prompt}</p>
-                  <Textarea 
-                    placeholder="Share your thoughts or context about this question..."
-                    className="min-h-[80px] border-primary/20 focus:border-primary mb-3"
-                    value={preTherapyInputs[index] || ''}
-                    onChange={(e) => handlePreTherapyInput(index, e.target.value)}
-                  />
+                  
+                  {/* Context explanation instead of input field */}
+                  <div className="p-3 bg-primary/5 rounded-lg border border-primary/10 mb-3">
+                    <p className="text-xs font-medium text-primary mb-2">Why this helps your Self-Love Journey:</p>
+                    <p className="text-sm text-muted-foreground">
+                      {getPostPromptExplanation(prompt)}
+                    </p>
+                  </div>
+                  
                   <div className="flex space-x-2">
                     <Button
                       variant="soft"
                       size="sm"
-                      onClick={() => handleAskPurposely(index, preTherapyInputs[index] || '', true)}
+                      onClick={() => handleAskPurposely(index, prompt, true)}
                       disabled={loadingPreTherapyAI[index]}
                       className="flex-1"
                     >
@@ -377,32 +396,19 @@ const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userPro
                 </div>
               ))}
               
-              {/* Navigation buttons */}
-              <div className="flex justify-between items-center pt-4">
-                <Button
-                  variant="soft"
-                  onClick={() => setPreTherapyPage(Math.max(0, preTherapyPage - 1))}
-                  disabled={preTherapyPage === 0}
-                  className="flex items-center"
-                >
-                  <ChevronLeft className="w-4 h-4 mr-1" />
-                  Previous
-                </Button>
-                
-                <span className="text-sm text-muted-foreground">
-                  Set {preTherapyPage + 1} of {personalizedPrompts.pre.length}
-                </span>
-                
-                <Button
-                  variant="soft"
-                  onClick={() => setPreTherapyPage(Math.min(personalizedPrompts.pre.length - 1, preTherapyPage + 1))}
-                  disabled={preTherapyPage === personalizedPrompts.pre.length - 1}
-                  className="flex items-center"
-                >
-                  See More
-                  <ChevronRight className="w-4 h-4 ml-1" />
-                </Button>
-              </div>
+              {/* See More button for Pre-Therapy */}
+              {!showMorePreTherapy && (
+                <div className="text-center pt-4">
+                  <Button
+                    variant="soft"
+                    onClick={() => setShowMorePreTherapy(true)}
+                    className="flex items-center"
+                  >
+                    See More Questions
+                    <ChevronRight className="w-4 h-4 ml-1" />
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -417,78 +423,81 @@ const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userPro
               <p className="text-sm text-muted-foreground mb-4">
                 Share what you learned in therapy so Purposely can offer affirmation and additional guidance:
               </p>
-              {currentPostPrompts.map((prompt, index) => (
-                <div key={index} className="p-4 bg-gradient-soft rounded-lg border border-primary/10">
-                  <p className="text-sm text-foreground mb-3 font-medium">{prompt}:</p>
-                  <Textarea 
-                    placeholder="Share your therapy takeaway..."
-                    className="min-h-[80px] border-primary/20 focus:border-primary mb-3"
-                    value={postTherapyInputs[index] || ''}
-                    onChange={(e) => handlePostTherapyInput(index, e.target.value)}
-                  />
-                  <div className="flex space-x-2">
-                    <Button
-                      variant="soft"
-                      size="sm"
-                      onClick={() => handleAskPurposely(index, postTherapyInputs[index] || '', false)}
-                      disabled={loadingPostTherapyAI[index]}
-                      className="flex-1"
-                    >
-                      {loadingPostTherapyAI[index] ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Asking Purposely...
-                        </>
-                      ) : (
-                        <>
-                          <Sparkles className="w-4 h-4 mr-2" />
-                          Ask Purposely
-                        </>
-                      )}
-                    </Button>
-                    <Button
-                      variant="romance"
-                      size="sm"
-                      onClick={() => addToJournal(index, postTherapyInputs[index] || '')}
-                    >
-                      <Plus className="w-4 h-4 mr-2" />
-                      Add to Journal
-                    </Button>
-                  </div>
-                  {postTherapyAIResponses[index] && (
-                    <div className="mt-3 p-3 bg-primary/5 rounded-lg border border-primary/10">
-                      <p className="text-xs font-medium text-primary mb-2">Purposely's Response:</p>
-                      <p className="text-sm text-muted-foreground">
-                        {postTherapyAIResponses[index]}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              ))}
               
-              {/* Navigation buttons */}
+              {/* Single Post-Therapy Question Display */}
+              <div className="p-4 bg-gradient-soft rounded-lg border border-primary/10">
+                <p className="text-sm text-foreground mb-3 font-medium">{getCurrentPostPrompt()}:</p>
+                <Textarea 
+                  placeholder="Share your therapy takeaway..."
+                  className="min-h-[80px] border-primary/20 focus:border-primary mb-3"
+                  value={postTherapyInputs[currentPostTherapyIndex] || ''}
+                  onChange={(e) => handlePostTherapyInput(currentPostTherapyIndex, e.target.value)}
+                />
+                <div className="flex space-x-2">
+                  <Button
+                    variant="soft"
+                    size="sm"
+                    onClick={() => handleAskPurposely(currentPostTherapyIndex, postTherapyInputs[currentPostTherapyIndex] || '', false)}
+                    disabled={loadingPostTherapyAI[currentPostTherapyIndex]}
+                    className="flex-1"
+                  >
+                    {loadingPostTherapyAI[currentPostTherapyIndex] ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Asking Purposely...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-4 h-4 mr-2" />
+                        Ask Purposely
+                      </>
+                    )}
+                  </Button>
+                  <Button
+                    variant="romance"
+                    size="sm"
+                    onClick={() => addToJournal(currentPostTherapyIndex, postTherapyInputs[currentPostTherapyIndex] || '')}
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add to Journal
+                  </Button>
+                </div>
+                {postTherapyAIResponses[currentPostTherapyIndex] && (
+                  <div className="mt-3 p-3 bg-primary/5 rounded-lg border border-primary/10">
+                    <p className="text-xs font-medium text-primary mb-2">Purposely's Response:</p>
+                    <p className="text-sm text-muted-foreground">
+                      {postTherapyAIResponses[currentPostTherapyIndex]}
+                    </p>
+                  </div>
+                )}
+              </div>
+              
+              {/* Swipeable Navigation buttons - no "Set X of Y" text */}
               <div className="flex justify-between items-center pt-4">
                 <Button
                   variant="soft"
-                  onClick={() => setPostTherapyPage(Math.max(0, postTherapyPage - 1))}
-                  disabled={postTherapyPage === 0}
+                  onClick={() => setCurrentPostTherapyIndex(Math.max(0, currentPostTherapyIndex - 1))}
+                  disabled={currentPostTherapyIndex === 0}
                   className="flex items-center"
                 >
                   <ChevronLeft className="w-4 h-4 mr-1" />
                   Previous
                 </Button>
                 
-                <span className="text-sm text-muted-foreground">
-                  Set {postTherapyPage + 1} of {personalizedPrompts.post.length}
-                </span>
-                
                 <Button
                   variant="soft"
-                  onClick={() => setPostTherapyPage(Math.min(personalizedPrompts.post.length - 1, postTherapyPage + 1))}
-                  disabled={postTherapyPage === personalizedPrompts.post.length - 1}
+                  onClick={() => {
+                    // Expand array if needed for unlimited questions
+                    if (currentPostTherapyIndex >= personalizedPrompts.post.length - 1) {
+                      // For unlimited questions, we cycle back to beginning or generate more
+                      setCurrentPostTherapyIndex((currentPostTherapyIndex + 1) % personalizedPrompts.post.length);
+                    } else {
+                      setCurrentPostTherapyIndex(currentPostTherapyIndex + 1);
+                    }
+                  }}
                   className="flex items-center"
                 >
-                  See More
+                  Next
                   <ChevronRight className="w-4 h-4 ml-1" />
                 </Button>
               </div>
