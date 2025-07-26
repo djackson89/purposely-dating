@@ -8,10 +8,11 @@ import { useToast } from '@/hooks/use-toast';
 
 interface PaywallProps {
   onPlanSelected: () => void;
+  onSkipToFree?: () => void;
   isModal?: boolean;
 }
 
-const Paywall: React.FC<PaywallProps> = ({ onPlanSelected, isModal = false }) => {
+const Paywall: React.FC<PaywallProps> = ({ onPlanSelected, onSkipToFree, isModal = false }) => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
@@ -128,6 +129,18 @@ const Paywall: React.FC<PaywallProps> = ({ onPlanSelected, isModal = false }) =>
               </>
             )}
           </Button>
+
+          {/* No Thank You Option */}
+          {onSkipToFree && (
+            <div className="text-center pt-4">
+              <button
+                onClick={onSkipToFree}
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors underline"
+              >
+                No thank you, continue with free version
+              </button>
+            </div>
+          )}
 
           {/* Trust Indicators */}
           <div className="text-center space-y-2 pt-4 border-t border-border">

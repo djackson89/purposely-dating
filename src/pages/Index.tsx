@@ -8,6 +8,7 @@ import DateConciergeModule from '@/components/modules/DateConciergeModule';
 import TherapyCompanionModule from '@/components/modules/TherapyCompanionModule';
 import ProfileModule from '@/components/modules/ProfileModule';
 import { useAppInitialization } from '@/hooks/useAppInitialization';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 interface OnboardingData {
   loveLanguage: string;
@@ -20,8 +21,10 @@ interface OnboardingData {
 const Index = () => {
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
   const [hasCompletedPaywall, setHasCompletedPaywall] = useState(false);
+  const [isUsingFreeVersion, setIsUsingFreeVersion] = useState(false);
   const [userProfile, setUserProfile] = useState<OnboardingData | null>(null);
   const [activeModule, setActiveModule] = useState<'home' | 'flirtfuel' | 'concierge' | 'therapy' | 'profile'>('home');
+  const [showPaywallModal, setShowPaywallModal] = useState(false);
   
   // Initialize native app features
   const { isNative, isOnline } = useAppInitialization(userProfile);
@@ -52,7 +55,18 @@ const Index = () => {
     // In a real implementation, this would integrate with Stripe
     console.log('Premium plan selected with 7-day trial');
     setHasCompletedPaywall(true);
+    setShowPaywallModal(false);
     localStorage.setItem('relationshipCompanionPaywall', JSON.stringify({ plan: 'premium', hasTrial: true, completedAt: new Date().toISOString() }));
+  };
+
+  const handleSkipToFree = () => {
+    console.log('User chose free version');
+    setIsUsingFreeVersion(true);
+    setShowPaywallModal(false);
+  };
+
+  const handlePremiumFeatureClick = () => {
+    setShowPaywallModal(true);
   };
 
   // Show onboarding if not completed
@@ -60,9 +74,9 @@ const Index = () => {
     return <OnboardingFlow onComplete={handleOnboardingComplete} />;
   }
 
-  // Show paywall if onboarding is done but paywall not completed
-  if (!hasCompletedPaywall) {
-    return <Paywall onPlanSelected={handlePlanSelected} />;
+  // Show paywall if onboarding is done but paywall not completed and not using free version
+  if (!hasCompletedPaywall && !isUsingFreeVersion) {
+    return <Paywall onPlanSelected={handlePlanSelected} onSkipToFree={handleSkipToFree} />;
   }
 
   const handleProfileUpdate = (updatedProfile: OnboardingData) => {
@@ -98,6 +112,17 @@ const Index = () => {
         activeModule={activeModule}
         onModuleChange={setActiveModule}
       />
+      
+      {/* Paywall Modal for Premium Features */}
+      <Dialog open={showPaywallModal} onOpenChange={setShowPaywallModal}>
+        <DialogContent className="max-w-lg">
+          <Paywall 
+            onPlanSelected={handlePlanSelected}
+            onSkipToFree={handleSkipToFree}
+            isModal={true}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
