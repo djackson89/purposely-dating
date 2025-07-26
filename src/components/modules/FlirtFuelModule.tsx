@@ -159,12 +159,12 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
     {
       category: "Intimacy",
       prompts: [
-        "What does emotional intimacy mean to you?",
-        "How do you like to show and receive affection?",
-        "What makes you feel most connected to someone?",
-        "What's your favorite way to be romantic?",
-        "How do you express love without words?",
-        "What makes you feel most vulnerable in a good way?"
+        "What do you find most attractive about sexual chemistry?",
+        "How do you like to build physical tension and anticipation?",
+        "What makes you feel most desired and wanted?",
+        "What's your favorite way to express sexual intimacy?",
+        "How do you communicate your desires and boundaries?",
+        "What's something you've always wanted to explore sexually?"
       ]
     },
     {
@@ -826,14 +826,6 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
                   Share This Question
                 </Button>
 
-                <Button
-                  onClick={loadMoreStarters}
-                  disabled={isLoading}
-                  variant="romance"
-                  className="w-full"
-                >
-                  {isLoading ? 'Loading...' : 'Get New Questions'}
-                </Button>
               </div>
             </div>
           )}
