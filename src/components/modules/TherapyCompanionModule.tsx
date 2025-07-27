@@ -365,7 +365,7 @@ const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userPro
                 
                 <div className="flex space-x-2">
                   <Button
-                    variant="soft"
+                    variant="romance"
                     size="sm"
                     onClick={() => handleAskPurposely(currentPreTherapyIndex, getCurrentPrePrompt(), true)}
                     disabled={loadingPreTherapyAI[currentPreTherapyIndex]}
@@ -449,7 +449,7 @@ const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userPro
                 />
                 <div className="flex space-x-2">
                   <Button
-                    variant="soft"
+                    variant="romance"
                     size="sm"
                     onClick={() => handleAskPurposely(currentPostTherapyIndex, postTherapyInputs[currentPostTherapyIndex] || '', false)}
                     disabled={loadingPostTherapyAI[currentPostTherapyIndex]}
