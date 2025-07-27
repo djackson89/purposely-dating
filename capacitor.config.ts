@@ -1,8 +1,8 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'app.lovable.a3b2c442d1f640d1a4a5f981d6acd20c',
-  appName: 'bloom-whisper-spark',
+  appId: 'com.betters-convos',
+  appName: 'Purposely',
   webDir: 'dist',
   bundledWebRuntime: false,
   server: {
