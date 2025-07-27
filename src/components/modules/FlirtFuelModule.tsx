@@ -118,6 +118,41 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
       ]
     },
     {
+      category: "True or False",
+      prompts: [
+        "True or False: A man should always pay for the first few dates to demonstrate his financial stability.",
+        "True or False: A person's sexual history is a clear indicator of their character.",
+        "True or False: Being married is always more fulfilling than staying single.",
+        "True or False: Someone who talks a lot about their own achievements is likely a narcissist.",
+        "True or False: A woman earning more than a man can undermine his role in the relationship.",
+        "True or False: Financial generosity in a relationship is a sure sign of genuine affection.",
+        "True or False: A partner who keeps in touch with their exes is a red flag for infidelity.",
+        "True or False: Men are naturally less emotionally expressive than women in relationships.",
+        "True or False: Frequent jealousy is a sign of deep emotional investment in a relationship.",
+        "True or False: A man who is close to his mother will be more understanding and supportive in a relationship.",
+        "True or False: A woman who values her career over starting a family lacks maternal instincts.",
+        "True or False: The way a person treats service staff is a window into their true personality.",
+        "True or False: Consistently arriving late for dates is a sign of disrespect.",
+        "True or False: A partner's unwillingness to share their phone password indicates they have something to hide.",
+        "True or False: A man's reluctance to talk about feelings indicates a lack of emotional depth.",
+        "True or False: A woman's fashion choices can be a reliable indicator of her personality.",
+        "True or False: Emotional safety in a relationship is more important than physical attraction.",
+        "True or False: Trust is easily rebuilt in a relationship once broken.",
+        "True or False: Emotional intimacy is a prerequisite for a lasting relationship.",
+        "True or False: A relationship without emotional vulnerability is likely to fail.",
+        "True or False: Physical attraction is crucial for the success of a long-term relationship.",
+        "True or False: Most men prefer a good woman over a physically attractive one.",
+        "True or False: Faithfulness is more about character than gender.",
+        "True or False: A woman's sexual history is irrelevant to her current relationship.",
+        "True or False: Men are hardwired to seek multiple sexual partners.",
+        "True or False: A woman has the right to deny her partner sex at any time, for any reason.",
+        "True or False: There are never valid reasons for cheating in a relationship.",
+        "True or False: Men generally benefit more from marriage than women do.",
+        "True or False: A woman's financial independence is important for relationship equality.",
+        "True or False: Traditional household roles are key to a relationship's success."
+      ]
+    },
+    {
       category: "Intimacy",
       prompts: [
         "What do you find most attractive about sexual chemistry?",
