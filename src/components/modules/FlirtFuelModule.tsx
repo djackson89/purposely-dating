@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Heart, MessageCircle, Zap, Share, Wand2, Trash2, Users, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Heart, MessageCircle, Zap, Share, Wand2, Trash2, Users, X, ChevronLeft, ChevronRight, Expand } from 'lucide-react';
 import { InfoDialog } from '@/components/ui/info-dialog';
 import { Share as CapacitorShare } from '@capacitor/share';
 import { useRelationshipAI } from '@/hooks/useRelationshipAI';
@@ -966,7 +966,12 @@ Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid gen
                   onTouchStart={handleTouchStart}
                   onTouchEnd={handleTouchEnd}
                 >
-                  <CardContent className="p-8 flex flex-col justify-center items-center text-center h-full">
+                  <CardContent className="p-8 flex flex-col justify-center items-center text-center h-full relative">
+                    {/* Expand icon */}
+                    <div className="absolute top-3 right-3">
+                      <Expand className="w-5 h-5 text-white/70" />
+                    </div>
+                    
                     <div className="flex items-center justify-center h-full w-full">
                       <p className="text-2xl font-bold text-white leading-relaxed">
                         {currentStarters[currentQuestionIndex]}
@@ -1025,15 +1030,6 @@ Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid gen
                   Share This Question
                 </Button>
 
-                <Button
-                  onClick={loadMoreStarters}
-                  disabled={isLoading}
-                  variant="romance"
-                  className="w-full"
-                >
-                  <Wand2 className="w-4 h-4 mr-2" />
-                  {isLoading ? 'Generating...' : 'Get More Questions ✨'}
-                </Button>
               </div>
             </div>
           )}
