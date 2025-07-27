@@ -149,26 +149,26 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
   };
 
   return (
-    <div className="pb-20 pt-6 px-4 space-y-6 bg-gradient-soft min-h-screen safe-area-pt">
+    <div className="pb-20 pt-6 px-4 space-y-6 bg-muted min-h-screen safe-area-pt">
       {/* Header */}
       <div className="text-center space-y-2">
         <h1 className="text-2xl font-bold bg-gradient-romance bg-clip-text text-transparent">
           Welcome to Purposely 💕
         </h1>
-        <p className="text-muted-foreground">Your daily dose of relationship growth</p>
+        <p className="text-white/80">Your daily dose of relationship growth</p>
       </div>
 
       {/* Daily Question of the Day */}
-      <Card className="shadow-romance border-primary/20">
+      <Card className="shadow-romance border-primary/30 bg-muted-foreground/20 backdrop-blur-sm">
         <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
+          <CardTitle className="flex items-center space-x-2 text-white">
             <MessageCircle className="w-5 h-5 text-primary animate-heart-pulse" />
             <span>Question of the Day</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="p-4 bg-gradient-soft rounded-lg border border-primary/10">
-            <p className="text-foreground leading-relaxed">{dailyQuestion}</p>
+          <div className="p-4 bg-black/20 rounded-lg border border-primary/20 backdrop-blur-sm">
+            <p className="text-white/90 leading-relaxed">{dailyQuestion}</p>
           </div>
           <Button
             onClick={onNavigateToFlirtFuel}
@@ -181,16 +181,16 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
       </Card>
 
       {/* How would you reply? Practice Section */}
-      <Card className="shadow-romance border-primary/20">
+      <Card className="shadow-romance border-primary/30 bg-muted-foreground/20 backdrop-blur-sm">
         <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
+          <CardTitle className="flex items-center space-x-2 text-white">
             <MessageCircle className="w-5 h-5 text-primary animate-heart-pulse" />
             <span>How would you reply?</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="p-4 bg-gradient-soft rounded-lg border border-primary/10">
-            <p className="text-foreground leading-relaxed">{dailyScenario}</p>
+          <div className="p-4 bg-black/20 rounded-lg border border-primary/20 backdrop-blur-sm">
+            <p className="text-white/90 leading-relaxed">{dailyScenario}</p>
           </div>
           <Button
             onClick={() => onNavigateToAIPractice(dailyScenario)}
@@ -203,21 +203,21 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
       </Card>
 
       {/* Invite a Friend */}
-      <Card className="shadow-soft border-primary/10">
+      <Card className="shadow-soft border-primary/20 bg-muted-foreground/15 backdrop-blur-sm">
         <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
+          <CardTitle className="flex items-center space-x-2 text-white">
             <Share2 className="w-5 h-5 text-primary" />
             <span>Invite a Friend</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-muted-foreground leading-relaxed">
+          <p className="text-white/70 leading-relaxed">
             Know someone who'd love the Purposely Dating App? Invite them to join you!
           </p>
           <Button
             onClick={handleShare}
             variant="soft"
-            className="w-full"
+            className="w-full bg-white/10 hover:bg-white/20 text-white border-white/20"
           >
             <Share2 className="w-4 h-4 mr-2" />
             Share Purposely Dating
@@ -226,16 +226,16 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
       </Card>
 
       {/* Gentle Reminder */}
-      <Card className="shadow-soft border-primary/10">
+      <Card className="shadow-soft border-primary/20 bg-muted-foreground/15 backdrop-blur-sm">
         <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
+          <CardTitle className="flex items-center space-x-2 text-white">
             <Heart className="w-5 h-5 text-primary" />
             <span>Gentle Reminder...</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="p-4 bg-gradient-soft rounded-lg border border-primary/10">
-            <p className="text-foreground leading-relaxed italic">{dailyQuote}</p>
+          <div className="p-4 bg-black/20 rounded-lg border border-primary/20 backdrop-blur-sm">
+            <p className="text-white/90 leading-relaxed italic">{dailyQuote}</p>
           </div>
           <div className="flex space-x-3 justify-center">
             <Button
@@ -243,6 +243,7 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
               variant={quoteVote === 'agree' ? "romance" : "soft"}
               size="sm"
               disabled={quoteVote !== null}
+              className={quoteVote !== 'agree' ? "bg-white/10 hover:bg-white/20 text-white border-white/20" : ""}
             >
               <ThumbsUp className="w-4 h-4 mr-1" />
               Agree
@@ -252,13 +253,14 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
               variant={quoteVote === 'disagree' ? "destructive" : "soft"}
               size="sm"
               disabled={quoteVote !== null}
+              className={quoteVote !== 'disagree' ? "bg-white/10 hover:bg-white/20 text-white border-white/20" : ""}
             >
               <ThumbsDown className="w-4 h-4 mr-1" />
               Disagree
             </Button>
           </div>
           {quoteVote && (
-            <p className="text-xs text-muted-foreground text-center">
+            <p className="text-xs text-white/60 text-center">
               Thanks for your response!
             </p>
           )}
