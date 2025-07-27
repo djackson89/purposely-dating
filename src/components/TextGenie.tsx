@@ -23,7 +23,8 @@ import {
 } from 'lucide-react';
 import { useCamera, PhotoResult } from '@/hooks/useCamera';
 import { useRelationshipAI } from '@/hooks/useRelationshipAI';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 interface OnboardingData {
   loveLanguage: string;
@@ -43,15 +44,22 @@ interface ReplySuggestion {
   perspective: string;
 }
 
+interface UploadedImage {
+  dataUrl: string;
+  file?: File;
+}
+
 const TextGenie: React.FC<TextGenieProps> = ({ userProfile }) => {
   const [description, setDescription] = useState('');
-  
   const [isProcessing, setIsProcessing] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
-  const [uploadedImages, setUploadedImages] = useState<PhotoResult[]>([]);
+  const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
   const [replySuggestions, setReplySuggestions] = useState<ReplySuggestion[]>([]);
   const [expandedPerspectives, setExpandedPerspectives] = useState<{ [key: number]: boolean }>({});
   const [loadingMessage, setLoadingMessage] = useState('');
+  const [imageAnalysis, setImageAnalysis] = useState<string>('');
+  const [isAnalyzingImages, setIsAnalyzingImages] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const { selectPhoto } = useCamera();
   const { getFlirtSuggestion, isLoading } = useRelationshipAI();
@@ -91,24 +99,112 @@ const TextGenie: React.FC<TextGenieProps> = ({ userProfile }) => {
   };
 
   const handleImageUpload = async () => {
-    const photo = await selectPhoto();
-    if (photo) {
-      setUploadedImages(prev => [...prev, photo]);
+    if (uploadedImages.length >= 6) {
       toast({
-        title: "Image uploaded",
-        description: "Ready to analyze your screenshot!",
+        title: "Maximum reached",
+        description: "You can upload up to 6 screenshots maximum.",
+        variant: "destructive",
       });
+      return;
+    }
+
+    // Use file input for multiple image selection
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
     }
   };
 
-  const extractTextFromImages = async (images: PhotoResult[]): Promise<string> => {
-    // For now, we'll simulate OCR functionality
-    // In a real implementation, you'd use an OCR service like Google Vision API
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve("Sample extracted text from uploaded images. This would contain the actual conversation text in a real implementation.");
-      }, 1000);
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files) return;
+
+    const remainingSlots = 6 - uploadedImages.length;
+    const filesToProcess = Array.from(files).slice(0, remainingSlots);
+
+    if (filesToProcess.length < files.length) {
+      toast({
+        title: "Some files skipped",
+        description: `Only ${remainingSlots} screenshots can be added. Maximum is 6 total.`,
+      });
+    }
+
+    const newImages: UploadedImage[] = [];
+    
+    for (const file of filesToProcess) {
+      if (file.type.startsWith('image/')) {
+        const dataUrl = await convertFileToDataUrl(file);
+        newImages.push({
+          dataUrl,
+          file
+        });
+      }
+    }
+
+    setUploadedImages(prev => [...prev, ...newImages]);
+    
+    if (newImages.length > 0) {
+      toast({
+        title: `${newImages.length} image(s) uploaded`,
+        description: "Ready to analyze your screenshots!",
+      });
+    }
+
+    // Clear the file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const convertFileToDataUrl = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
     });
+  };
+
+  const analyzeScreenshots = async (images: UploadedImage[]): Promise<string> => {
+    if (images.length === 0) return '';
+
+    setIsAnalyzingImages(true);
+    try {
+      console.log('Analyzing screenshots with AI...');
+      
+      // Convert images to base64 strings
+      const imageDataUrls = images.map(img => img.dataUrl);
+      
+      const { data, error } = await supabase.functions.invoke('analyze-screenshots', {
+        body: {
+          images: imageDataUrls,
+          context: description,
+          userProfile: userProfile
+        }
+      });
+
+      if (error) {
+        console.error('Screenshot analysis error:', error);
+        throw new Error(error.message || 'Failed to analyze screenshots');
+      }
+
+      if (!data.success) {
+        throw new Error(data.error || 'Screenshot analysis failed');
+      }
+
+      console.log('Screenshot analysis completed');
+      return data.analysis || '';
+      
+    } catch (error) {
+      console.error('Error analyzing screenshots:', error);
+      toast({
+        title: "Analysis failed",
+        description: "Could not analyze screenshots. Please try again.",
+        variant: "destructive",
+      });
+      return '';
+    } finally {
+      setIsAnalyzingImages(false);
+    }
   };
 
   const startRecording = async () => {
@@ -190,11 +286,13 @@ const TextGenie: React.FC<TextGenieProps> = ({ userProfile }) => {
     
     try {
       let contextText = description;
+      let screenshotAnalysis = '';
       
-      // Extract text from images if any
+      // Analyze screenshots if any
       if (uploadedImages.length > 0) {
-        const extractedText = await extractTextFromImages(uploadedImages);
-        contextText += (contextText ? '\n\n' : '') + `From screenshots: ${extractedText}`;
+        screenshotAnalysis = await analyzeScreenshots(uploadedImages);
+        setImageAnalysis(screenshotAnalysis);
+        contextText += (contextText ? '\n\n' : '') + `Screenshot Analysis:\n${screenshotAnalysis}`;
       }
 
       const prompt = `Based on this context: ${contextText}
@@ -321,9 +419,10 @@ Keep replies concise (max 2 sentences each).`;
               variant="outline"
               size="sm"
               className="flex items-center space-x-2"
+              disabled={uploadedImages.length >= 6}
             >
-              <Camera className="w-4 h-4" />
-              <span>Upload Screenshots</span>
+              <Upload className="w-4 h-4" />
+              <span>Upload Screenshots ({uploadedImages.length}/6)</span>
             </Button>
             
             <Button
@@ -337,47 +436,79 @@ Keep replies concise (max 2 sentences each).`;
             </Button>
           </div>
 
+          {/* Hidden File Input */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={handleFileSelect}
+            className="hidden"
+          />
+
           {/* Uploaded Images */}
           {uploadedImages.length > 0 && (
             <div className="space-y-2">
-              <Label>Uploaded Screenshots</Label>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex items-center justify-between">
+                <Label>Uploaded Screenshots ({uploadedImages.length}/6)</Label>
+                {uploadedImages.length === 6 && (
+                  <Badge variant="secondary" className="text-xs">Maximum reached</Badge>
+                )}
+              </div>
+              <div className="grid grid-cols-3 gap-2">
                 {uploadedImages.map((image, index) => (
-                  <div key={index} className="relative">
+                  <div key={index} className="relative group">
                     <img
                       src={image.dataUrl}
                       alt={`Screenshot ${index + 1}`}
-                      className="w-20 h-20 object-cover rounded-lg border border-border"
+                      className="w-full h-20 object-cover rounded-lg border border-border"
                     />
                     <Button
                       onClick={() => removeImage(index)}
                       variant="destructive"
                       size="sm"
-                      className="absolute -top-2 -right-2 w-6 h-6 rounded-full p-0"
+                      className="absolute -top-1 -right-1 w-5 h-5 rounded-full p-0 opacity-0 group-hover:opacity-100 transition-opacity"
                     >
                       ×
                     </Button>
+                    <div className="absolute bottom-1 left-1 bg-black/70 text-white text-xs px-1 rounded">
+                      {index + 1}
+                    </div>
                   </div>
                 ))}
+              </div>
+              {isAnalyzingImages && (
+                <div className="text-center text-sm text-muted-foreground">
+                  <RefreshCw className="w-4 h-4 inline animate-spin mr-2" />
+                  Analyzing screenshots...
+                </div>
+              )}
+            </div>
+          )}
+          {/* Image Analysis Results */}
+          {imageAnalysis && (
+            <div className="space-y-2">
+              <Label>Screenshot Analysis</Label>
+              <div className="p-3 bg-muted/50 rounded-lg border">
+                <p className="text-sm leading-relaxed whitespace-pre-wrap">{imageAnalysis}</p>
               </div>
             </div>
           )}
         </CardContent>
       </Card>
 
-
       {/* Generate Button */}
       <Button
         onClick={generateReplySuggestions}
-        disabled={isProcessing || isLoading}
+        disabled={isProcessing || isLoading || isAnalyzingImages}
         variant="romance"
         size="lg"
         className="w-full"
       >
-        {isProcessing || isLoading ? (
+        {isProcessing || isLoading || isAnalyzingImages ? (
           <>
             <Wand2 className="w-4 h-4 mr-2 animate-spin" />
-            {loadingMessage}
+            {isAnalyzingImages ? 'Analyzing screenshots...' : loadingMessage}
           </>
         ) : (
           <>
@@ -388,12 +519,12 @@ Keep replies concise (max 2 sentences each).`;
       </Button>
 
       {/* Loading Progress */}
-      {(isProcessing || isLoading) && (
+      {(isProcessing || isLoading || isAnalyzingImages) && (
         <Card className="shadow-soft border-primary/10">
           <CardContent className="pt-6">
             <Progress value={undefined} className="w-full" />
             <p className="text-center text-sm text-muted-foreground mt-2">
-              {loadingMessage}
+              {isAnalyzingImages ? 'Analyzing screenshots...' : loadingMessage}
             </p>
           </CardContent>
         </Card>
@@ -455,7 +586,7 @@ Keep replies concise (max 2 sentences each).`;
             onClick={retryGeneration}
             variant="outline"
             className="w-full"
-            disabled={isProcessing || isLoading}
+            disabled={isProcessing || isLoading || isAnalyzingImages}
           >
             <RefreshCw className="w-4 h-4 mr-2" />
             Retry
