@@ -96,7 +96,7 @@ serve(async (req) => {
       success_url: `${req.headers.get("origin")}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${req.headers.get("origin")}/`,
       allow_promotion_codes: true,
-      payment_method_types: ['card', 'apple_pay', 'google_pay'],
+      payment_method_types: ['card'],
       automatic_tax: { enabled: true },
       customer_update: {
         address: 'auto',
