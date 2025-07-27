@@ -19,6 +19,8 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [showTour, setShowTour] = useState(true);
   const [formData, setFormData] = useState<Partial<OnboardingData>>({});
+  const [touchStart, setTouchStart] = useState({ x: 0, y: 0 });
+  const [touchEnd, setTouchEnd] = useState({ x: 0, y: 0 });
 
   const tourSteps = [
     {
@@ -119,13 +121,49 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
     }
   };
 
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStart({
+      x: e.touches[0].clientX,
+      y: e.touches[0].clientY
+    });
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    setTouchEnd({
+      x: e.changedTouches[0].clientX,
+      y: e.changedTouches[0].clientY
+    });
+    
+    const deltaX = touchStart.x - e.changedTouches[0].clientX;
+    const deltaY = touchStart.y - e.changedTouches[0].clientY;
+    
+    // Only trigger swipe if horizontal movement is greater than vertical
+    if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50) {
+      if (deltaX > 0) {
+        // Swiped left - next step
+        if (showTour) {
+          handleTourNext();
+        }
+      } else {
+        // Swiped right - previous step
+        if (!showTour && currentStep > 0) {
+          handleBack();
+        }
+      }
+    }
+  };
+
   if (showTour) {
     const step = tourSteps[currentStep];
     const IconComponent = step.icon;
 
     return (
       <div className="min-h-screen bg-gradient-soft flex items-center justify-center p-4">
-        <Card className="w-full max-w-md shadow-romance border-primary/20 animate-fade-in-up">
+        <Card 
+          className="w-full max-w-md shadow-romance border-primary/20 animate-fade-in-up select-none"
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
           <CardHeader className="text-center space-y-4">
             <div className="mx-auto w-16 h-16 bg-gradient-romance rounded-full flex items-center justify-center shadow-glow">
               <IconComponent className="w-8 h-8 text-white animate-heart-pulse" />
@@ -156,6 +194,9 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
             >
               {currentStep === tourSteps.length - 1 ? "Let's Get Started! 💕" : "Next"}
             </Button>
+            <p className="text-xs text-muted-foreground/70">
+              Swipe left/right to navigate
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -166,7 +207,11 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
 
   return (
     <div className="min-h-screen bg-gradient-soft flex items-center justify-center p-4">
-      <Card className="w-full max-w-md shadow-romance border-primary/20 animate-fade-in-up">
+      <Card 
+        className="w-full max-w-md shadow-romance border-primary/20 animate-fade-in-up select-none"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
         <CardHeader className="text-center space-y-4">
           <div className="mx-auto w-12 h-12 bg-gradient-romance rounded-full flex items-center justify-center text-white font-bold text-lg shadow-glow">
             {currentStep + 1}
@@ -221,6 +266,10 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
             </Button>
             <div className="flex-1" />
           </div>
+          
+          <p className="text-xs text-muted-foreground/70 text-center">
+            Swipe left/right to navigate
+          </p>
         </CardContent>
       </Card>
     </div>

@@ -542,6 +542,10 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
   const tryDifferentScenario = async () => {
     setShowPracticeInput(false);
     try {
+      // Force generate a new random scenario by clearing the daily storage
+      const today = new Date().toDateString();
+      localStorage.removeItem(`dailyScenarioIndex_${practiceScenario}_${today}`);
+      
       const scenarioText = await generateScenario(practiceScenario);
       setCurrentScenarioText(scenarioText);
       setPracticeMessages([{ role: 'ai', message: scenarioText }]);
@@ -1173,7 +1177,7 @@ Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid gen
 
       {/* Full Screen Question Modal */}
       <Dialog open={isFullScreen} onOpenChange={setIsFullScreen}>
-        <DialogContent className="max-w-full max-h-full w-screen h-screen m-0 p-0 rounded-none border-none bg-gradient-romance">
+        <DialogContent className="max-w-full max-h-full w-screen h-screen m-0 p-0 rounded-none border-none bg-gradient-romance [&>button]:hidden">
           <div className="relative h-full flex flex-col">
             {/* Close button */}
             <div className="absolute top-4 right-4 z-10">
