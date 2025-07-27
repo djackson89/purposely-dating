@@ -387,7 +387,7 @@ const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userPro
                 {preTherapyAIResponses[currentPreTherapyIndex] && (
                   <div className="mt-3 p-3 bg-primary/5 rounded-lg border border-primary/10">
                     <p className="text-xs font-medium text-primary mb-2">Purposely's Insight:</p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-lg text-muted-foreground">
                       {preTherapyAIResponses[currentPreTherapyIndex]}
                     </p>
                   </div>
@@ -480,7 +480,7 @@ const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userPro
                 {postTherapyAIResponses[currentPostTherapyIndex] && (
                   <div className="mt-3 p-3 bg-primary/5 rounded-lg border border-primary/10">
                     <p className="text-xs font-medium text-primary mb-2">Purposely's Response:</p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-lg text-muted-foreground">
                       {postTherapyAIResponses[currentPostTherapyIndex]}
                     </p>
                   </div>

@@ -490,7 +490,7 @@ Keep replies concise (max 2 sentences each).`;
             <div className="space-y-2">
               <Label>Screenshot Analysis</Label>
               <div className="p-3 bg-muted/50 rounded-lg border">
-                <p className="text-sm leading-relaxed whitespace-pre-wrap">{imageAnalysis}</p>
+                <p className="text-lg leading-relaxed whitespace-pre-wrap">{imageAnalysis}</p>
               </div>
             </div>
           )}

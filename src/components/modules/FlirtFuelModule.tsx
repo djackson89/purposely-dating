@@ -1134,7 +1134,7 @@ Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid gen
                           : 'bg-card border border-border'
                       }`}
                     >
-                      <p className="text-sm">{message.message}</p>
+                      <p className="text-lg">{message.message}</p>
                     </div>
                   </div>
                 ))}
@@ -1223,7 +1223,7 @@ Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid gen
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="p-4 bg-muted/20 rounded-lg border">
-                <p className="text-sm leading-relaxed whitespace-pre-wrap">{sessionFeedback}</p>
+                <p className="text-lg leading-relaxed whitespace-pre-wrap">{sessionFeedback}</p>
               </div>
               
               <div className="flex gap-2">
