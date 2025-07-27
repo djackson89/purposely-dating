@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Heart, MessageCircle, Zap, Share, Wand2, Trash2, Users, X } from 'lucide-react';
-import { FTUETooltip } from '@/components/ui/ftue-tooltip';
+import { InfoDialog } from '@/components/ui/info-dialog';
 import { Share as CapacitorShare } from '@capacitor/share';
 import { useRelationshipAI } from '@/hooks/useRelationshipAI';
 import TextGenie from '@/components/TextGenie';
@@ -699,8 +699,7 @@ Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid gen
           <div className="flex items-center justify-center space-x-2">
             <h2 className="text-xl font-semibold text-primary">Conversation Starters</h2>
             <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center cursor-pointer hover:bg-primary/20 transition-colors">
-              <FTUETooltip
-                id="conversation-starters"
+              <InfoDialog
                 title="Conversation Starters"
                 description="Discover engaging questions and topics that spark meaningful conversations. Swipe through cards or use our AI to generate custom questions based on your interests and dating style."
               />
@@ -960,8 +959,7 @@ Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid gen
           <div className="flex items-center justify-center space-x-2 mb-6">
             <h2 className="text-xl font-semibold text-primary">Text Genie</h2>
             <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center cursor-pointer hover:bg-primary/20 transition-colors">
-              <FTUETooltip
-                id="text-genie"
+              <InfoDialog
                 title="Text Genie"
                 description="Get AI-powered help crafting the perfect text message replies. Share context through text, photos, or voice recordings, and receive personalized response suggestions with different tones and explanations."
               />
@@ -978,8 +976,7 @@ Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid gen
           <div className="flex items-center justify-center space-x-2">
             <h2 className="text-xl font-semibold text-primary">AI Practice</h2>
             <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center cursor-pointer hover:bg-primary/20 transition-colors">
-              <FTUETooltip
-                id="ai-practice"
+              <InfoDialog
                 title="AI Practice"
                 description="Practice conversations with AI partners in a safe, judgment-free space. Build confidence and improve your communication skills before real dates."
               />

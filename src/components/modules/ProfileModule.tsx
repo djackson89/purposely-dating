@@ -5,9 +5,9 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { User, Camera, Edit, Heart, Calendar, MessageCircle, LogOut, Settings } from 'lucide-react';
-import { FTUETooltip } from '@/components/ui/ftue-tooltip';
+import { InfoDialog } from '@/components/ui/info-dialog';
 import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { useCamera } from '@/hooks/useCamera';
 import { useHaptics } from '@/hooks/useHaptics';
 import AppSettings from '@/components/AppSettings';
@@ -90,8 +90,7 @@ const ProfileModule: React.FC<ProfileModuleProps> = ({ userProfile, onProfileUpd
           <h1 className="text-2xl font-bold bg-gradient-romance bg-clip-text text-transparent">
             Profile 💕
           </h1>
-          <FTUETooltip
-            id="profile"
+          <InfoDialog
             title="Profile"
             description="Track your growth, celebrate your progress, and personalize your Purposely Dating experience."
           />

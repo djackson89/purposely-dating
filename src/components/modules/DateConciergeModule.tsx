@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar, MapPin, Sparkles, Heart, Users, Coffee, Plus, ChevronDown, ChevronUp, Eye, EyeOff, ThumbsUp, ThumbsDown, HelpCircle, Trash2 } from 'lucide-react';
-import { FTUETooltip } from '@/components/ui/ftue-tooltip';
+import { InfoDialog } from '@/components/ui/info-dialog';
 import { useRelationshipAI } from '@/hooks/useRelationshipAI';
 
 interface OnboardingData {
@@ -291,8 +291,7 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
           <div className="flex items-center justify-center space-x-2">
             <h2 className="text-xl font-semibold text-primary">Dating Prospects</h2>
             <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center cursor-pointer hover:bg-primary/20 transition-colors">
-              <FTUETooltip
-                id="dating-prospects"
+              <InfoDialog
                 title="Dating Prospects"
                 description="Organize and track the people you're interested in dating. Rate their compatibility, flag important qualities, and get AI insights to help you make better dating decisions."
               />
@@ -533,8 +532,7 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
           <div className="flex items-center justify-center space-x-2">
             <h2 className="text-xl font-semibold text-primary">Dating Planner</h2>
             <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center cursor-pointer hover:bg-primary/20 transition-colors">
-              <FTUETooltip
-                id="dating-planner"
+              <InfoDialog
                 title="Dating Planner"
                 description="Get personalized date ideas perfectly tailored to your love language, personality, and relationship goals."
               />
@@ -596,8 +594,7 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
           <div className="flex items-center justify-center space-x-2">
             <h2 className="text-xl font-semibold text-primary">Local Events</h2>
             <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center cursor-pointer hover:bg-primary/20 transition-colors">
-              <FTUETooltip
-                id="local-events"
+              <InfoDialog
                 title="Local Events"
                 description="Discover exciting activities and hidden gems in your area to create unforgettable experiences together."
               />
@@ -652,8 +649,7 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
           <div className="flex items-center justify-center space-x-2">
             <h2 className="text-xl font-semibold text-primary">Planning Board</h2>
             <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center cursor-pointer hover:bg-primary/20 transition-colors">
-              <FTUETooltip
-                id="planning-board"
+              <InfoDialog
                 title="Planning Board"
                 description="Collaborate with your partner to plan the perfect date night and keep track of who's doing what."
               />

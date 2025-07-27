@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Slider } from '@/components/ui/slider';
 import { Heart, BookOpen, TrendingUp, Sparkles, Brain, MessageSquare, Loader2, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
-import { FTUETooltip } from '@/components/ui/ftue-tooltip';
+import { InfoDialog } from '@/components/ui/info-dialog';
 import { useRelationshipAI } from '@/hooks/useRelationshipAI';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -333,8 +333,7 @@ const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userPro
           <div className="flex items-center justify-center space-x-2">
             <h2 className="text-xl font-semibold text-primary">Therapy Companion</h2>
             <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center cursor-pointer hover:bg-primary/20 transition-colors">
-              <FTUETooltip
-                id="therapy-reflection"
+              <InfoDialog
                 title="Therapy Companion"
                 description="Prepare thoughtful questions for therapy and reflect on your insights to maximize your relationship growth."
               />
@@ -529,8 +528,7 @@ const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userPro
           <div className="flex items-center justify-center space-x-2">
             <h2 className="text-xl font-semibold text-primary">Growth Journal</h2>
             <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center cursor-pointer hover:bg-primary/20 transition-colors">
-              <FTUETooltip
-                id="growth-journal"
+              <InfoDialog
                 title="Growth Journal"
                 description="Document your relationship journey, capture breakthrough moments, and track your emotional growth over time."
               />
@@ -596,8 +594,7 @@ const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userPro
           <div className="flex items-center justify-center space-x-2">
             <h2 className="text-xl font-semibold text-primary">Mental Health Check-In</h2>
             <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center cursor-pointer hover:bg-primary/20 transition-colors">
-              <FTUETooltip
-                id="mental-health-checkin"
+              <InfoDialog
                 title="Mental Health Check-In"
                 description="Track your daily mental health and receive personalized recommendations to support your emotional well-being."
               />
