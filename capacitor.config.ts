@@ -1,7 +1,7 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.betters-convos',
+  appId: 'com.better.purposley',
   appName: 'Purposely',
   webDir: 'dist',
   bundledWebRuntime: false,
