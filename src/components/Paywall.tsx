@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Crown, Heart, Sparkles, Check, X } from 'lucide-react';
 import { HeartIcon } from '@/components/ui/heart-icon';
-import { supabase } from '@/integrations/supabase/client';
+import { useSubscription } from '@/hooks/useSubscription';
 import { useToast } from '@/hooks/use-toast';
 
 interface PaywallProps {
@@ -15,24 +15,14 @@ interface PaywallProps {
 
 const Paywall: React.FC<PaywallProps> = ({ onPlanSelected, onSkipToFree, isModal = false }) => {
   const [isLoading, setIsLoading] = useState(false);
+  const { createCheckoutSession } = useSubscription();
   const { toast } = useToast();
 
   const handleStartTrial = async () => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: { 
-          priceId: 'premium_annual_trial',
-          trialDays: 7 
-        }
-      });
-      
-      if (error) throw error;
-      
-      if (data?.url) {
-        // Open Stripe checkout in a new tab
-        window.open(data.url, '_blank');
-      }
+      await createCheckoutSession('yearly', true);
+      onPlanSelected(); // Call the callback to update the parent component
     } catch (error) {
       console.error('Error starting trial:', error);
       toast({

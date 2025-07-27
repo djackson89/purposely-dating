@@ -7,7 +7,10 @@ import FlirtFuelModule from '@/components/modules/FlirtFuelModule';
 import DateConciergeModule from '@/components/modules/DateConciergeModule';
 import TherapyCompanionModule from '@/components/modules/TherapyCompanionModule';
 import ProfileModule from '@/components/modules/ProfileModule';
+import ReviewRequestModal from '@/components/ReviewRequestModal';
 import { useAppInitialization } from '@/hooks/useAppInitialization';
+import { useSubscription } from '@/hooks/useSubscription';
+import { useReviewTracking } from '@/hooks/useReviewTracking';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 interface OnboardingData {
@@ -20,14 +23,16 @@ interface OnboardingData {
 
 const Index = () => {
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
-  const [hasCompletedPaywall, setHasCompletedPaywall] = useState(false);
-  const [isUsingFreeVersion, setIsUsingFreeVersion] = useState(false);
   const [userProfile, setUserProfile] = useState<OnboardingData | null>(null);
   const [activeModule, setActiveModule] = useState<'home' | 'flirtfuel' | 'concierge' | 'therapy' | 'profile'>('home');
   const [showPaywallModal, setShowPaywallModal] = useState(false);
   
   // Initialize native app features
   const { isNative, isOnline } = useAppInitialization(userProfile);
+  
+  // Subscription and review tracking hooks
+  const { subscription, loading: subscriptionLoading, createCheckoutSession } = useSubscription();
+  const { shouldShowReview, hideReviewModal, markReviewAsShown } = useReviewTracking();
 
   // Check for existing onboarding and paywall data
   useEffect(() => {
@@ -50,18 +55,15 @@ const Index = () => {
     localStorage.setItem('relationshipCompanionProfile', JSON.stringify(data));
   };
 
-  const handlePlanSelected = () => {
-    // For now, just complete the paywall flow
-    // In a real implementation, this would integrate with Stripe
-    console.log('Premium plan selected with 7-day trial');
-    setHasCompletedPaywall(true);
+  const handlePlanSelected = async () => {
+    // Start the Stripe checkout process
+    await createCheckoutSession('yearly', true);
     setShowPaywallModal(false);
-    localStorage.setItem('relationshipCompanionPaywall', JSON.stringify({ plan: 'premium', hasTrial: true, completedAt: new Date().toISOString() }));
   };
 
   const handleSkipToFree = () => {
     console.log('User chose free version');
-    setIsUsingFreeVersion(true);
+    localStorage.setItem('hasSeenPaywall', 'true');
     setShowPaywallModal(false);
   };
 
@@ -74,8 +76,8 @@ const Index = () => {
     return <OnboardingFlow onComplete={handleOnboardingComplete} />;
   }
 
-  // Show paywall if onboarding is done but paywall not completed and not using free version
-  if (!hasCompletedPaywall && !isUsingFreeVersion) {
+  // Show paywall if user doesn't have subscription and hasn't seen it yet
+  if (!subscriptionLoading && !subscription.subscribed && !localStorage.getItem('hasSeenPaywall')) {
     return <Paywall onPlanSelected={handlePlanSelected} onSkipToFree={handleSkipToFree} />;
   }
 
@@ -132,6 +134,15 @@ const Index = () => {
           />
         </DialogContent>
       </Dialog>
+
+      {/* Review Request Modal */}
+      <ReviewRequestModal 
+        isOpen={shouldShowReview}
+        onClose={() => {
+          hideReviewModal();
+          markReviewAsShown();
+        }}
+      />
     </div>
   );
 };
