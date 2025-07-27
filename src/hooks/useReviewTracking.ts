@@ -17,6 +17,7 @@ const TRACKING_KEYS = {
 };
 
 const THIRTY_MINUTES_MS = 30 * 60 * 1000; // 30 minutes in milliseconds
+const TEN_MINUTES_MS = 10 * 60 * 1000; // 10 minutes in milliseconds
 
 export const useReviewTracking = (): ReviewTrackingState => {
   const [shouldShowReview, setShouldShowReview] = useState(false);
@@ -51,6 +52,12 @@ export const useReviewTracking = (): ReviewTrackingState => {
     localStorage.setItem(TRACKING_KEYS.SESSION_START, currentTime.toString());
   };
 
+  // Get current session duration
+  const getCurrentSessionDuration = () => {
+    const sessionStart = parseInt(localStorage.getItem(TRACKING_KEYS.SESSION_START) || Date.now().toString());
+    return Date.now() - sessionStart;
+  };
+
   // Check if conditions are met to show review modal
   const checkReviewConditions = () => {
     const reviewAlreadyShown = localStorage.getItem(TRACKING_KEYS.REVIEW_SHOWN) === 'true';
@@ -62,10 +69,19 @@ export const useReviewTracking = (): ReviewTrackingState => {
     }
     
     const loginCount = parseInt(localStorage.getItem(TRACKING_KEYS.LOGIN_COUNT) || '0');
-    const totalTimeSpent = parseInt(localStorage.getItem(TRACKING_KEYS.TOTAL_TIME_SPENT) || '0');
+    const currentSessionDuration = getCurrentSessionDuration();
     
-    // Show on second login OR after 30 minutes of usage
-    return loginCount >= 2 || totalTimeSpent >= THIRTY_MINUTES_MS;
+    // For first-time users (loginCount === 1): wait at least 30 minutes
+    if (loginCount === 1) {
+      return currentSessionDuration >= THIRTY_MINUTES_MS;
+    }
+    
+    // For returning users (loginCount >= 2): wait at least 10 minutes into session
+    if (loginCount >= 2) {
+      return currentSessionDuration >= TEN_MINUTES_MS;
+    }
+    
+    return false;
   };
 
   // Initialize tracking and check conditions
