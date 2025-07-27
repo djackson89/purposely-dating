@@ -313,11 +313,11 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
                 <div className="mt-4 space-y-4 p-4 bg-muted/50 rounded-lg">
                   <div className="flex space-x-2">
                     <div className="flex-1">
-                      <label className="text-sm font-medium mb-1 block">Prospect Nickname</label>
+                      <label className="text-sm font-medium mb-1 block">Prospect Name</label>
                       <Input
                         value={newProspectNickname}
                         onChange={(e) => setNewProspectNickname(e.target.value)}
-                        placeholder="Enter nickname"
+                        placeholder="Enter name"
                       />
                     </div>
                     <div className="w-24">
