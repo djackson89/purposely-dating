@@ -50,7 +50,7 @@ export const useAppInitialization = (userProfile?: any) => {
     };
 
     initializeApp();
-  }, [isNative, userProfile?.age, userProfile?.gender, userProfile?.loveLanguage, userProfile?.relationshipStatus, userProfile?.personalityType, setStatusBarStyle, pushSupported, checkPermissions, setUserProperties, trackScreenView, success]);
+  }, [isNative, userProfile?.age, userProfile?.gender, userProfile?.loveLanguage, userProfile?.relationshipStatus, userProfile?.personalityType]);
 
   return {
     isNative,
