@@ -167,9 +167,15 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="p-4 bg-gradient-soft rounded-lg border border-primary/10">
-            <p className="text-foreground leading-relaxed">{dailyQuestion}</p>
-          </div>
+          <Card className="w-full shadow-elegant border-primary/20 bg-gradient-romance">
+            <CardContent className="p-8 flex flex-col justify-center items-center text-center">
+              <div className="flex items-center justify-center h-full w-full">
+                <p className="text-xl font-bold text-white leading-relaxed">
+                  {dailyQuestion}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
           <Button
             onClick={onNavigateToFlirtFuel}
             variant="romance"
