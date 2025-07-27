@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Heart, MessageCircle, Zap, Share, Wand2, Trash2, Users, X } from 'lucide-react';
+import { Heart, MessageCircle, Zap, Share, Wand2, Trash2, Users, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { InfoDialog } from '@/components/ui/info-dialog';
 import { Share as CapacitorShare } from '@capacitor/share';
 import { useRelationshipAI } from '@/hooks/useRelationshipAI';
@@ -279,7 +279,7 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
         line.trim() && 
         (line.includes('?') || line.match(/^\d+\.?/))
       ).map(line => 
-        line.replace(/^\d+\.?\s*/, '').trim()
+        line.replace(/^\d+\.?\s*/, '').replace(/\*\*/g, '').replace(/[""'']/g, '"').replace(/[^\w\s\?\.\!\,\:\;\(\)\-\'\"]/g, '').trim()
       ).slice(0, 8);
       
       // Generate unique custom category name
@@ -392,7 +392,7 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
           line.trim() && 
           (line.includes('?') || line.match(/^\d+\.?/))
         ).map(line => 
-          line.replace(/^\d+\.?\s*/, '').trim()
+          line.replace(/^\d+\.?\s*/, '').replace(/\*\*/g, '').replace(/[""'']/g, '"').replace(/[^\w\s\?\.\!\,\:\;\(\)\-\'\"]/g, '').trim()
         ).slice(0, 8);
         
         if (questions.length > 0) {
@@ -427,7 +427,7 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
             questions = response.split('\n').filter(line => 
               line.trim() && line.toLowerCase().includes('true or false')
             ).map(line => 
-              line.replace(/^\d+\.?\s*/, '').trim()
+              line.replace(/^\d+\.?\s*/, '').replace(/\*\*/g, '').replace(/[""'']/g, '"').replace(/[^\w\s\?\.\!\,\:\;\(\)\-\'\"]/g, '').trim()
             ).slice(0, 8);
           } else {
             // Parse regular questions
@@ -435,7 +435,7 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
               line.trim() && 
               (line.includes('?') || line.match(/^\d+\.?/))
             ).map(line => 
-              line.replace(/^\d+\.?\s*/, '').trim()
+              line.replace(/^\d+\.?\s*/, '').replace(/\*\*/g, '').replace(/[""'']/g, '"').replace(/[^\w\s\?\.\!\,\:\;\(\)\-\'\"]/g, '').trim()
             ).slice(0, 8);
           }
           
@@ -1276,6 +1276,31 @@ Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid gen
               </Button>
             </div>
 
+            {/* Navigation arrows */}
+            <div className="absolute left-4 top-1/2 transform -translate-y-1/2 z-10">
+              <Button
+                onClick={previousQuestion}
+                variant="ghost"
+                size="sm"
+                className="text-white hover:bg-white/20 rounded-full w-12 h-12 opacity-80 hover:opacity-100 transition-opacity"
+                disabled={currentQuestionIndex === 0}
+              >
+                <ChevronLeft className="w-6 h-6" />
+              </Button>
+            </div>
+            
+            <div className="absolute right-4 top-1/2 transform -translate-y-1/2 z-10">
+              <Button
+                onClick={nextQuestion}
+                variant="ghost"
+                size="sm"
+                className="text-white hover:bg-white/20 rounded-full w-12 h-12 opacity-80 hover:opacity-100 transition-opacity"
+                disabled={currentQuestionIndex === currentStarters.length - 1}
+              >
+                <ChevronRight className="w-6 h-6" />
+              </Button>
+            </div>
+
             {/* Question content */}
             <div 
               className="flex-1 flex items-center justify-center p-8 select-none cursor-pointer"
@@ -1284,7 +1309,7 @@ Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid gen
             >
               <div className="text-center max-w-4xl">
                 <p className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-relaxed">
-                  {currentStarters[currentQuestionIndex]}
+                  {currentStarters[currentQuestionIndex]?.replace(/\*\*/g, '').replace(/[""'']/g, '"').replace(/[^\w\s\?\.\!\,\:\;\(\)\-\'\"]/g, '').trim()}
                 </p>
               </div>
             </div>
@@ -1295,11 +1320,12 @@ Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid gen
                 {currentStarters.map((_, index) => (
                   <div
                     key={index}
-                    className={`w-3 h-3 rounded-full transition-colors ${
+                    className={`w-3 h-3 rounded-full transition-colors cursor-pointer ${
                       index === currentQuestionIndex 
                         ? 'bg-white' 
-                        : 'bg-white/40'
+                        : 'bg-white/40 hover:bg-white/60'
                     }`}
+                    onClick={() => setCurrentQuestionIndex(index)}
                   />
                 ))}
               </div>
@@ -1307,7 +1333,7 @@ Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid gen
 
             {/* Swipe instructions */}
             <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2">
-              <p className="text-white/70 text-sm">Swipe left or right to navigate</p>
+              <p className="text-white/70 text-sm">Swipe or tap arrows to navigate</p>
             </div>
           </div>
         </DialogContent>
