@@ -7,11 +7,12 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Heart, MessageCircle, Zap, Share, Wand2, Trash2, Users } from 'lucide-react';
+import { Heart, MessageCircle, Zap, Share, Wand2, Trash2, Users, X } from 'lucide-react';
 import { FTUETooltip } from '@/components/ui/ftue-tooltip';
 import { Share as CapacitorShare } from '@capacitor/share';
 import { useRelationshipAI } from '@/hooks/useRelationshipAI';
 import TextGenie from '@/components/TextGenie';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface OnboardingData {
   loveLanguage: string;
@@ -46,6 +47,9 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
   const [currentScenarioText, setCurrentScenarioText] = useState('');
   const [sessionFeedback, setSessionFeedback] = useState('');
   const [showFeedback, setShowFeedback] = useState(false);
+  const [isFullScreen, setIsFullScreen] = useState(false);
+  const [touchStart, setTouchStart] = useState({ x: 0, y: 0 });
+  const [touchEnd, setTouchEnd] = useState({ x: 0, y: 0 });
   const { getFlirtSuggestion, isLoading } = useRelationshipAI();
 
   const handleShare = async (text: string) => {
@@ -424,6 +428,42 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
     } else {
       previousQuestion();
     }
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStart({
+      x: e.touches[0].clientX,
+      y: e.touches[0].clientY
+    });
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    setTouchEnd({
+      x: e.changedTouches[0].clientX,
+      y: e.changedTouches[0].clientY
+    });
+    
+    const deltaX = touchStart.x - e.changedTouches[0].clientX;
+    const deltaY = touchStart.y - e.changedTouches[0].clientY;
+    
+    // Only trigger swipe if horizontal movement is greater than vertical
+    if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50) {
+      if (deltaX > 0) {
+        // Swiped left - next question
+        nextQuestion();
+      } else {
+        // Swiped right - previous question
+        previousQuestion();
+      }
+    }
+  };
+
+  const openFullScreen = () => {
+    setIsFullScreen(true);
+  };
+
+  const closeFullScreen = () => {
+    setIsFullScreen(false);
   };
 
   // AI Practice Partner methods
@@ -841,8 +881,11 @@ Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid gen
               {/* Question Card */}
               <div className="relative min-h-[300px] flex items-center justify-center">
                 <Card 
-                  className="w-full max-w-md mx-auto shadow-elegant border-primary/20 bg-gradient-romance transform transition-all duration-300 hover:scale-105"
+                  className="w-full max-w-md mx-auto shadow-elegant border-primary/20 bg-gradient-romance transform transition-all duration-300 hover:scale-105 cursor-pointer select-none"
                   style={{ minHeight: '250px' }}
+                  onClick={openFullScreen}
+                  onTouchStart={handleTouchStart}
+                  onTouchEnd={handleTouchEnd}
                 >
                   <CardContent className="p-8 flex flex-col justify-center items-center text-center h-full">
                     <div className="flex items-center justify-center h-full w-full">
@@ -1130,6 +1173,59 @@ Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid gen
         )}
         </div>
       )}
+
+      {/* Full Screen Question Modal */}
+      <Dialog open={isFullScreen} onOpenChange={setIsFullScreen}>
+        <DialogContent className="max-w-full max-h-full w-screen h-screen m-0 p-0 rounded-none border-none bg-gradient-romance">
+          <div className="relative h-full flex flex-col">
+            {/* Close button */}
+            <div className="absolute top-4 right-4 z-10">
+              <Button
+                onClick={closeFullScreen}
+                variant="ghost"
+                size="sm"
+                className="text-white hover:bg-white/20 rounded-full w-10 h-10"
+              >
+                <X className="w-5 h-5" />
+              </Button>
+            </div>
+
+            {/* Question content */}
+            <div 
+              className="flex-1 flex items-center justify-center p-8 select-none cursor-pointer"
+              onTouchStart={handleTouchStart}
+              onTouchEnd={handleTouchEnd}
+            >
+              <div className="text-center max-w-4xl">
+                <p className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-relaxed">
+                  {currentStarters[currentQuestionIndex]}
+                </p>
+              </div>
+            </div>
+
+            {/* Navigation indicators */}
+            <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
+              <div className="flex space-x-3">
+                {currentStarters.map((_, index) => (
+                  <div
+                    key={index}
+                    className={`w-3 h-3 rounded-full transition-colors ${
+                      index === currentQuestionIndex 
+                        ? 'bg-white' 
+                        : 'bg-white/40'
+                    }`}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Swipe instructions */}
+            <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2">
+              <p className="text-white/70 text-sm">Swipe left or right to navigate</p>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
