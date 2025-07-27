@@ -102,7 +102,7 @@ const Paywall: React.FC<PaywallProps> = ({ onPlanSelected, onSkipToFree, isModal
         <CardHeader className="text-center space-y-4">
           <div className="flex justify-center">
             <Badge variant="secondary" className="bg-gradient-romance text-white border-0 px-4 py-1">
-              7-Day Free Trial
+              3-Day Free Trial
             </Badge>
           </div>
           
@@ -112,7 +112,7 @@ const Paywall: React.FC<PaywallProps> = ({ onPlanSelected, onSkipToFree, isModal
             <div className="flex items-center justify-center space-x-2">
               <span className="text-4xl font-bold text-primary">$0</span>
               <div className="text-left">
-                <div className="text-sm text-muted-foreground">for 7 days</div>
+                <div className="text-sm text-muted-foreground">for 3 days</div>
                 <div className="text-xs text-muted-foreground">then $49.99/year</div>
               </div>
             </div>
@@ -193,7 +193,7 @@ const Paywall: React.FC<PaywallProps> = ({ onPlanSelected, onSkipToFree, isModal
               ✓ No commitment • ✓ Cancel anytime • ✓ Secure payment
             </p>
             <p className="text-xs text-muted-foreground">
-              Start your 7-day free trial and discover deeper connections
+              Start your 3-day free trial and discover deeper connections
             </p>
           </div>
         </CardContent>
