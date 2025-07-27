@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { User, Camera, Edit, Heart, Calendar, MessageCircle, LogOut, Settings } from 'lucide-react';
+import { HeartIcon } from '@/components/ui/heart-icon';
 import { InfoDialog } from '@/components/ui/info-dialog';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -77,7 +78,7 @@ const ProfileModule: React.FC<ProfileModuleProps> = ({ userProfile, onProfileUpd
   };
 
   const profileStats = [
-    { icon: Heart, label: 'Challenges Completed', value: '12' },
+    { icon: HeartIcon, label: 'Challenges Completed', value: '12' },
     { icon: Calendar, label: 'Date Ideas Saved', value: '8' },
     { icon: MessageCircle, label: 'Journal Entries', value: '15' }
   ];

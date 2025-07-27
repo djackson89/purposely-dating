@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Heart, MessageCircle, Zap, Share, Wand2, Trash2, Users, X, ChevronLeft, ChevronRight, Expand } from 'lucide-react';
+import { HeartIcon } from '@/components/ui/heart-icon';
 import { InfoDialog } from '@/components/ui/info-dialog';
 import { Share as CapacitorShare } from '@capacitor/share';
 import { useRelationshipAI } from '@/hooks/useRelationshipAI';
@@ -1222,7 +1223,7 @@ Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid gen
           <Card className="shadow-romance border-primary/20 bg-gradient-soft">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
-                <Heart className="w-5 h-5 text-primary animate-heart-pulse" />
+                <HeartIcon className="w-5 h-5 text-primary animate-heart-pulse" size={20} />
                 <span>Practice Session Feedback</span>
               </CardTitle>
             </CardHeader>

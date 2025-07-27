@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Slider } from '@/components/ui/slider';
 import { Heart, BookOpen, TrendingUp, Sparkles, Brain, MessageSquare, Loader2, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
+import { HeartIcon } from '@/components/ui/heart-icon';
 import { InfoDialog } from '@/components/ui/info-dialog';
 import { useRelationshipAI } from '@/hooks/useRelationshipAI';
 import { useToast } from '@/components/ui/use-toast';
@@ -237,7 +238,7 @@ const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userPro
   ];
 
   const sections = [
-    { id: 'reflection', label: 'Therapy Companion', icon: Sparkles },
+    { id: 'reflection', label: 'Therapy Companion', icon: HeartIcon },
     { id: 'journal', label: 'Growth Journal', icon: BookOpen },
     { id: 'insights', label: 'Mental Health Check-In', icon: TrendingUp }
   ];
@@ -378,7 +379,7 @@ const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userPro
                       </>
                     ) : (
                       <>
-                        <Sparkles className="w-4 h-4 mr-2" />
+                        <HeartIcon className="w-4 h-4 mr-2" size={16} />
                         Ask Purposely
                       </>
                     )}
@@ -429,7 +430,7 @@ const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userPro
           <Card className="shadow-soft border-primary/10">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
-                <Heart className="w-5 h-5 text-primary" />
+                <HeartIcon className="w-5 h-5 text-primary" size={20} />
                 <span>Post-Therapy: Share Your Takeaways</span>
               </CardTitle>
             </CardHeader>
@@ -462,7 +463,7 @@ const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userPro
                       </>
                     ) : (
                       <>
-                        <Sparkles className="w-4 h-4 mr-2" />
+                        <HeartIcon className="w-4 h-4 mr-2" size={16} />
                         Ask Purposely
                       </>
                     )}

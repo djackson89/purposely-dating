@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Crown, Heart, Sparkles, Check, X } from 'lucide-react';
+import { HeartIcon } from '@/components/ui/heart-icon';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -61,7 +62,7 @@ const Paywall: React.FC<PaywallProps> = ({ onPlanSelected, onSkipToFree, isModal
       <div className="text-center space-y-4">
         <div className="flex justify-center">
           <div className="w-16 h-16 bg-gradient-romance rounded-full flex items-center justify-center shadow-glow">
-            <Crown className="w-8 h-8 text-white" />
+            <HeartIcon className="w-8 h-8 text-white" size={32} />
           </div>
         </div>
         <h1 className="text-3xl font-bold bg-gradient-romance bg-clip-text text-transparent">
@@ -124,7 +125,7 @@ const Paywall: React.FC<PaywallProps> = ({ onPlanSelected, onSkipToFree, isModal
               </div>
             ) : (
               <>
-                <Sparkles className="w-5 h-5 mr-2" />
+                <HeartIcon className="w-5 h-5 mr-2" size={20} />
                 Try Premium for $0
               </>
             )}

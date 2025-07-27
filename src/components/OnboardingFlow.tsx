@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Heart, Sparkles, Calendar, MessageCircle } from 'lucide-react';
+import { HeartIcon } from '@/components/ui/heart-icon';
 
 interface OnboardingData {
   loveLanguage: string;
@@ -39,7 +40,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
       description: "Discover amazing date ideas tailored to your love language and create shared planning boards with your partner!"
     },
     {
-      icon: Sparkles,
+      icon: HeartIcon,
       title: "Self-Love Journey - Grow Together 🌱",
       description: "Reflect, journal, and track your emotional growth with personalized prompts and insights!"
     }

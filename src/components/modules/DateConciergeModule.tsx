@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar, MapPin, Sparkles, Heart, Users, Coffee, Plus, ChevronDown, ChevronUp, Eye, EyeOff, ThumbsUp, ThumbsDown, HelpCircle, Trash2 } from 'lucide-react';
+import { HeartIcon } from '@/components/ui/heart-icon';
 import { InfoDialog } from '@/components/ui/info-dialog';
 import { useRelationshipAI } from '@/hooks/useRelationshipAI';
 
@@ -253,7 +254,7 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
     { id: 'prospects', label: 'Dating Prospects', icon: Users },
     { id: 'suggestions', label: 'Dating Planner', icon: Sparkles },
     { id: 'local', label: 'Local Events', icon: MapPin },
-    { id: 'planning', label: 'Planning Board', icon: Heart }
+    { id: 'planning', label: 'Planning Board', icon: HeartIcon }
   ];
 
   return (
@@ -541,7 +542,7 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
           <Card className="shadow-romance border-primary/20">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
-                <Sparkles className="w-5 h-5 text-primary animate-heart-pulse" />
+                <HeartIcon className="w-5 h-5 text-primary animate-heart-pulse" size={20} />
                 <span>Perfect for {userProfile.loveLanguage} lovers</span>
               </CardTitle>
             </CardHeader>
