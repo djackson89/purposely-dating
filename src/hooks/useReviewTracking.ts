@@ -16,7 +16,7 @@ const TRACKING_KEYS = {
   TOTAL_TIME_SPENT: 'purposely_total_time_spent'
 };
 
-const TEN_MINUTES_MS = 10 * 60 * 1000; // 10 minutes in milliseconds
+const THIRTY_MINUTES_MS = 30 * 60 * 1000; // 30 minutes in milliseconds
 
 export const useReviewTracking = (): ReviewTrackingState => {
   const [shouldShowReview, setShouldShowReview] = useState(false);
@@ -64,8 +64,8 @@ export const useReviewTracking = (): ReviewTrackingState => {
     const loginCount = parseInt(localStorage.getItem(TRACKING_KEYS.LOGIN_COUNT) || '0');
     const totalTimeSpent = parseInt(localStorage.getItem(TRACKING_KEYS.TOTAL_TIME_SPENT) || '0');
     
-    // Show on second login OR after 10 minutes of usage
-    return loginCount >= 2 || totalTimeSpent >= TEN_MINUTES_MS;
+    // Show on second login OR after 30 minutes of usage
+    return loginCount >= 2 || totalTimeSpent >= THIRTY_MINUTES_MS;
   };
 
   // Initialize tracking and check conditions
