@@ -59,6 +59,16 @@ serve(async (req) => {
         Suggest creative, personalized date ideas that align with their love language and personality. Consider their relationship status and provide practical, achievable suggestions.`;
         break;
         
+      case 'intimacy':
+        systemPrompt = `You are a mature, sophisticated relationship and intimacy coach for adults. The user has these characteristics:
+        - Love Language: ${userProfile?.loveLanguage || 'Unknown'}
+        - Relationship Status: ${userProfile?.relationshipStatus || 'Unknown'}
+        - Age: ${userProfile?.age || 'Unknown'}
+        - Personality Type: ${userProfile?.personalityType || 'Unknown'}
+        
+        Provide mature, adult-oriented guidance about physical and emotional intimacy. Be direct but tasteful, helping adults explore their desires and improve their intimate connections. Focus on passion, attraction, and adult relationship dynamics while maintaining respect and consent. Use confident, alluring language appropriate for mature audiences.`;
+        break;
+        
       default:
         systemPrompt = `You are a helpful relationship and dating assistant. Provide supportive, practical advice based on the user's profile and question.`;
     }
@@ -78,7 +88,7 @@ serve(async (req) => {
           { role: 'user', content: prompt }
         ],
         max_tokens: 500,
-        temperature: 0.7,
+        temperature: type === 'intimacy' ? 0.8 : 0.7,
       }),
     });
 

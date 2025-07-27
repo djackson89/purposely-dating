@@ -50,7 +50,7 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [touchStart, setTouchStart] = useState({ x: 0, y: 0 });
   const [touchEnd, setTouchEnd] = useState({ x: 0, y: 0 });
-  const { getFlirtSuggestion, isLoading } = useRelationshipAI();
+  const { getFlirtSuggestion, getAIResponse, isLoading } = useRelationshipAI();
 
   const handleShare = async (text: string) => {
     try {
@@ -155,12 +155,18 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
     {
       category: "Intimacy",
       prompts: [
-        "What do you find most attractive about sexual chemistry?",
-        "How do you like to build physical tension and anticipation?",
-        "What makes you feel most desired and wanted?",
-        "What's your favorite way to express sexual intimacy?",
-        "How do you communicate your desires and boundaries?",
-        "What's something you've always wanted to explore sexually?"
+        "What drives you wild with desire about your partner?",
+        "How do you like to seduce and be seduced?",
+        "What's your most intense turn-on that you'd want a partner to know?",
+        "How do you build sexual tension throughout the day?",
+        "What's your fantasy about the perfect intimate encounter?",
+        "How do you prefer to communicate your deepest desires?",
+        "What makes you feel completely irresistible to your partner?",
+        "What's something that instantly makes you feel sexually confident?",
+        "How do you like to take control or surrender control in intimate moments?",
+        "What's the most alluring thing someone could whisper to you?",
+        "How do you express passion when words aren't enough?",
+        "What's your idea of the perfect buildup to intimacy?"
       ]
     },
     {
@@ -265,7 +271,8 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
     
     try {
       const prompt = `Generate 8 conversation starter questions based on these keywords: ${customKeywords}. The questions should be engaging, thoughtful, and incorporate the mood/themes of the keywords provided.`;
-      const response = await getFlirtSuggestion(prompt, userProfile);
+      const aiType = selectedCategory === 'Intimacy' ? 'intimacy' : 'flirt';
+      const response = await getAIResponse(prompt, userProfile, aiType);
       
       // Parse the response into an array of questions
       const questions = response.split('\n').filter(line => 
@@ -379,7 +386,8 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
       const existingQuestions = customCategories[selectedCategory];
       const prompt = `Generate 8 new conversation starter questions similar to these but completely different: ${existingQuestions.join(', ')}`;
       try {
-        const response = await getFlirtSuggestion(prompt, userProfile);
+        const aiType = selectedCategory === 'Intimacy' ? 'intimacy' : 'flirt';
+        const response = await getAIResponse(prompt, userProfile, aiType);
         const questions = response.split('\n').filter(line => 
           line.trim() && 
           (line.includes('?') || line.match(/^\d+\.?/))
@@ -410,7 +418,8 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
         }
         
         try {
-          const response = await getFlirtSuggestion(prompt, userProfile);
+          const aiType = selectedCategory === 'Intimacy' ? 'intimacy' : 'flirt';
+          const response = await getAIResponse(prompt, userProfile, aiType);
           let questions = [];
           
           if (selectedCategory === 'True or False') {

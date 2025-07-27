@@ -10,7 +10,7 @@ interface UserProfile {
   personalityType: string;
 }
 
-type AIType = 'therapy' | 'flirt' | 'date' | 'general';
+type AIType = 'therapy' | 'flirt' | 'date' | 'intimacy' | 'general';
 
 export const useRelationshipAI = () => {
   const [isLoading, setIsLoading] = useState(false);
