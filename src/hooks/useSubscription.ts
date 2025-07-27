@@ -21,6 +21,17 @@ export const useSubscription = () => {
       return;
     }
 
+    // Check for admin email first
+    if (user.email === 'thepurposleyapp@gmail.com') {
+      setSubscription({ 
+        subscribed: true, 
+        subscription_tier: 'Premium',
+        subscription_end: '2025-12-31T23:59:59.000Z'
+      });
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       const { data, error } = await supabase.functions.invoke('check-subscription');

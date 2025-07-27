@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Crown, Heart, Sparkles, Check, X } from 'lucide-react';
+import { Crown, Heart, Sparkles, Check, X, Smartphone, Globe } from 'lucide-react';
 import { HeartIcon } from '@/components/ui/heart-icon';
-import { useSubscription } from '@/hooks/useSubscription';
+import { usePlatformPayments } from '@/hooks/usePlatformPayments';
 import { useToast } from '@/hooks/use-toast';
 
 interface PaywallProps {
@@ -15,14 +15,46 @@ interface PaywallProps {
 
 const Paywall: React.FC<PaywallProps> = ({ onPlanSelected, onSkipToFree, isModal = false }) => {
   const [isLoading, setIsLoading] = useState(false);
-  const { createCheckoutSession } = useSubscription();
+  const { 
+    isNativeMobile, 
+    processPayment, 
+    getPaymentButtonText, 
+    getPlatformPrices,
+    currentPlatform,
+    isProcessing 
+  } = usePlatformPayments();
   const { toast } = useToast();
 
   const handleStartTrial = async () => {
     setIsLoading(true);
     try {
-      await createCheckoutSession('yearly', true);
-      onPlanSelected(); // Call the callback to update the parent component
+      if (isNativeMobile) {
+        // For mobile apps, redirect to app store
+        const platform = currentPlatform;
+        let storeUrl = '';
+        
+        if (platform === 'ios') {
+          storeUrl = 'https://apps.apple.com/app/purposely/id123456789'; // Replace with actual App Store ID
+        } else if (platform === 'android') {
+          storeUrl = 'https://play.google.com/store/apps/details?id=com.purposely.app'; // Replace with actual package name
+        }
+        
+        if (storeUrl) {
+          window.open(storeUrl, '_blank');
+          toast({
+            title: "Redirecting to Store",
+            description: `Opening ${platform === 'ios' ? 'App Store' : 'Google Play'} to complete your subscription...`,
+          });
+        }
+      } else {
+        // For web, use platform payment processing (which will use Stripe)
+        const result = await processPayment('yearly', true);
+        if (result.success) {
+          onPlanSelected();
+        } else {
+          throw new Error(result.error || 'Payment failed');
+        }
+      }
     } catch (error) {
       console.error('Error starting trial:', error);
       toast({
@@ -102,21 +134,43 @@ const Paywall: React.FC<PaywallProps> = ({ onPlanSelected, onSkipToFree, isModal
             ))}
           </div>
 
+          {/* Platform indicator */}
+          {isNativeMobile && (
+            <div className="flex items-center justify-center space-x-2 text-sm text-muted-foreground mb-4">
+              <Smartphone className="w-4 h-4" />
+              <span>
+                {currentPlatform === 'ios' ? 'App Store' : 'Google Play'} Purchase
+              </span>
+            </div>
+          )}
+          
+          {!isNativeMobile && (
+            <div className="flex items-center justify-center space-x-2 text-sm text-muted-foreground mb-4">
+              <Globe className="w-4 h-4" />
+              <span>Web Checkout</span>
+            </div>
+          )}
+
           {/* CTA Button */}
           <Button
             onClick={handleStartTrial}
-            disabled={isLoading}
+            disabled={isLoading || isProcessing}
             className="w-full bg-gradient-romance hover:opacity-90 text-white font-semibold py-3 text-lg shadow-lg hover:shadow-xl transition-all duration-300"
           >
-            {isLoading ? (
+            {(isLoading || isProcessing) ? (
               <div className="flex items-center space-x-2">
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                <span>Starting Trial...</span>
+                <span>
+                  {isNativeMobile ? 'Opening Store...' : 'Starting Trial...'}
+                </span>
               </div>
             ) : (
               <>
                 <HeartIcon className="w-5 h-5 mr-2" size={20} />
-                Try Premium for $0
+                {isNativeMobile 
+                  ? `Get Premium via ${currentPlatform === 'ios' ? 'App Store' : 'Google Play'}`
+                  : 'Try Premium for $0'
+                }
               </>
             )}
           </Button>

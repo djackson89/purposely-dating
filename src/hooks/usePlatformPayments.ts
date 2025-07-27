@@ -32,45 +32,48 @@ export const usePlatformPayments = () => {
     yearly: Capacitor.getPlatform() === 'ios' ? 'purposely_dating_yearly' : 'purposely.dating.yearly'
   });
 
-  // Handle in-app purchase for mobile
+  // Handle in-app purchase for mobile - redirects to app store
   const processInAppPurchase = async (plan: 'weekly' | 'yearly', hasTrial?: boolean): Promise<PlatformPaymentResult> => {
     try {
       setIsProcessing(true);
       
-      // Note: This is a simplified implementation
-      // In a real app, you would need to:
-      // 1. Initialize the store plugin
-      // 2. Get available products
-      // 3. Process the purchase
-      // 4. Validate the receipt on your backend
+      const platform = Capacitor.getPlatform();
+      let storeUrl = '';
       
-      const productIds = getProductIds();
-      const productId = productIds[plan];
+      if (platform === 'ios') {
+        // iOS - App Store (replace with your actual App Store ID)
+        storeUrl = 'https://apps.apple.com/app/purposely/id123456789';
+      } else if (platform === 'android') {
+        // Android - Google Play Store (replace with your actual package name)
+        storeUrl = 'https://play.google.com/store/apps/details?id=com.purposely.app';
+      }
       
-      toast({
-        title: "In-App Purchase",
-        description: `This would initiate purchase for ${productId}. Store setup required.`,
-      });
-
-      // Simulate purchase flow
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // In a real implementation, you would:
-      // - Call the store's purchase method
-      // - Handle the purchase result
-      // - Send receipt to your backend for validation
-      // - Update subscription status
-      
-      return {
-        success: true,
-        transactionId: `mobile_${Date.now()}`
-      };
+      if (storeUrl) {
+        window.open(storeUrl, '_blank');
+        
+        toast({
+          title: "Redirecting to Store",
+          description: `Opening ${platform === 'ios' ? 'App Store' : 'Google Play'} to complete your subscription...`,
+        });
+        
+        return {
+          success: true,
+          transactionId: `store_redirect_${Date.now()}`
+        };
+      } else {
+        throw new Error('Unsupported platform for app store redirect');
+      }
       
     } catch (error) {
-      console.error('In-app purchase failed:', error);
+      console.error('App store redirect failed:', error);
+      toast({
+        title: "Store Redirect Failed",
+        description: "Could not open app store. Please try again.",
+        variant: "destructive"
+      });
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Purchase failed'
+        error: error instanceof Error ? error.message : 'Store redirect failed'
       };
     } finally {
       setIsProcessing(false);
