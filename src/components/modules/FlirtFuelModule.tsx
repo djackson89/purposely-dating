@@ -387,29 +387,61 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
           line.replace(/^\d+\.?\s*/, '').trim()
         ).slice(0, 8);
         
-        setCurrentStarters(questions);
-        setCurrentQuestionIndex(0);
+        if (questions.length > 0) {
+          setCurrentStarters(questions);
+          setCurrentQuestionIndex(0);
+        }
       } catch (error) {
         console.error('Error loading more starters:', error);
+        // Fallback: shuffle the existing questions
+        const shuffled = [...customCategories[selectedCategory]].sort(() => Math.random() - 0.5);
+        setCurrentStarters(shuffled);
+        setCurrentQuestionIndex(0);
       }
     } else {
       const category = conversationStarters.find(cat => cat.category === selectedCategory);
       if (category) {
-        // Generate more questions for the same category
-        const prompt = `Generate 8 new conversation starter questions in the style of "${selectedCategory}" category. They should be similar to these examples but completely different: ${category.prompts.join(', ')}`;
+        // Enhanced prompt based on category type
+        let prompt = '';
+        if (selectedCategory === 'True or False') {
+          prompt = `Generate 8 new "True or False" conversation starter statements about relationships, dating, love, and modern romance. Make them thought-provoking, slightly controversial, and designed to spark meaningful discussions. Each should start with "True or False:" and cover topics like gender dynamics, relationship expectations, dating culture, emotional intelligence, etc. Make them different from these examples: ${category.prompts.slice(0, 5).join(', ')}`;
+        } else {
+          prompt = `Generate 8 new conversation starter questions in the style of "${selectedCategory}" category. They should be similar to these examples but completely different: ${category.prompts.slice(0, 5).join(', ')}. Make them engaging, thoughtful, and perfect for sparking meaningful conversations.`;
+        }
+        
         try {
           const response = await getFlirtSuggestion(prompt, userProfile);
-          const questions = response.split('\n').filter(line => 
-            line.trim() && 
-            (line.includes('?') || line.match(/^\d+\.?/))
-          ).map(line => 
-            line.replace(/^\d+\.?\s*/, '').trim()
-          ).slice(0, 8);
+          let questions = [];
           
-          setCurrentStarters(questions);
-          setCurrentQuestionIndex(0);
+          if (selectedCategory === 'True or False') {
+            // Parse True/False statements
+            questions = response.split('\n').filter(line => 
+              line.trim() && line.toLowerCase().includes('true or false')
+            ).map(line => 
+              line.replace(/^\d+\.?\s*/, '').trim()
+            ).slice(0, 8);
+          } else {
+            // Parse regular questions
+            questions = response.split('\n').filter(line => 
+              line.trim() && 
+              (line.includes('?') || line.match(/^\d+\.?/))
+            ).map(line => 
+              line.replace(/^\d+\.?\s*/, '').trim()
+            ).slice(0, 8);
+          }
+          
+          if (questions.length > 0) {
+            setCurrentStarters(questions);
+            setCurrentQuestionIndex(0);
+          } else {
+            throw new Error('No valid questions generated');
+          }
         } catch (error) {
           console.error('Error loading more starters:', error);
+          // Fallback: shuffle the original questions as backup
+          const shuffled = [...category.prompts].sort(() => Math.random() - 0.5);
+          setCurrentStarters(shuffled);
+          setCurrentQuestionIndex(0);
         }
       }
     }
@@ -984,6 +1016,15 @@ Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid gen
                   Share This Question
                 </Button>
 
+                <Button
+                  onClick={loadMoreStarters}
+                  disabled={isLoading}
+                  variant="romance"
+                  className="w-full"
+                >
+                  <Wand2 className="w-4 h-4 mr-2" />
+                  {isLoading ? 'Generating...' : 'Get More Questions ✨'}
+                </Button>
               </div>
             </div>
           )}
