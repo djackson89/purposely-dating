@@ -203,21 +203,21 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
       </Card>
 
       {/* Invite a Friend */}
-      <Card className="shadow-soft border-primary/10">
+      <Card className="shadow-romance border-primary/20 bg-primary text-primary-foreground">
         <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <Share2 className="w-5 h-5 text-primary" />
+          <CardTitle className="flex items-center space-x-2 text-primary-foreground">
+            <Share2 className="w-5 h-5 text-primary-foreground" />
             <span>Invite a Friend</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-muted-foreground leading-relaxed">
+          <p className="text-primary-foreground/90 leading-relaxed">
             Know someone who'd love the Purposely Dating App? Invite them to join you!
           </p>
           <Button
             onClick={handleShare}
-            variant="soft"
-            className="w-full"
+            variant="secondary"
+            className="w-full bg-primary-foreground text-primary hover:bg-primary-foreground/90"
           >
             <Share2 className="w-4 h-4 mr-2" />
             Share Purposely Dating
