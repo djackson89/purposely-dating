@@ -144,12 +144,6 @@ const Paywall: React.FC<PaywallProps> = ({ onPlanSelected, onSkipToFree, isModal
             </div>
           )}
           
-          {!isNativeMobile && (
-            <div className="flex items-center justify-center space-x-2 text-sm text-muted-foreground mb-4">
-              <Globe className="w-4 h-4" />
-              <span>Web Checkout</span>
-            </div>
-          )}
 
           {/* CTA Button */}
           <Button
