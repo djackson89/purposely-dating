@@ -242,7 +242,6 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
               onClick={() => handleQuoteVote('agree')}
               variant={quoteVote === 'agree' ? "romance" : "soft"}
               size="sm"
-              disabled={quoteVote !== null}
             >
               <ThumbsUp className="w-4 h-4 mr-1" />
               Agree
@@ -251,7 +250,6 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
               onClick={() => handleQuoteVote('disagree')}
               variant={quoteVote === 'disagree' ? "destructive" : "soft"}
               size="sm"
-              disabled={quoteVote !== null}
             >
               <ThumbsDown className="w-4 h-4 mr-1" />
               Disagree
