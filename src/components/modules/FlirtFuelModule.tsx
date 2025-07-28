@@ -51,6 +51,7 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [touchStart, setTouchStart] = useState({ x: 0, y: 0 });
   const [touchEnd, setTouchEnd] = useState({ x: 0, y: 0 });
+  const [depthLevel, setDepthLevel] = useState([1]); // 0=Fun, 1=Casual, 2=Deep
   const { getFlirtSuggestion, getAIResponse, isLoading } = useRelationshipAI();
 
   const handleShare = async (text: string) => {
@@ -262,6 +263,25 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
   ];
 
 
+  // Function to adjust question depth based on slider
+  const adjustQuestionDepth = async (originalQuestion: string, depth: number) => {
+    try {
+      const depthInstructions = {
+        0: "Make this question more fun, light-hearted, and slightly sarcastic. Perfect for casual conversations at lunch or on road trips.",
+        1: "Keep this question casual and balanced - mix of thought-provoking and light elements.",
+        2: "Make this question deeper, more complex, and thought-provoking for serious conversations that build thorough understanding."
+      };
+
+      const prompt = `Take this conversation starter: "${originalQuestion}" and ${depthInstructions[depth as keyof typeof depthInstructions]} Keep the core intent but adjust the tone and complexity. Return only the adjusted question.`;
+      
+      const response = await getAIResponse(prompt, userProfile, 'general');
+      return response.trim().replace(/^["']|["']$/g, ''); // Remove quotes if present
+    } catch (error) {
+      console.error('Error adjusting question depth:', error);
+      return originalQuestion; // Fallback to original
+    }
+  };
+
   // Initialize current starters with default category and daily shuffling
   React.useEffect(() => {
     const defaultCategory = conversationStarters.find(cat => cat.category === selectedCategory);
@@ -282,6 +302,29 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
       }
     }
   }, [selectedCategory, isCustom]);
+
+  // Adjust starters based on depth level
+  React.useEffect(() => {
+    const adjustStarters = async () => {
+      if (!isCustom && currentStarters.length > 0) {
+        const defaultCategory = conversationStarters.find(cat => cat.category === selectedCategory);
+        if (defaultCategory) {
+          // Only adjust if depth is not casual (1)
+          if (depthLevel[0] !== 1) {
+            const adjustedStarters = await Promise.all(
+              defaultCategory.prompts.map(question => adjustQuestionDepth(question, depthLevel[0]))
+            );
+            setCurrentStarters(adjustedStarters);
+          } else {
+            // Reset to original questions for casual level
+            setCurrentStarters(defaultCategory.prompts);
+          }
+        }
+      }
+    };
+
+    adjustStarters();
+  }, [depthLevel, selectedCategory, isCustom]);
 
   // Check for stored practice scenario from Home page navigation
   React.useEffect(() => {
@@ -1030,6 +1073,39 @@ Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid gen
                   </CardContent>
                 </Card>
               </div>
+
+              {/* Depth Slider */}
+              <Card className="shadow-soft border-primary/10">
+                <CardContent className="pt-6 pb-4">
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="font-medium text-primary">Question Depth</span>
+                      <span className="text-xs text-muted-foreground">
+                        {depthLevel[0] === 0 ? 'Fun' : depthLevel[0] === 1 ? 'Casual' : 'Deep'}
+                      </span>
+                    </div>
+                    <div className="px-2">
+                      <Slider
+                        value={depthLevel}
+                        onValueChange={setDepthLevel}
+                        max={2}
+                        step={1}
+                        className="w-full"
+                      />
+                      <div className="flex justify-between text-xs text-muted-foreground mt-2">
+                        <span>Fun</span>
+                        <span>Casual</span>
+                        <span>Deep</span>
+                      </div>
+                    </div>
+                    <p className="text-xs text-muted-foreground text-center">
+                      {depthLevel[0] === 0 && "Light-hearted & sarcastic for casual moments"}
+                      {depthLevel[0] === 1 && "Balanced mix of fun and thought-provoking"}
+                      {depthLevel[0] === 2 && "Complex & meaningful for deep conversations"}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
 
               {/* Navigation Controls */}
               <div className="flex justify-between items-center px-2 sm:px-4">
