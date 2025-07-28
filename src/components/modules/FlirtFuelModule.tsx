@@ -88,141 +88,175 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
   
   const conversationStarters = [
     {
-      category: "First Date Fun",
+      category: "First Date Deep Dive",
       prompts: userProfile.personalityType.includes("Outgoing") 
         ? [
-            "What's the most spontaneous thing you've ever done?",
-            "If you could have dinner with anyone, who would it be?",
-            "What's your favorite way to celebrate small wins?",
-            "What's the craziest adventure you've been on?",
-            "If you could live anywhere in the world, where would it be?",
-            "What's your go-to karaoke song?"
+            "What belief you held strongly in your twenties has completely shifted as you've grown?",
+            "What's something you're working on healing within yourself right now?",
+            "How do you know when someone truly sees and appreciates the real you?",
+            "What pattern do you notice in the type of people you're drawn to?",
+            "What does emotional maturity look like to you in a relationship?",
+            "What's a conversation topic that instantly reveals someone's character to you?"
           ]
         : [
-            "What book has influenced you the most?",
-            "What's your ideal way to spend a quiet evening?",
-            "What's something you're passionate about that might surprise me?",
-            "What's the most interesting documentary you've watched?",
-            "What's a skill you've always wanted to learn?",
-            "What's your favorite way to unwind after a long day?"
+            "What's something you've learned about yourself from your past relationships that surprised you?",
+            "How do you distinguish between healthy attachment and codependency?",
+            "What's one way your family dynamics shaped your approach to love?",
+            "When have you had to choose between what others wanted for you and what you wanted for yourself?",
+            "What does it mean to you when someone truly understands you?",
+            "How do you recognize when someone is emotionally available versus just saying the right things?"
           ]
     },
     {
-      category: "Relationship Talk", 
+      category: "Relationship Clarity", 
       prompts: [
-        `Since your love language is ${userProfile.loveLanguage}, what makes you feel most loved?`,
-        "What's your favorite memory of us together?",
-        "How do you prefer to handle disagreements?",
-        "What's one thing you appreciate about our relationship?",
-        "How do you like to be comforted when you're stressed?",
-        "What does a perfect relationship look like to you?"
+        `Since your love language is ${userProfile.loveLanguage}, how do you communicate when you're not feeling loved in that way?`,
+        "What's the difference between how you show love when you feel secure versus when you feel anxious?",
+        "How do you handle it when your partner processes emotions differently than you do?",
+        "What helps you feel emotionally safe enough to be completely vulnerable?",
+        "How do you distinguish between a partner having a bad day and a pattern of treating you poorly?",
+        "What does it look like when someone truly prioritizes you versus just fitting you into their schedule?",
+        "How do you navigate wanting to help someone you love while respecting their autonomy?",
+        "What's your experience with the difference between being wanted and being needed?"
       ]
     },
     {
-      category: "True or False",
+      category: "Boundaries & Values",
       prompts: [
-        "True or False: A man should always pay for the first few dates to demonstrate his financial stability.",
-        "True or False: A person's sexual history is a clear indicator of their character.",
-        "True or False: Being married is always more fulfilling than staying single.",
-        "True or False: Someone who talks a lot about their own achievements is likely a narcissist.",
-        "True or False: A woman earning more than a man can undermine his role in the relationship.",
-        "True or False: Financial generosity in a relationship is a sure sign of genuine affection.",
-        "True or False: A partner who keeps in touch with their exes is a red flag for infidelity.",
-        "True or False: Men are naturally less emotionally expressive than women in relationships.",
-        "True or False: Frequent jealousy is a sign of deep emotional investment in a relationship.",
-        "True or False: A man who is close to his mother will be more understanding and supportive in a relationship.",
-        "True or False: A woman who values her career over starting a family lacks maternal instincts.",
-        "True or False: The way a person treats service staff is a window into their true personality.",
-        "True or False: Consistently arriving late for dates is a sign of disrespect.",
-        "True or False: A partner's unwillingness to share their phone password indicates they have something to hide.",
-        "True or False: A man's reluctance to talk about feelings indicates a lack of emotional depth.",
-        "True or False: A woman's fashion choices can be a reliable indicator of her personality.",
-        "True or False: Emotional safety in a relationship is more important than physical attraction.",
-        "True or False: Trust is easily rebuilt in a relationship once broken.",
-        "True or False: Emotional intimacy is a prerequisite for a lasting relationship.",
-        "True or False: A relationship without emotional vulnerability is likely to fail.",
-        "True or False: Physical attraction is crucial for the success of a long-term relationship.",
-        "True or False: Most men prefer a good woman over a physically attractive one.",
-        "True or False: Faithfulness is more about character than gender.",
-        "True or False: A woman's sexual history is irrelevant to her current relationship.",
-        "True or False: Men are hardwired to seek multiple sexual partners.",
-        "True or False: A woman has the right to deny her partner sex at any time, for any reason.",
-        "True or False: There are never valid reasons for cheating in a relationship.",
-        "True or False: Men generally benefit more from marriage than women do.",
-        "True or False: A woman's financial independence is important for relationship equality.",
-        "True or False: Traditional household roles are key to a relationship's success."
+        "How do you feel about maintaining friendships with people of the opposite sex while in a relationship?",
+        "What are your thoughts on partner transparency with social media interactions and online activities?",
+        "How comfortable are you with the idea of girls' trips or guys' outings without your partner?",
+        "What boundaries should couples have regarding communication with ex-partners?",
+        "How do you define emotional cheating, and where do you draw those lines?",
+        "What are your views on sharing passwords or access to personal devices in a relationship?",
+        "How should couples handle situations where one partner feels jealous or insecure?",
+        "What boundaries do you think are necessary for work relationships with the opposite sex?",
+        "How do you feel about attending social events where alcohol is involved when your partner isn't present?",
+        "What's your stance on keeping in touch with people who have expressed romantic interest in you?",
+        "How do couples balance individual social lives with being a united couple?",
+        "What are your thoughts on the types of content that should be off-limits to consume in a relationship?"
       ]
     },
     {
-      category: "Intimacy",
+      category: "Trust & Transparency",
       prompts: [
-        "What drives you wild with desire about your partner?",
-        "How do you like to seduce and be seduced?",
-        "What's your most intense turn-on that you'd want a partner to know?",
-        "How do you build sexual tension throughout the day?",
-        "What's your fantasy about the perfect intimate encounter?",
-        "How do you prefer to communicate your deepest desires?",
-        "What makes you feel completely irresistible to your partner?",
-        "What's something that instantly makes you feel sexually confident?",
-        "How do you like to take control or surrender control in intimate moments?",
-        "What's the most alluring thing someone could whisper to you?",
-        "How do you express passion when words aren't enough?",
-        "What's your idea of the perfect buildup to intimacy?"
+        "True or False: Complete transparency about daily interactions should be standard in healthy relationships.",
+        "True or False: A partner's reluctance to share phone passwords indicates they have something to hide.",
+        "True or False: Emotional cheating is more damaging to a relationship than physical infidelity.",
+        "True or False: Someone who maintains close friendships with exes lacks respect for relationship boundaries.",
+        "True or False: Jealousy is always a sign of personal insecurity rather than legitimate concerns.",
+        "True or False: Partners should inform each other about all interactions with people of the opposite sex.",
+        "True or False: Checking your partner's social media activity is a violation of privacy, not protection.",
+        "True or False: A person's digital behavior when single should have no bearing on relationship expectations.",
+        "True or False: Trust once broken can be fully restored with enough time and effort.",
+        "True or False: Partners should have complete access to each other's social media accounts.",
+        "True or False: Flirting with others is harmless as long as it doesn't lead to anything physical.",
+        "True or False: Work relationships that involve late-night communication cross appropriate boundaries.",
+        "True or False: A partner who needs constant reassurance is being emotionally manipulative.",
+        "True or False: Solo travel or activities without your partner indicates a lack of commitment.",
+        "True or False: Relationships require some level of surveillance to maintain trust in the digital age."
       ]
     },
     {
-      category: "Relationship Boundaries",
+      category: "Intimacy & Connection",
       prompts: [
-        "What are your non-negotiables in a relationship?",
-        "How do you handle time with friends versus partner time?",
-        "What boundaries help you feel secure in relationships?",
-        "How do you communicate when you need space?",
-        "What's important to you about maintaining independence?",
-        "How do you handle social media in relationships?"
+        "How do you differentiate between physical chemistry and deeper emotional intimacy?",
+        "What does it mean to you when someone makes you feel emotionally safe during vulnerable moments?",
+        "How do you communicate your needs when your desire for intimacy doesn't match your partner's?",
+        "What role does emotional foreplay play in your ideal intimate connection?",
+        "How do you maintain individual sexual identity while building shared intimacy with a partner?",
+        "What's the relationship between emotional vulnerability and physical attraction for you?",
+        "How do you navigate mismatched libidos while maintaining connection and avoiding resentment?",
+        "What does it look like when someone truly sees and desires all of you, not just your physical self?",
+        "How do you balance being sexually adventurous with maintaining emotional safety?",
+        "What's the difference between performing for a partner versus authentically sharing yourself?",
+        "How do you communicate boundaries around intimacy without creating distance?",
+        "What role does anticipation and emotional buildup play in your ideal intimate experiences?"
       ]
     },
     {
-      category: "Turn-Offs & Turn-Ons",
+      category: "Communication & Conflict",
       prompts: [
-        "What instantly makes you lose interest in someone?",
-        "What qualities make someone irresistible to you?",
-        "What's a green flag that not everyone appreciates?",
-        "What's the most attractive thing someone can do?",
-        "What's a deal-breaker that might surprise people?",
-        "What kind of confidence do you find most appealing?"
+        "How do you recognize when you're being defensive versus when you're legitimately protecting yourself?",
+        "What's the difference between someone who avoids conflict and someone who chooses their battles wisely?",
+        "How do you handle conversations when your partner shuts down emotionally?",
+        "What does it look like when someone fights fair versus fights to win?",
+        "How do you navigate disagreements when you both feel misunderstood?",
+        "What's your experience with the difference between being heard and being understood?",
+        "How do you address issues when your communication styles are fundamentally different?",
+        "What boundaries do you need during heated discussions to feel safe and respected?",
+        "How do you know when an argument is productive versus when it's becoming destructive?",
+        "What role does timing play in having difficult but necessary conversations?",
+        "How do you rebuild connection after a significant disagreement or hurt?",
+        "What's the difference between someone who takes accountability and someone who just apologizes?"
       ]
     },
     {
-      category: "Mental Health",
+      category: "Red Flags & Green Flags",
       prompts: [
-        "How do you take care of your mental health?",
-        "How would you support a partner going through a tough time?",
-        "What's your relationship with therapy or self-improvement?",
-        "How do you handle stress in relationships?",
-        "What helps you feel emotionally safe?",
-        "How do you practice self-compassion?"
+        "What's a subtle red flag that most people overlook but you've learned to watch for?",
+        "How do you distinguish between someone who's going through a rough patch and someone who has concerning patterns?",
+        "What green flag do you value that might not be obvious to others?",
+        "What behavior makes you feel instantly safe and valued with someone?",
+        "How do you recognize when someone's words don't align with their actions?",
+        "What's a warning sign that someone isn't emotionally ready for a relationship?",
+        "What does emotional intelligence look like in how someone treats others, not just you?",
+        "How do you identify when someone is love-bombing versus genuinely interested?",
+        "What's a sign that someone respects your autonomy and doesn't see you as a project?",
+        "How do you recognize when someone is building you up versus when they're trying to control your self-image?",
+        "What behavior indicates someone sees you as an equal partner rather than a prize to win?",
+        "What's the difference between someone who supports your growth and someone who feels threatened by it?"
       ]
     },
     {
-      category: "Date Night Debates",
+      category: "Emotional Intelligence",
       prompts: [
-        "Pineapple on pizza: yes or no?",
-        "What's better: planning everything or being spontaneous?",
-        "Would you rather travel to the past or the future?",
-        "Cats or dogs, and why?",
-        "What's the best movie genre for a date night?",
-        "Morning person or night owl?"
+        "How do you differentiate between someone having strong boundaries and someone being emotionally unavailable?",
+        "What does it look like when someone takes responsibility for their emotional triggers?",
+        "How do you handle your own emotional reactions when your partner is processing something difficult?",
+        "What's the difference between supporting someone and enabling their unhealthy patterns?",
+        "How do you recognize when you're projecting past relationship wounds onto a current situation?",
+        "What does healthy interdependence look like to you versus codependency?",
+        "How do you maintain your own emotional stability while being present for a partner's struggles?",
+        "What's your approach to addressing insecurities without making them your partner's responsibility?",
+        "How do you navigate loving someone while accepting they may never change certain things about themselves?",
+        "What does it mean to show up authentically in a relationship rather than performing the 'perfect partner'?",
+        "How do you balance being understanding with maintaining your own standards and needs?",
+        "What's the difference between compromise and losing yourself in a relationship?"
       ]
     },
     {
-      category: "Conflict Resolution",
+      category: "Values & Future Vision",
       prompts: [
-        "How can we better communicate when we're both upset?",
-        "What's one thing we could improve about how we handle disagreements?",
-        "How do you prefer to make up after an argument?",
-        "What helps you feel heard during difficult conversations?",
-        "How can we prevent this issue from happening again?",
-        "What do you need from me when you're feeling hurt?"
+        "How do you navigate when you and a partner have different timelines for relationship milestones?",
+        "What does financial compatibility mean beyond just earning similar amounts?",
+        "How important is it that a partner shares your spiritual or philosophical worldview?",
+        "What role do you want your families to play in your romantic relationship?",
+        "How do you handle differences in social energy and need for alone time?",
+        "What does equality look like to you in terms of domestic responsibilities and decision-making?",
+        "How do you navigate different approaches to handling money, from saving to spending philosophies?",
+        "What's your approach to balancing career ambitions with relationship priorities?",
+        "How important is it that a partner shares your parenting philosophy if you want children?",
+        "What does it mean to grow together as a couple rather than growing apart over time?",
+        "How do you handle it when life circumstances change your shared goals or dreams?",
+        "What role does adventure and spontaneity play in your ideal long-term partnership?"
+      ]
+    },
+    {
+      category: "Self-Awareness & Growth",
+      prompts: [
+        "What insecurities do you recognize as your own responsibility to address rather than your partner's to manage?",
+        "How has your understanding of healthy love evolved from your earlier relationships?",
+        "What patterns from your family of origin do you actively work to break or continue in your relationships?",
+        "How do you balance accepting yourself as you are while still growing and improving?",
+        "What's something you've learned about your attachment style and how it shows up in relationships?",
+        "How do you distinguish between intuition about a relationship and anxiety or past trauma speaking?",
+        "What does self-love look like in practice, and how does it affect your romantic relationships?",
+        "How do you handle the vulnerability of being truly known by another person?",
+        "What's your relationship with therapy or personal development work?",
+        "How do you maintain your individual identity while building a life with someone else?",
+        "What does emotional responsibility look like in your relationships?",
+        "How do you recognize when you need to focus on personal growth versus when you need relationship support?"
       ]
     }
   ];
@@ -271,7 +305,7 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
     if (!customKeywords.trim()) return;
     
     try {
-      const prompt = `Generate 8 conversation starter questions based on these keywords: ${customKeywords}. The questions should be engaging, thoughtful, and incorporate the mood/themes of the keywords provided.`;
+      const prompt = `Generate 8 emotionally intelligent conversation starter questions based on these keywords: ${customKeywords}. The questions should go beyond surface-level topics and explore relationship boundaries, emotional dynamics, and authentic connection. Make them specific enough that someone thinks "Wow, I never thought to ask that before." Focus on topics that reveal character, values, and emotional maturity while incorporating the mood/themes of the keywords provided.`;
       const aiType = selectedCategory === 'Intimacy' ? 'intimacy' : 'flirt';
       const response = await getAIResponse(prompt, userProfile, aiType);
       
@@ -410,12 +444,27 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
     } else {
       const category = conversationStarters.find(cat => cat.category === selectedCategory);
       if (category) {
-        // Enhanced prompt based on category type
+        // Enhanced prompt based on category type for deeper, more emotionally intelligent questions
         let prompt = '';
-        if (selectedCategory === 'True or False') {
-          prompt = `Generate 8 new "True or False" conversation starter statements about relationships, dating, love, and modern romance. Make them thought-provoking, slightly controversial, and designed to spark meaningful discussions. Each should start with "True or False:" and cover topics like gender dynamics, relationship expectations, dating culture, emotional intelligence, etc. Make them different from these examples: ${category.prompts.slice(0, 5).join(', ')}`;
+        
+        if (selectedCategory === 'Trust & Transparency') {
+          prompt = `Generate 8 new "True or False" conversation starter statements that explore trust, transparency, and boundaries in modern relationships. Focus on situations that make people think "I never considered that perspective before." Address topics like digital boundaries, emotional fidelity, communication transparency, and relationship security. Each should start with "True or False:" and be thought-provoking enough to reveal someone's deeper values. Make them different from these examples: ${category.prompts.slice(0, 5).join(', ')}`;
+        } else if (selectedCategory === 'Boundaries & Values') {
+          prompt = `Generate 8 new conversation starter questions that explore relationship boundaries and values at a deep level. Focus on situations couples actually face but don't often discuss openly - like social media boundaries, opposite-sex friendships, transparency expectations, and personal autonomy within partnerships. Make them specific enough that someone thinks "Wow, I never thought to ask that before." Make them different from these examples: ${category.prompts.slice(0, 5).join(', ')}`;
+        } else if (selectedCategory === 'Communication & Conflict') {
+          prompt = `Generate 8 new conversation starter questions about emotional intelligence, conflict resolution, and communication patterns in relationships. Focus on the nuanced aspects of how people handle disagreements, express needs, and navigate misunderstandings. Address topics like emotional regulation, defensive patterns, and authentic expression. Make them insightful enough to help someone understand their partner's emotional world better. Make them different from these examples: ${category.prompts.slice(0, 5).join(', ')}`;
+        } else if (selectedCategory === 'Red Flags & Green Flags') {
+          prompt = `Generate 8 new conversation starter questions that help people identify healthy versus unhealthy relationship patterns. Focus on subtle signs of emotional intelligence, respect, and compatibility that people might overlook. Address topics like emotional availability, authentic interest, and behavioral consistency. Make them reveal character traits that aren't immediately obvious. Make them different from these examples: ${category.prompts.slice(0, 5).join(', ')}`;
+        } else if (selectedCategory === 'Emotional Intelligence') {
+          prompt = `Generate 8 new conversation starter questions that explore emotional maturity, self-awareness, and psychological health in relationships. Focus on how people handle their own emotions, support others, and navigate complex feelings like jealousy, insecurity, and vulnerability. Address topics like emotional responsibility, trauma awareness, and personal growth. Make them profound enough to spark deep self-reflection. Make them different from these examples: ${category.prompts.slice(0, 5).join(', ')}`;
+        } else if (selectedCategory === 'Values & Future Vision') {
+          prompt = `Generate 8 new conversation starter questions that explore life values, future compatibility, and shared vision in relationships. Focus on practical aspects of building a life together like financial philosophy, family dynamics, career priorities, and lifestyle preferences. Address topics that reveal fundamental compatibility beyond initial attraction. Make them specific enough to uncover potential areas of conflict or harmony. Make them different from these examples: ${category.prompts.slice(0, 5).join(', ')}`;
+        } else if (selectedCategory === 'Self-Awareness & Growth') {
+          prompt = `Generate 8 new conversation starter questions that explore personal development, self-awareness, and emotional growth within relationships. Focus on how people understand themselves, work on their issues, and show up authentically in partnerships. Address topics like attachment styles, family patterns, and individual responsibility. Make them introspective enough to promote meaningful self-discovery. Make them different from these examples: ${category.prompts.slice(0, 5).join(', ')}`;
+        } else if (selectedCategory === 'Intimacy & Connection') {
+          prompt = `Generate 8 new conversation starter questions that explore emotional and physical intimacy in relationships. Focus on the deeper aspects of connection, vulnerability, and authentic sharing between partners. Address topics like emotional safety, sexual communication, and intimate bonding. Make them thoughtful enough to deepen understanding of each other's intimate needs. Make them different from these examples: ${category.prompts.slice(0, 5).join(', ')}`;
         } else {
-          prompt = `Generate 8 new conversation starter questions in the style of "${selectedCategory}" category. They should be similar to these examples but completely different: ${category.prompts.slice(0, 5).join(', ')}. Make them engaging, thoughtful, and perfect for sparking meaningful conversations.`;
+          prompt = `Generate 8 new conversation starter questions in the style of "${selectedCategory}" category that go beyond surface-level dating questions. Make them emotionally intelligent, boundary-aware, and specific enough that someone thinks "That's such a good question, I never thought about that." Focus on relationship dynamics, emotional maturity, and authentic connection. They should be similar to these examples but completely different: ${category.prompts.slice(0, 5).join(', ')}. Make them engaging, thought-provoking, and perfect for sparking meaningful conversations about real relationship topics.`;
         }
         
         try {
