@@ -299,8 +299,34 @@ const TextGenie: React.FC<TextGenieProps> = ({ userProfile }) => {
         contextText += (contextText ? '\n\n' : '') + `Screenshot Analysis:\n${screenshotAnalysis}`;
       }
 
-      // First, generate the Purposely Perspective
-      const perspectivePrompt = `Analyze this message/situation and provide a "Purposely Perspective" - a short, empowering interpretation that gives the user clarity and validation: ${contextText}
+      // First, assess the user's tone and emotional state
+      const userToneAssessment = `Analyze the user's tone and emotional state from their description: ${contextText}
+
+Determine if the user sounds:
+1. OFFENDED/BOTHERED - They express feeling hurt, insulted, upset, angry, disrespected, or bothered by the message
+2. NEUTRAL/CURIOUS - They seem calm, confused, or simply seeking advice without strong negative emotions
+3. POSITIVE/ENGAGED - They seem happy, excited, or positively engaged
+
+Respond with just the category (OFFENDED/BOTHERED, NEUTRAL/CURIOUS, or POSITIVE/ENGAGED) followed by a brief explanation.`;
+
+      const userToneResponse = await getFlirtSuggestion(userToneAssessment, userProfile);
+      const userEmotionalState = userToneResponse.split('\n')[0].trim().toUpperCase();
+
+      // Generate perspective based on user's emotional state
+      let perspectivePrompt = '';
+      if (userEmotionalState.includes('OFFENDED') || userEmotionalState.includes('BOTHERED')) {
+        perspectivePrompt = `The user appears to be offended, hurt, or bothered by this message/situation: ${contextText}
+
+Provide a "Purposely Perspective" that prioritizes SELF-ADVOCACY and validation:
+- Validate the user's feelings and intuition about something being problematic
+- Identify any potential toxic, disrespectful, or problematic elements in the received message
+- Empower them to trust their instincts and set appropriate boundaries
+- Be supportive and confidence-building
+- Be 1-2 sentences maximum
+
+Focus on helping them recognize their worth and the importance of addressing concerning behavior.`;
+      } else {
+        perspectivePrompt = `Analyze this message/situation and provide a "Purposely Perspective" - a short, empowering interpretation that gives the user clarity and validation: ${contextText}
 
 Your response should:
 - Offer insight into what might really be happening
@@ -310,6 +336,7 @@ Your response should:
 - Help the user see the situation clearly
 
 Example format: "This appears to be [insight about the situation]. Your [feelings/needs] are completely valid and here's how we can address this thoughtfully."`;
+      }
 
       const perspectiveResponse = await getFlirtSuggestion(perspectivePrompt, userProfile);
       setPurposelyPerspective(perspectiveResponse.trim());
@@ -327,10 +354,37 @@ Respond with just the category (DEROGATORY, KIND_NEUTRAL, or UNCLEAR) followed b
       const toneAnalysis = await getFlirtSuggestion(analysisPrompt, userProfile);
       const messageCategory = toneAnalysis.split('\n')[0].trim().toUpperCase();
 
-      // Generate contextually appropriate responses based on the message tone
+      // Prioritize boundary-setting responses if user is offended/bothered
+      const shouldPrioritizeBoundaries = userEmotionalState.includes('OFFENDED') || userEmotionalState.includes('BOTHERED');
+
+      // Generate contextually appropriate responses based on user's emotional state and message tone
       let responsePrompt = '';
       
-      if (messageCategory.includes('DEROGATORY')) {
+      if (shouldPrioritizeBoundaries) {
+        // When user is offended/bothered, prioritize boundary-setting regardless of message classification
+        responsePrompt = `The user feels offended, hurt, or bothered by this message/situation: ${contextText}
+
+Generate 3 response suggestions focused on SELF-ADVOCACY and BOUNDARY SETTING:
+
+1. Sweet: A gentle but clear response that sets boundaries while maintaining dignity and self-respect
+2. Mild: An emotionally intelligent response that addresses the issue directly and seeks clarity or resolution
+3. Spicy: A confident, assertive response that firmly establishes boundaries and communicates their worth
+
+For each reply, provide a "Purposely Perspective" explaining how this response helps the user advocate for themselves (max 2 sentences).
+
+Format as:
+Sweet: [reply text]
+Perspective: [explanation]
+
+Mild: [reply text]  
+Perspective: [explanation]
+
+Spicy: [reply text]
+Perspective: [explanation]
+
+Keep replies concise (max 2 sentences each). Focus on responses that help the user stand up for themselves, set clear boundaries, and maintain their self-worth.`;
+
+      } else if (messageCategory.includes('DEROGATORY')) {
         responsePrompt = `The incoming message appears to be derogatory or disrespectful: ${contextText}
 
 Generate 3 response suggestions focused on BOUNDARY SETTING and CLARITY:
@@ -681,7 +735,7 @@ Avoid repeating the previous assessment and look at this from a new angle.`;
                   }}
                 >
                   <ThumbsUp className="w-4 h-4 text-green-600" />
-                  <span>This helps</span>
+                  <span>Agreed</span>
                 </Button>
                 <Button
                   variant="outline"
@@ -691,7 +745,7 @@ Avoid repeating the previous assessment and look at this from a new angle.`;
                   disabled={isGeneratingPerspective}
                 >
                   <ThumbsDown className="w-4 h-4 text-orange-600" />
-                  <span>{isGeneratingPerspective ? 'Generating...' : 'Different angle'}</span>
+                  <span>{isGeneratingPerspective ? 'Generating...' : 'Disagree'}</span>
                 </Button>
               </div>
             </div>
