@@ -317,25 +317,29 @@ Respond with just the category (OFFENDED/BOTHERED, NEUTRAL/CURIOUS, or POSITIVE/
       if (userEmotionalState.includes('OFFENDED') || userEmotionalState.includes('BOTHERED')) {
         perspectivePrompt = `The user appears to be offended, hurt, or bothered by this message/situation: ${contextText}
 
-Provide a "Purposely Perspective" that prioritizes SELF-ADVOCACY and validation:
-- Validate the user's feelings and intuition about something being problematic
-- Identify any potential toxic, disrespectful, or problematic elements in the received message
-- Empower them to trust their instincts and set appropriate boundaries
-- Be supportive and confidence-building
-- Be 1-2 sentences maximum
+You are a no-nonsense relationship coach specializing in boundaries and identifying manipulation. Assume the person messaging them is potentially toxic. Provide a "Purposely Perspective" that:
 
-Focus on helping them recognize their worth and the importance of addressing concerning behavior.`;
+- VALIDATES their intuition - their anxiety/discomfort is their nervous system's alarm system going off
+- IDENTIFIES subtle manipulation tactics or red flags in the received message 
+- EMPOWERS them to trust their instincts over trying to "make it work"
+- Uses direct, protective language like "Your peace is the compass - if this consistently disrupts it, you're going the wrong direction"
+- Reminds them that pain is often protection trying to guide them toward their exit
+- Be 1-2 sentences maximum with tough-love energy
+
+Channel the energy: "When something isn't for you, it'll hurt you until you let it go. Stop taking Advil for universe-induced headaches."`;
       } else {
-        perspectivePrompt = `Analyze this message/situation and provide a "Purposely Perspective" - a short, empowering interpretation that gives the user clarity and validation: ${contextText}
+        perspectivePrompt = `Analyze this message/situation as a no-nonsense relationship coach specializing in boundaries: ${contextText}
 
-Your response should:
-- Offer insight into what might really be happening
-- Validate the user's feelings and needs
-- Be supportive and empowering
+You assume this person is dealing with someone potentially toxic unless the message is OBVIOUSLY positive and flirty. Provide a "Purposely Perspective" that:
+
+- LOOKS FOR subtle manipulation, guilt-tripping, or boundary-testing behaviors
+- VALIDATES the user's need for clarity and healthy boundaries  
+- IDENTIFIES when someone is making them feel "crazy" or confused (common manipulation tactic)
+- Encourages self-advocacy and clear communication over people-pleasing
+- Uses protective, empowering language about their worth and peace
 - Be 1-2 sentences maximum
-- Help the user see the situation clearly
 
-Example format: "This appears to be [insight about the situation]. Your [feelings/needs] are completely valid and here's how we can address this thoughtfully."`;
+Only suggest flirtation if the incoming message is clearly positive, kind, and respectful. Otherwise, focus on clarity and boundary-setting.`;
       }
 
       const perspectiveResponse = await getFlirtSuggestion(perspectivePrompt, userProfile);
@@ -536,16 +540,17 @@ Keep replies concise (max 2 sentences each). Focus on responses that either seek
         contextText += (contextText ? '\n\n' : '') + `Screenshot Analysis:\n${imageAnalysis}`;
       }
 
-      const newPerspectivePrompt = `The user disagreed with the previous assessment. Please provide a different "Purposely Perspective" on this message/situation, exploring a different angle: ${contextText}
+      const newPerspectivePrompt = `The user disagreed with the previous assessment. As a no-nonsense relationship coach specializing in boundaries and manipulation detection, provide a DIFFERENT "Purposely Perspective" on this message/situation: ${contextText}
 
 Your new response should:
-- Offer a different interpretation than before
-- Consider alternative motivations or contexts
-- Still be supportive and empowering
-- Be 1-2 sentences maximum
-- Give the user a fresh way to view the situation
+- Offer a completely different interpretation than before, but still assume potential toxicity unless obviously positive
+- Look for different red flags or manipulation tactics
+- Focus on boundary-setting and self-advocacy
+- Use direct, protective language about their worth and peace
+- Be 1-2 sentences maximum with tough-love energy
+- Channel the energy: "Your anxiety around them isn't chemistry—it's your nervous system's alarm system"
 
-Avoid repeating the previous assessment and look at this from a new angle.`;
+Give the user a fresh but equally protective way to view the situation.`;
 
       const newPerspective = await getFlirtSuggestion(newPerspectivePrompt, userProfile);
       setPurposelyPerspective(newPerspective.trim());
