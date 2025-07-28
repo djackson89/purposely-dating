@@ -4,13 +4,14 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { User, Camera, Edit, Heart, Calendar, MessageCircle, LogOut, Settings } from 'lucide-react';
+import { User, Camera, Edit, Heart, Calendar, MessageCircle, LogOut, Settings, CreditCard } from 'lucide-react';
 import { HeartIcon } from '@/components/ui/heart-icon';
 import { InfoDialog } from '@/components/ui/info-dialog';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useCamera } from '@/hooks/useCamera';
 import { useHaptics } from '@/hooks/useHaptics';
+import { useSubscription } from '@/hooks/useSubscription';
 import AppSettings from '@/components/AppSettings';
 
 interface OnboardingData {
@@ -33,6 +34,7 @@ const ProfileModule: React.FC<ProfileModuleProps> = ({ userProfile, onProfileUpd
   const [userName, setUserName] = useState('Your Name');
   const [showSettings, setShowSettings] = useState(false);
   const { user, signOut } = useAuth();
+  const { subscription, openCustomerPortal } = useSubscription();
   const { toast } = useToast();
   const { selectPhoto } = useCamera();
   const { success, light } = useHaptics();
@@ -73,6 +75,19 @@ const ProfileModule: React.FC<ProfileModuleProps> = ({ userProfile, onProfileUpd
       toast({
         title: "Signed Out",
         description: "You've been successfully signed out.",
+      });
+    }
+  };
+
+  const handleManageBilling = async () => {
+    light(); // Haptic feedback on button press
+    try {
+      await openCustomerPortal();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to open billing portal. Please try again.",
+        variant: "destructive",
       });
     }
   };
@@ -260,6 +275,52 @@ const ProfileModule: React.FC<ProfileModuleProps> = ({ userProfile, onProfileUpd
           )}
         </CardContent>
       </Card>
+
+      {/* Subscription Management */}
+      {subscription.subscribed && (
+        <Card className="shadow-soft border-primary/10">
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <CreditCard className="w-5 h-5 text-primary" />
+              <span>Subscription & Billing</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="bg-gradient-soft p-4 rounded-lg border border-primary/20">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="font-semibold text-primary">Current Plan</h3>
+                <span className="bg-gradient-romance text-white px-3 py-1 rounded-full text-sm font-medium">
+                  {subscription.subscription_tier || 'Premium'}
+                </span>
+              </div>
+              {subscription.subscription_end && (
+                <p className="text-sm text-muted-foreground">
+                  {subscription.subscription_tier?.includes('trial') || subscription.subscription_tier === 'Premium' 
+                    ? `Trial ends: ${new Date(subscription.subscription_end).toLocaleDateString()}`
+                    : `Next billing: ${new Date(subscription.subscription_end).toLocaleDateString()}`
+                  }
+                </p>
+              )}
+            </div>
+            
+            <Button 
+              variant="soft" 
+              className="w-full justify-start"
+              onClick={handleManageBilling}
+            >
+              <CreditCard className="w-4 h-4 mr-2" />
+              Manage Subscription & Billing
+            </Button>
+            
+            <div className="text-xs text-muted-foreground space-y-1">
+              <p>• Cancel your free trial before it renews</p>
+              <p>• Update payment methods</p>
+              <p>• Change or upgrade your plan</p>
+              <p>• View billing history</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* App Info */}
       <Card className="shadow-soft border-primary/10">
