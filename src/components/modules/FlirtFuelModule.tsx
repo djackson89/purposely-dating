@@ -1189,32 +1189,32 @@ Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid gen
                       <Expand className="w-5 h-5 text-white/70" />
                     </div>
                     
-                    <div className="flex items-center justify-center h-full w-full">
+                    <div className="flex items-center justify-center h-full w-full px-4">
                       {isMultipleChoice(currentStarters[currentQuestionIndex]) ? (
-                        <div className="w-full max-w-2xl">
-                          <p className="text-xl font-bold text-white leading-relaxed mb-6">
+                        <div className="w-full max-w-lg">
+                          <p className="text-lg sm:text-xl font-bold text-white leading-relaxed mb-4 text-center">
                             {currentStarters[currentQuestionIndex].statement}
                           </p>
-                          <div className="space-y-3">
+                          <div className="space-y-2">
                             {currentStarters[currentQuestionIndex].options.map((option) => (
                               <Button
                                 key={option.key}
                                 onClick={() => setSelectedAnswer(option.key)}
                                 variant={selectedAnswer === option.key ? "default" : "outline"}
-                                className={`w-full p-4 text-left justify-start text-sm ${
+                                className={`w-full p-3 text-left justify-start text-xs sm:text-sm ${
                                   selectedAnswer === option.key 
                                     ? "bg-primary text-primary-foreground" 
                                     : "bg-white/10 text-white border-white/20 hover:bg-white/20"
                                 }`}
                               >
-                                <span className="font-bold mr-3">{option.key}.</span>
-                                <span>{option.text}</span>
+                                <span className="font-bold mr-2 text-sm">{option.key}.</span>
+                                <span className="leading-tight">{option.text}</span>
                               </Button>
                             ))}
                           </div>
                         </div>
                       ) : (
-                        <p className="text-2xl font-bold text-white leading-relaxed">
+                        <p className="text-xl sm:text-2xl font-bold text-white leading-relaxed text-center px-4">
                           {getQuestionText(currentStarters[currentQuestionIndex])}
                         </p>
                       )}
