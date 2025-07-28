@@ -1424,8 +1424,7 @@ Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid gen
         </div>
       )}
 
-
-      {/* Text Genie */}
+      {/* Text Genie - Debug: This should be at root level */}
       {activeSection === 'textgenie' && (
         <div className="animate-fade-in-up">
           {/* Section Heading */}
@@ -1750,14 +1749,10 @@ Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid gen
           </div>
         </DialogContent>
       </Dialog>
-            </div>
-          )}
         </div>
       )}
     </div>
   );
 };
-
-export default FlirtFuelModule;
 
 export default FlirtFuelModule;
