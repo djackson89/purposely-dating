@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Heart, MessageCircle, Zap, Share, Wand2, Trash2, Users, X, ChevronLeft, ChevronRight, Expand } from 'lucide-react';
+import { Heart, MessageCircle, Zap, Share, Send, Wand2, Trash2, Users, X, ChevronLeft, ChevronRight, Expand } from 'lucide-react';
 import { HeartIcon } from '@/components/ui/heart-icon';
 import { InfoDialog } from '@/components/ui/info-dialog';
 import { Share as CapacitorShare } from '@capacitor/share';
@@ -68,23 +68,36 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
   };
 
   const handleShare = async (text: string) => {
+    // Detect device type for appropriate app store link
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const isAndroid = /Android/.test(navigator.userAgent);
+    
+    let appStoreLink = 'https://purposely.app'; // Default fallback
+    if (isIOS) {
+      appStoreLink = 'https://apps.apple.com/app/purposely-dating'; // Replace with actual iOS App Store link
+    } else if (isAndroid) {
+      appStoreLink = 'https://play.google.com/store/apps/details?id=com.purposely.dating'; // Replace with actual Google Play link
+    }
+    
+    const shareText = `${text}\n\nSent with Purposely App\n${appStoreLink}`;
+    
     try {
       // Try Capacitor Share first (for mobile)
       if ((window as any).Capacitor) {
         await CapacitorShare.share({
-          title: 'Conversation Starter from Clarity Coach',
-          text: text,
+          title: 'Conversation Starter from Purposely App',
+          text: shareText,
         });
       } else {
         // Fallback to Web Share API
         if (navigator.share) {
           await navigator.share({
-            title: 'Conversation Starter from Clarity Coach',
-            text: text,
+            title: 'Conversation Starter from Purposely App',
+            text: shareText,
           });
         } else {
           // Fallback to clipboard
-          await navigator.clipboard.writeText(text);
+          await navigator.clipboard.writeText(shareText);
           alert('Copied to clipboard!');
         }
       }
@@ -92,7 +105,7 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
       console.error('Error sharing:', error);
       // Final fallback to clipboard
       try {
-        await navigator.clipboard.writeText(text);
+        await navigator.clipboard.writeText(shareText);
         alert('Copied to clipboard!');
       } catch (clipboardError) {
         console.error('Error copying to clipboard:', clipboardError);
@@ -1294,24 +1307,39 @@ Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid gen
               <div className="text-center w-full max-w-6xl mx-auto">
                 {isMultipleChoice(currentStarters[currentQuestionIndex]) ? (
                   <div className="w-full">
-                    <p className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-white leading-tight mb-8 sm:mb-12 px-4">
-                      {currentStarters[currentQuestionIndex].statement}
-                    </p>
+                    {/* Question with dark gradient background */}
+                    <div className="relative inline-block mb-8 sm:mb-12">
+                      <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-black/60 rounded-2xl backdrop-blur-sm"></div>
+                      <p className="relative text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-white leading-tight px-6 py-4">
+                        {currentStarters[currentQuestionIndex].statement}
+                      </p>
+                    </div>
+                    
+                    {/* Answer choices with dark gradient background */}
                     <div className="space-y-4 sm:space-y-6 text-left max-w-5xl mx-auto px-4">
-                      {currentStarters[currentQuestionIndex].options.map((option) => (
-                        <div key={option.key} className="text-white/90">
-                          <span className="font-bold text-xl sm:text-2xl md:text-3xl mr-4">{option.key}.</span>
-                          <span className="text-lg sm:text-xl md:text-2xl leading-relaxed break-words">
-                            {option.text}
-                          </span>
+                      <div className="relative">
+                        <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-black/30 to-black/50 rounded-xl backdrop-blur-sm"></div>
+                        <div className="relative px-6 py-4 space-y-3">
+                          {currentStarters[currentQuestionIndex].options.map((option) => (
+                            <div key={option.key} className="text-white/90">
+                              <span className="font-bold text-xl sm:text-2xl md:text-3xl mr-4">{option.key}.</span>
+                              <span className="text-lg sm:text-xl md:text-2xl leading-relaxed break-words">
+                                {option.text}
+                              </span>
+                            </div>
+                          ))}
                         </div>
-                      ))}
+                      </div>
                     </div>
                   </div>
                 ) : (
-                  <p className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl 2xl:text-7xl font-bold text-white leading-tight px-4 max-w-5xl mx-auto">
-                    {getQuestionText(currentStarters[currentQuestionIndex])?.replace(/\*\*/g, '').replace(/[""'']/g, '"').replace(/[^\w\s\?\.\!\,\:\;\(\)\-\'\"]/g, '').trim()}
-                  </p>
+                  // Single question with dark gradient background
+                  <div className="relative inline-block">
+                    <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-black/60 rounded-2xl backdrop-blur-sm"></div>
+                    <p className="relative text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl 2xl:text-7xl font-bold text-white leading-tight px-6 py-4 max-w-5xl">
+                      {getQuestionText(currentStarters[currentQuestionIndex])?.replace(/\*\*/g, '').replace(/[""'']/g, '"').replace(/[^\w\s\?\.\!\,\:\;\(\)\-\'\"]/g, '').trim()}
+                    </p>
+                  </div>
                 )}
               </div>
             </div>
@@ -1324,8 +1352,8 @@ Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid gen
                 size="lg"
                 className="text-white hover:bg-white/20 rounded-full px-6 py-3 bg-white/10 backdrop-blur-sm border border-white/20"
               >
-                <Share className="w-5 h-5 mr-2" />
-                Share
+                <Send className="w-5 h-5 mr-2" />
+                Ask a friend
               </Button>
             </div>
 
