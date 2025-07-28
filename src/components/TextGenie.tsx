@@ -19,7 +19,9 @@ import {
   ChevronUp,
   MessageSquare,
   Heart,
-  Flame
+  Flame,
+  ThumbsUp,
+  ThumbsDown
 } from 'lucide-react';
 import { useCamera, PhotoResult } from '@/hooks/useCamera';
 import { useRelationshipAI } from '@/hooks/useRelationshipAI';
@@ -59,6 +61,8 @@ const TextGenie: React.FC<TextGenieProps> = ({ userProfile }) => {
   const [loadingMessage, setLoadingMessage] = useState('');
   const [imageAnalysis, setImageAnalysis] = useState<string>('');
   const [isAnalyzingImages, setIsAnalyzingImages] = useState(false);
+  const [purposelyPerspective, setPurposelyPerspective] = useState<string>('');
+  const [isGeneratingPerspective, setIsGeneratingPerspective] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const { selectPhoto } = useCamera();
@@ -295,7 +299,22 @@ const TextGenie: React.FC<TextGenieProps> = ({ userProfile }) => {
         contextText += (contextText ? '\n\n' : '') + `Screenshot Analysis:\n${screenshotAnalysis}`;
       }
 
-      // First, analyze the incoming message tone to determine appropriate response strategy
+      // First, generate the Purposely Perspective
+      const perspectivePrompt = `Analyze this message/situation and provide a "Purposely Perspective" - a short, empowering interpretation that gives the user clarity and validation: ${contextText}
+
+Your response should:
+- Offer insight into what might really be happening
+- Validate the user's feelings and needs
+- Be supportive and empowering
+- Be 1-2 sentences maximum
+- Help the user see the situation clearly
+
+Example format: "This appears to be [insight about the situation]. Your [feelings/needs] are completely valid and here's how we can address this thoughtfully."`;
+
+      const perspectiveResponse = await getFlirtSuggestion(perspectivePrompt, userProfile);
+      setPurposelyPerspective(perspectiveResponse.trim());
+
+      // Then, analyze the incoming message tone to determine appropriate response strategy
       const analysisPrompt = `Analyze the tone and intent of this incoming message/situation: ${contextText}
 
 Classify this as one of these categories:
@@ -450,6 +469,45 @@ Keep replies concise (max 2 sentences each). Focus on responses that either seek
     generateReplySuggestions();
   };
 
+  const generateNewPerspective = async () => {
+    if (!description.trim() && uploadedImages.length === 0) {
+      return;
+    }
+
+    setIsGeneratingPerspective(true);
+    
+    try {
+      let contextText = description;
+      if (imageAnalysis) {
+        contextText += (contextText ? '\n\n' : '') + `Screenshot Analysis:\n${imageAnalysis}`;
+      }
+
+      const newPerspectivePrompt = `The user disagreed with the previous assessment. Please provide a different "Purposely Perspective" on this message/situation, exploring a different angle: ${contextText}
+
+Your new response should:
+- Offer a different interpretation than before
+- Consider alternative motivations or contexts
+- Still be supportive and empowering
+- Be 1-2 sentences maximum
+- Give the user a fresh way to view the situation
+
+Avoid repeating the previous assessment and look at this from a new angle.`;
+
+      const newPerspective = await getFlirtSuggestion(newPerspectivePrompt, userProfile);
+      setPurposelyPerspective(newPerspective.trim());
+      
+    } catch (error) {
+      console.error('Error generating new perspective:', error);
+      toast({
+        title: "Generation failed",
+        description: "Could not generate new perspective. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingPerspective(false);
+    }
+  };
+
   const removeImage = (index: number) => {
     setUploadedImages(prev => prev.filter((_, i) => i !== index));
   };
@@ -592,6 +650,51 @@ Keep replies concise (max 2 sentences each). Focus on responses that either seek
             <p className="text-center text-sm text-muted-foreground mt-2">
               {isAnalyzingImages ? 'Analyzing screenshots...' : loadingMessage}
             </p>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Purposely Perspective */}
+      {purposelyPerspective && (
+        <Card className="shadow-soft border-primary/10">
+          <CardHeader>
+            <CardTitle className="text-center flex items-center justify-center space-x-2">
+              <Heart className="w-5 h-5 text-primary" />
+              <span>Purposely Perspective</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="p-4 bg-primary/5 rounded-lg border border-primary/20">
+              <p className="text-foreground leading-relaxed mb-4">
+                {purposelyPerspective}
+              </p>
+              <div className="flex items-center justify-center space-x-4">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center space-x-2 hover:bg-green-50 hover:border-green-200"
+                  onClick={() => {
+                    toast({
+                      title: "Great!",
+                      description: "Glad this perspective resonates with you.",
+                    });
+                  }}
+                >
+                  <ThumbsUp className="w-4 h-4 text-green-600" />
+                  <span>This helps</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center space-x-2 hover:bg-orange-50 hover:border-orange-200"
+                  onClick={generateNewPerspective}
+                  disabled={isGeneratingPerspective}
+                >
+                  <ThumbsDown className="w-4 h-4 text-orange-600" />
+                  <span>{isGeneratingPerspective ? 'Generating...' : 'Different angle'}</span>
+                </Button>
+              </div>
+            </div>
           </CardContent>
         </Card>
       )}
