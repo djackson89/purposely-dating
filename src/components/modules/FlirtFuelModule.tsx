@@ -1578,32 +1578,32 @@ Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid gen
               onTouchStart={handleTouchStart}
               onTouchEnd={handleTouchEnd}
             >
-              <div className="text-center max-w-4xl">
+              <div className="text-center max-w-full px-4 sm:px-8">
                 {isMultipleChoice(currentStarters[currentQuestionIndex]) ? (
                   <div className="w-full">
-                    <p className="text-2xl md:text-3xl lg:text-4xl font-bold text-white leading-relaxed mb-8">
+                    <p className="text-lg sm:text-xl md:text-2xl font-bold text-white leading-tight mb-4 sm:mb-6">
                       {currentStarters[currentQuestionIndex].statement}
                     </p>
-                    <div className="space-y-4">
+                    <div className="space-y-2 sm:space-y-3">
                       {currentStarters[currentQuestionIndex].options.map((option) => (
                         <Button
                           key={option.key}
                           onClick={() => setSelectedAnswer(option.key)}
                           variant={selectedAnswer === option.key ? "default" : "outline"}
-                          className={`w-full p-6 text-left justify-start text-lg ${
+                          className={`w-full p-3 sm:p-4 text-left justify-start text-sm sm:text-base ${
                             selectedAnswer === option.key 
                               ? "bg-primary text-primary-foreground" 
                               : "bg-white/10 text-white border-white/20 hover:bg-white/20"
                           }`}
                         >
-                          <span className="font-bold mr-4 text-xl">{option.key}.</span>
-                          <span>{option.text}</span>
+                          <span className="font-bold mr-2 sm:mr-3 text-base sm:text-lg flex-shrink-0">{option.key}.</span>
+                          <span className="leading-snug text-left break-words">{option.text}</span>
                         </Button>
                       ))}
                     </div>
                   </div>
                 ) : (
-                  <p className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-relaxed">
+                  <p className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-white leading-tight px-2">
                     {getQuestionText(currentStarters[currentQuestionIndex])?.replace(/\*\*/g, '').replace(/[""'']/g, '"').replace(/[^\w\s\?\.\!\,\:\;\(\)\-\'\"]/g, '').trim()}
                   </p>
                 )}
