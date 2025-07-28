@@ -1191,25 +1191,18 @@ Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid gen
                     
                     <div className="flex items-center justify-center h-full w-full px-4">
                       {isMultipleChoice(currentStarters[currentQuestionIndex]) ? (
-                        <div className="w-full max-w-lg">
-                          <p className="text-lg sm:text-xl font-bold text-white leading-relaxed mb-4 text-center">
+                        <div className="w-full text-center">
+                          <p className="text-lg sm:text-xl font-bold text-white leading-tight mb-3">
                             {currentStarters[currentQuestionIndex].statement}
                           </p>
-                          <div className="space-y-2">
+                          <div className="space-y-2 text-left">
                             {currentStarters[currentQuestionIndex].options.map((option) => (
-                              <Button
-                                key={option.key}
-                                onClick={() => setSelectedAnswer(option.key)}
-                                variant={selectedAnswer === option.key ? "default" : "outline"}
-                                className={`w-full p-3 text-left justify-start text-xs sm:text-sm ${
-                                  selectedAnswer === option.key 
-                                    ? "bg-primary text-primary-foreground" 
-                                    : "bg-white/10 text-white border-white/20 hover:bg-white/20"
-                                }`}
-                              >
-                                <span className="font-bold mr-2 text-sm">{option.key}.</span>
-                                <span className="leading-tight">{option.text}</span>
-                              </Button>
+                              <div key={option.key} className="text-white/90">
+                                <span className="font-bold text-sm">{option.key}. </span>
+                                <span className="text-xs leading-tight break-words">
+                                  {option.text}
+                                </span>
+                              </div>
                             ))}
                           </div>
                         </div>
@@ -1591,28 +1584,17 @@ Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid gen
               <div className="text-center max-w-full px-4 sm:px-8">
                 {isMultipleChoice(currentStarters[currentQuestionIndex]) ? (
                   <div className="w-full">
-                    <p className="text-lg sm:text-xl md:text-2xl font-bold text-white leading-tight mb-4 sm:mb-6">
+                    <p className="text-xl sm:text-2xl md:text-3xl font-bold text-white leading-tight mb-6 sm:mb-8">
                       {currentStarters[currentQuestionIndex].statement}
                     </p>
-                    <div className="space-y-2 sm:space-y-3 max-h-[60vh] overflow-y-auto">
+                    <div className="space-y-3 sm:space-y-4 text-left max-w-4xl mx-auto">
                       {currentStarters[currentQuestionIndex].options.map((option) => (
-                        <Button
-                          key={option.key}
-                          onClick={() => setSelectedAnswer(option.key)}
-                          variant={selectedAnswer === option.key ? "default" : "outline"}
-                          className={`w-full p-2 sm:p-3 text-left justify-start min-h-[auto] h-auto ${
-                            selectedAnswer === option.key 
-                              ? "bg-primary text-primary-foreground" 
-                              : "bg-white/10 text-white border-white/20 hover:bg-white/20"
-                          }`}
-                        >
-                          <div className="flex items-start w-full">
-                            <span className="font-bold mr-2 text-sm sm:text-base flex-shrink-0 mt-0.5">{option.key}.</span>
-                            <span className="text-xs sm:text-sm leading-tight text-left break-words whitespace-normal flex-1">
-                              {option.text}
-                            </span>
-                          </div>
-                        </Button>
+                        <div key={option.key} className="text-white/90">
+                          <span className="font-bold text-lg sm:text-xl mr-3">{option.key}.</span>
+                          <span className="text-base sm:text-lg leading-relaxed break-words">
+                            {option.text}
+                          </span>
+                        </div>
                       ))}
                     </div>
                   </div>
