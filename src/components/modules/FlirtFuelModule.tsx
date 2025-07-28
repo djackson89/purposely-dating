@@ -665,6 +665,7 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
       setIsCustom(false); // Reset custom flag
       setCurrentStarters([]); // Clear current starters to show customize interface
       setCustomKeywords('');
+      setShowCategorySelection(true); // Stay on category selection for customize
       return;
     }
     
@@ -675,12 +676,14 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
       setIsCustom(true);
       setCurrentStarters(customCategories[categoryName]);
       setCurrentQuestionIndex(0);
+      setShowCategorySelection(false); // Move to question display
     } else {
       setIsCustom(false);
       const category = conversationStarters.find(cat => cat.category === categoryName);
       if (category) {
         setCurrentStarters(category.prompts);
         setCurrentQuestionIndex(0);
+        setShowCategorySelection(false); // Move to question display
       }
     }
   };
