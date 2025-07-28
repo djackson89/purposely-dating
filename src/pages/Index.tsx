@@ -42,11 +42,24 @@ const Index = () => {
       setUserProfile(JSON.parse(savedProfile));
       setHasCompletedOnboarding(true);
     }
-    // Temporarily comment out paywall check so you can preview it
-    // if (savedPaywall) {
-    //   setHasCompletedPaywall(true);
-    // }
-  }, []);
+    
+    // Premium users skip onboarding automatically
+    if (!subscriptionLoading && subscription.subscribed) {
+      if (!savedProfile) {
+        // Create a default profile for premium users
+        const defaultProfile: OnboardingData = {
+          loveLanguage: 'Words of Affirmation',
+          relationshipStatus: 'Single',
+          age: '25-30',
+          gender: 'Prefer not to say',
+          personalityType: 'Explorer'
+        };
+        setUserProfile(defaultProfile);
+        localStorage.setItem('relationshipCompanionProfile', JSON.stringify(defaultProfile));
+      }
+      setHasCompletedOnboarding(true);
+    }
+  }, [subscription.subscribed, subscriptionLoading]);
 
   const handleOnboardingComplete = (data: OnboardingData) => {
     setUserProfile(data);
@@ -71,8 +84,8 @@ const Index = () => {
     setShowPaywallModal(true);
   };
 
-  // Show onboarding if not completed
-  if (!hasCompletedOnboarding || !userProfile) {
+  // Show onboarding if not completed (unless user is premium)
+  if (!subscriptionLoading && !subscription.subscribed && (!hasCompletedOnboarding || !userProfile)) {
     return <OnboardingFlow onComplete={handleOnboardingComplete} />;
   }
 
