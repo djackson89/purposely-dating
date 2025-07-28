@@ -31,6 +31,7 @@ interface FlirtFuelModuleProps {
 
 const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
   const [activeSection, setActiveSection] = useState<'starters' | 'practice' | 'textgenie'>('starters');
+  const [showCategorySelection, setShowCategorySelection] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('Relationship Talk');
   const [customKeywords, setCustomKeywords] = useState('');
   const [currentStarters, setCurrentStarters] = useState<(string | { statement: string; options: { key: string; text: string; }[] })[]>([]);
@@ -993,6 +994,8 @@ Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid gen
           isFullScreen={isFullScreen}
           touchStart={touchStart}
           touchEnd={touchEnd}
+          showCategorySelection={showCategorySelection}
+          setShowCategorySelection={setShowCategorySelection}
           setSelectedCategory={setSelectedCategory}
           setCustomKeywords={setCustomKeywords}
           setCurrentQuestionIndex={setCurrentQuestionIndex}

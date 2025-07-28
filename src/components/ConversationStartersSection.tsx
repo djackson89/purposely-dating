@@ -39,6 +39,8 @@ interface ConversationStartersSectionProps {
   isFullScreen: boolean;
   touchStart: { x: number; y: number };
   touchEnd: { x: number; y: number };
+  showCategorySelection: boolean;
+  setShowCategorySelection: (show: boolean) => void;
   setSelectedCategory: (category: string) => void;
   setCustomKeywords: (keywords: string) => void;
   setCurrentQuestionIndex: (index: number) => void;
@@ -80,11 +82,17 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
   isLoading,
   touchStart,
   touchEnd,
+  showCategorySelection,
+  setShowCategorySelection,
+  setSelectedCategory,
   setCustomKeywords,
+  setCurrentQuestionIndex,
   setShowRename,
   setShowManage,
   setNewCategoryName,
   setDepthLevel,
+  setTouchStart,
+  setTouchEnd,
   selectCategory,
   generateCustomStarters,
   saveCurrentCustom,
@@ -154,63 +162,79 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
       </div>
 
       {/* Category Selection */}
-      {currentStarters.length === 0 && (
+      {showCategorySelection && (
         <div className="space-y-3">
           <Label className="text-sm font-medium">Choose Category:</Label>
           <div className="grid grid-cols-1 gap-3">
-            {/* Customize Option */}
-            <Card
-              className={`cursor-pointer transition-all duration-200 border-2 ${
-                selectedCategory === "Customize"
-                  ? 'border-primary bg-primary/5 shadow-md'
-                  : 'border-border hover:border-primary/50 hover:shadow-sm'
-              }`}
-              onClick={() => selectCategory("Customize")}
-            >
-              <CardContent className="flex items-center p-4 space-x-4">
-                <div className="text-2xl">✨</div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-foreground mb-1">Customize</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Generate personalized conversation starters with AI
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Predefined Categories */}
-            {conversationStarters.map((starter) => (
-              <Card
-                key={starter.category}
-                className={`cursor-pointer transition-all duration-200 border-2 ${
-                  selectedCategory === starter.category
-                    ? 'border-primary bg-primary/5 shadow-md'
-                    : 'border-border hover:border-primary/50 hover:shadow-sm'
-                }`}
-                onClick={() => selectCategory(starter.category)}
-              >
-                <CardContent className="flex items-center p-4 space-x-4">
-                  <div className="text-2xl">
-                    {categoryEmojis[starter.category] || "💭"}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-semibold text-foreground">
-                        {starter.category}
-                      </h3>
-                      {starter.type === 'multiple-choice' && (
-                        <span className="text-xs bg-accent text-accent-foreground px-2 py-0.5 rounded-full">
-                          Debate
-                        </span>
-                      )}
+            {/* Date Night Debates first */}
+            {conversationStarters
+              .filter(starter => starter.category === "Date Night Debates")
+              .map((starter) => (
+                <Card
+                  key={starter.category}
+                  className={`cursor-pointer transition-all duration-200 border-2 ${
+                    selectedCategory === starter.category
+                      ? 'border-primary bg-primary/5 shadow-md'
+                      : 'border-border hover:border-primary/50 hover:shadow-sm'
+                  }`}
+                  onClick={() => selectCategory(starter.category)}
+                >
+                  <CardContent className="flex items-center p-4 space-x-4">
+                    <div className="text-2xl">🎯</div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-semibold text-foreground">
+                          {starter.category}
+                        </h3>
+                        {starter.type === 'multiple-choice' && (
+                          <span className="text-xs bg-accent text-accent-foreground px-2 py-0.5 rounded-full">
+                            Debate
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {getDescription(starter.category)}
+                      </p>
                     </div>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {getDescription(starter.category)}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              ))}
+
+            {/* Other predefined categories (excluding Date Night Debates) */}
+            {conversationStarters
+              .filter(starter => starter.category !== "Date Night Debates")
+              .map((starter) => (
+                <Card
+                  key={starter.category}
+                  className={`cursor-pointer transition-all duration-200 border-2 ${
+                    selectedCategory === starter.category
+                      ? 'border-primary bg-primary/5 shadow-md'
+                      : 'border-border hover:border-primary/50 hover:shadow-sm'
+                  }`}
+                  onClick={() => selectCategory(starter.category)}
+                >
+                  <CardContent className="flex items-center p-4 space-x-4">
+                    <div className="text-2xl">
+                      {categoryEmojis[starter.category] || "💭"}
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-semibold text-foreground">
+                          {starter.category}
+                        </h3>
+                        {starter.type === 'multiple-choice' && (
+                          <span className="text-xs bg-accent text-accent-foreground px-2 py-0.5 rounded-full">
+                            Debate
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {getDescription(starter.category)}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
 
             {/* Custom Categories */}
             {Object.keys(customCategories).map((categoryName) => (
@@ -243,12 +267,32 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
                 </CardContent>
               </Card>
             ))}
+
+            {/* Customize Option at the bottom */}
+            <Card
+              className={`cursor-pointer transition-all duration-200 border-2 ${
+                selectedCategory === "Customize"
+                  ? 'border-primary bg-primary/5 shadow-md'
+                  : 'border-border hover:border-primary/50 hover:shadow-sm'
+              }`}
+              onClick={() => selectCategory("Customize")}
+            >
+              <CardContent className="flex items-center p-4 space-x-4">
+                <div className="text-2xl">✨</div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-foreground mb-1">Customize</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Generate personalized conversation starters with AI
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       )}
 
       {/* Custom Input */}
-      {selectedCategory === 'Customize' && currentStarters.length === 0 && (
+      {selectedCategory === 'Customize' && showCategorySelection && (
         <Card className="shadow-soft border-primary/10">
           <CardContent className="pt-6 space-y-3">
             <div className="flex flex-col sm:flex-row gap-2">
@@ -272,11 +316,11 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
       )}
 
       {/* Question Display */}
-      {currentStarters.length > 0 && (
+      {!showCategorySelection && currentStarters.length > 0 && (
         <div className="space-y-4">
           {/* Back to Categories Button */}
           <Button
-            onClick={() => window.location.reload()}
+            onClick={() => setShowCategorySelection(true)}
             variant="outline"
             size="sm"
             className="mb-4"
