@@ -267,7 +267,7 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
   const adjustQuestionDepth = async (originalQuestion: string, depth: number) => {
     try {
       const depthInstructions = {
-        0: "Make this question more fun, light-hearted, and slightly sarcastic. Perfect for casual conversations at lunch or on road trips.",
+        0: "Transform this into a sarcastic, witty question with dark humor. Make it snarky and playfully provocative - like asking someone 'At what point did you realize you were toxic and are you still a walking red flag or have you completed rehab?' Keep it edgy but still conversational.",
         1: "Keep this question casual and balanced - mix of thought-provoking and light elements.",
         2: "Make this question deeper, more complex, and thought-provoking for serious conversations that build thorough understanding."
       };
