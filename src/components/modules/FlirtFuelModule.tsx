@@ -32,10 +32,10 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
   const [activeSection, setActiveSection] = useState<'starters' | 'practice' | 'textgenie'>('starters');
   const [selectedCategory, setSelectedCategory] = useState('Relationship Talk');
   const [customKeywords, setCustomKeywords] = useState('');
-  const [currentStarters, setCurrentStarters] = useState<string[]>([]);
+  const [currentStarters, setCurrentStarters] = useState<(string | { statement: string; options: { key: string; text: string; }[] })[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [isCustom, setIsCustom] = useState(false);
-  const [customCategories, setCustomCategories] = useState<{[key: string]: string[]}>({});
+  const [customCategories, setCustomCategories] = useState<{[key: string]: (string | { statement: string; options: { key: string; text: string; }[] })[]}>({});
   const [savedPacks, setSavedPacks] = useState<{[key: string]: boolean}>({});
   const [showRename, setShowRename] = useState(false);
   const [showManage, setShowManage] = useState(false);
@@ -51,8 +51,19 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [touchStart, setTouchStart] = useState({ x: 0, y: 0 });
   const [touchEnd, setTouchEnd] = useState({ x: 0, y: 0 });
-  const [depthLevel, setDepthLevel] = useState([1]); // 0=Fun, 1=Casual, 2=Deep
+  const [depthLevel, setDepthLevel] = useState([1]); // 0=Light, 1=Casual, 2=Deep
+  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const { getFlirtSuggestion, getAIResponse, isLoading } = useRelationshipAI();
+
+  // Helper function to check if current question is multiple choice
+  const isMultipleChoice = (question: string | { statement: string; options: { key: string; text: string; }[] }): question is { statement: string; options: { key: string; text: string; }[] } => {
+    return typeof question === 'object' && 'statement' in question;
+  };
+
+  // Helper function to get question text
+  const getQuestionText = (question: string | { statement: string; options: { key: string; text: string; }[] }): string => {
+    return isMultipleChoice(question) ? question.statement : question;
+  };
 
   const handleShare = async (text: string) => {
     try {
@@ -258,6 +269,102 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
         "How do you maintain your individual identity while building a life with someone else?",
         "What does emotional responsibility look like in your relationships?",
         "How do you recognize when you need to focus on personal growth versus when you need relationship support?"
+      ]
+    },
+    {
+      category: "Date Night Debates",
+      type: "multiple-choice",
+      prompts: [
+        {
+          statement: "If a man is broke, he's automatically less attractive—no matter how good his heart is.",
+          options: [
+            { key: "A", text: "Strongly Agree — Struggle love expired in the 90s" },
+            { key: "B", text: "Somewhat Agree — Intentions don't pay bills" },
+            { key: "C", text: "Somewhat Disagree — Broke isn't forever" },
+            { key: "D", text: "Strongly Disagree — Y'all too materialistic to know real love" }
+          ]
+        },
+        {
+          statement: "Co-parenting only works when one parent gives up control.",
+          options: [
+            { key: "A", text: "Strongly Agree — Two CEOs crash the company" },
+            { key: "B", text: "Somewhat Agree — Somebody has to pick peace over power" },
+            { key: "C", text: "Somewhat Disagree — Communication can balance power" },
+            { key: "D", text: "Strongly Disagree — Control isn't required, collaboration is" }
+          ]
+        },
+        {
+          statement: "Men with money date younger women because they know women their age won't tolerate them.",
+          options: [
+            { key: "A", text: "Strongly Agree — It's not preference, it's escape" },
+            { key: "B", text: "Somewhat Agree — Age equals accountability" },
+            { key: "C", text: "Somewhat Disagree — Some just connect better younger" },
+            { key: "D", text: "Strongly Disagree — Love doesn't check birth dates" }
+          ]
+        },
+        {
+          statement: "Marriage doesn't make people more loyal—it just makes cheating more expensive.",
+          options: [
+            { key: "A", text: "Strongly Agree — Rings don't change habits" },
+            { key: "B", text: "Somewhat Agree — The affair just comes with paperwork" },
+            { key: "C", text: "Somewhat Disagree — Commitment still matters to some" },
+            { key: "D", text: "Strongly Disagree — That mindset belongs to cheaters" }
+          ]
+        },
+        {
+          statement: "If you're not sexually compatible, the relationship is already on life support.",
+          options: [
+            { key: "A", text: "Strongly Agree — Chemistry is the foundation" },
+            { key: "B", text: "Somewhat Agree — Desire makes everything smoother" },
+            { key: "C", text: "Somewhat Disagree — Other things can keep it alive" },
+            { key: "D", text: "Strongly Disagree — Y'all sound addicted to vibes" }
+          ]
+        },
+        {
+          statement: "Most women can't handle being with a man they have to take care of.",
+          options: [
+            { key: "A", text: "Strongly Agree — Nurture isn't the same as support" },
+            { key: "B", text: "Somewhat Agree — The dynamic gets old fast" },
+            { key: "C", text: "Somewhat Disagree — Some are built for that life" },
+            { key: "D", text: "Strongly Disagree — Y'all underestimate feminine loyalty" }
+          ]
+        },
+        {
+          statement: "If you have to constantly ask your partner to touch you, you're not in a relationship—you're on an emotional payment plan.",
+          options: [
+            { key: "A", text: "Strongly Agree — Affection shouldn't require begging" },
+            { key: "B", text: "Somewhat Agree — Attraction shows itself, not explains itself" },
+            { key: "C", text: "Somewhat Disagree — Not everyone is expressive" },
+            { key: "D", text: "Strongly Disagree — Love languages need reminders" }
+          ]
+        },
+        {
+          statement: "Dating apps didn't ruin love—people did.",
+          options: [
+            { key: "A", text: "Strongly Agree — It's the users, not the platform" },
+            { key: "B", text: "Somewhat Agree — People are the problem, not the pixels" },
+            { key: "C", text: "Somewhat Disagree — The swiping culture changed us" },
+            { key: "D", text: "Strongly Disagree — Apps were built for short-term flings" }
+          ]
+        },
+        {
+          statement: "Some people don't want love—they just want someone to serve them emotionally.",
+          options: [
+            { key: "A", text: "Strongly Agree — Therapy would ruin their hustle" },
+            { key: "B", text: "Somewhat Agree — They crave caretakers, not partners" },
+            { key: "C", text: "Somewhat Disagree — Some are just unaware" },
+            { key: "D", text: "Strongly Disagree — That's just trauma talking" }
+          ]
+        },
+        {
+          statement: "If your sex life requires alcohol to feel good, you're not compatible.",
+          options: [
+            { key: "A", text: "Strongly Agree — Liquor shouldn't be lube" },
+            { key: "B", text: "Somewhat Agree — Sober sex tells the truth" },
+            { key: "C", text: "Somewhat Disagree — Inhibitions are real" },
+            { key: "D", text: "Strongly Disagree — Y'all just need better drinks" }
+          ]
+        }
       ]
     }
   ];
@@ -885,32 +992,49 @@ Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid gen
               <div className="space-y-3">
                 <Label htmlFor="category-select" className="text-sm font-medium">Choose Category:</Label>
                 <Select value={selectedCategory} onValueChange={selectCategory}>
-                  <SelectTrigger className="w-full bg-card z-50">
+                  <SelectTrigger className="w-full bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20 hover:border-primary/40 transition-all duration-300 z-50">
                     <SelectValue placeholder="Select a category" />
                   </SelectTrigger>
-                  <SelectContent className="bg-card border border-border shadow-lg z-50">
+                  <SelectContent className="bg-card border border-border shadow-xl z-50 backdrop-blur-sm">
                     <SelectItem 
                       value="Customize"
-                      className="bg-card hover:bg-muted cursor-pointer font-medium text-primary"
+                      className="bg-gradient-to-r from-primary/10 to-primary/5 hover:from-primary/20 hover:to-primary/10 cursor-pointer font-medium text-primary border-b border-primary/10 mb-1"
                     >
-                      ✨ Customize
+                      <div className="flex items-center space-x-2">
+                        <span className="text-primary">✨</span>
+                        <span>Customize</span>
+                      </div>
                     </SelectItem>
                     {conversationStarters.map((category) => (
                       <SelectItem 
                         key={category.category} 
                         value={category.category}
-                        className="bg-card hover:bg-muted cursor-pointer"
+                        className="bg-card hover:bg-gradient-to-r hover:from-muted/50 hover:to-muted/20 cursor-pointer transition-all duration-300 group"
                       >
-                        {category.category}
+                        <div className="flex items-center space-x-2">
+                          <span className="w-2 h-2 rounded-full bg-primary/60 group-hover:bg-primary transition-colors"></span>
+                          <span className="group-hover:text-primary transition-colors">{category.category}</span>
+                          {category.type === 'multiple-choice' && (
+                            <span className="text-xs bg-accent text-accent-foreground px-2 py-0.5 rounded-full ml-auto">
+                              Debate
+                            </span>
+                          )}
+                        </div>
                       </SelectItem>
                     ))}
                     {Object.keys(customCategories).map((categoryName) => (
                       <SelectItem 
                         key={categoryName} 
                         value={categoryName}
-                        className="bg-card hover:bg-muted cursor-pointer"
+                        className="bg-card hover:bg-gradient-to-r hover:from-muted/50 hover:to-muted/20 cursor-pointer transition-all duration-300 group"
                       >
-                        {categoryName} (Custom)
+                        <div className="flex items-center space-x-2">
+                          <span className="w-2 h-2 rounded-full bg-secondary/60 group-hover:bg-secondary transition-colors"></span>
+                          <span className="group-hover:text-secondary transition-colors">{categoryName}</span>
+                          <span className="text-xs bg-secondary/20 text-secondary px-2 py-0.5 rounded-full ml-auto">
+                            Custom
+                          </span>
+                        </div>
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -1066,9 +1190,34 @@ Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid gen
                     </div>
                     
                     <div className="flex items-center justify-center h-full w-full">
-                      <p className="text-2xl font-bold text-white leading-relaxed">
-                        {currentStarters[currentQuestionIndex]}
-                      </p>
+                      {isMultipleChoice(currentStarters[currentQuestionIndex]) ? (
+                        <div className="w-full max-w-2xl">
+                          <p className="text-xl font-bold text-white leading-relaxed mb-6">
+                            {currentStarters[currentQuestionIndex].statement}
+                          </p>
+                          <div className="space-y-3">
+                            {currentStarters[currentQuestionIndex].options.map((option) => (
+                              <Button
+                                key={option.key}
+                                onClick={() => setSelectedAnswer(option.key)}
+                                variant={selectedAnswer === option.key ? "default" : "outline"}
+                                className={`w-full p-4 text-left justify-start text-sm ${
+                                  selectedAnswer === option.key 
+                                    ? "bg-primary text-primary-foreground" 
+                                    : "bg-white/10 text-white border-white/20 hover:bg-white/20"
+                                }`}
+                              >
+                                <span className="font-bold mr-3">{option.key}.</span>
+                                <span>{option.text}</span>
+                              </Button>
+                            ))}
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-2xl font-bold text-white leading-relaxed">
+                          {getQuestionText(currentStarters[currentQuestionIndex])}
+                        </p>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
@@ -1081,7 +1230,7 @@ Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid gen
                     <div className="flex justify-between items-center text-sm">
                       <span className="font-medium text-primary">Question Depth</span>
                       <span className="text-xs text-muted-foreground">
-                        {depthLevel[0] === 0 ? 'Fun' : depthLevel[0] === 1 ? 'Casual' : 'Deep'}
+                        {depthLevel[0] === 0 ? 'Light' : depthLevel[0] === 1 ? 'Casual' : 'Deep'}
                       </span>
                     </div>
                     <div className="px-2">
@@ -1093,13 +1242,13 @@ Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid gen
                         className="w-full"
                       />
                       <div className="flex justify-between text-xs text-muted-foreground mt-2">
-                        <span>Fun</span>
+                        <span>Light</span>
                         <span>Casual</span>
                         <span>Deep</span>
                       </div>
                     </div>
                     <p className="text-xs text-muted-foreground text-center">
-                      {depthLevel[0] === 0 && "Light-hearted & sarcastic for casual moments"}
+                      {depthLevel[0] === 0 && "Sarcastic & witty with dark humor"}
                       {depthLevel[0] === 1 && "Balanced mix of fun and thought-provoking"}
                       {depthLevel[0] === 2 && "Complex & meaningful for deep conversations"}
                     </p>
@@ -1148,7 +1297,7 @@ Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid gen
               {/* Action Buttons */}
               <div className="space-y-3">
                 <Button
-                  onClick={() => handleShare(currentStarters[currentQuestionIndex])}
+                  onClick={() => handleShare(getQuestionText(currentStarters[currentQuestionIndex]))}
                   variant="outline"
                   className="w-full"
                 >
@@ -1430,9 +1579,34 @@ Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid gen
               onTouchEnd={handleTouchEnd}
             >
               <div className="text-center max-w-4xl">
-                <p className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-relaxed">
-                  {currentStarters[currentQuestionIndex]?.replace(/\*\*/g, '').replace(/[""'']/g, '"').replace(/[^\w\s\?\.\!\,\:\;\(\)\-\'\"]/g, '').trim()}
-                </p>
+                {isMultipleChoice(currentStarters[currentQuestionIndex]) ? (
+                  <div className="w-full">
+                    <p className="text-2xl md:text-3xl lg:text-4xl font-bold text-white leading-relaxed mb-8">
+                      {currentStarters[currentQuestionIndex].statement}
+                    </p>
+                    <div className="space-y-4">
+                      {currentStarters[currentQuestionIndex].options.map((option) => (
+                        <Button
+                          key={option.key}
+                          onClick={() => setSelectedAnswer(option.key)}
+                          variant={selectedAnswer === option.key ? "default" : "outline"}
+                          className={`w-full p-6 text-left justify-start text-lg ${
+                            selectedAnswer === option.key 
+                              ? "bg-primary text-primary-foreground" 
+                              : "bg-white/10 text-white border-white/20 hover:bg-white/20"
+                          }`}
+                        >
+                          <span className="font-bold mr-4 text-xl">{option.key}.</span>
+                          <span>{option.text}</span>
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-relaxed">
+                    {getQuestionText(currentStarters[currentQuestionIndex])?.replace(/\*\*/g, '').replace(/[""'']/g, '"').replace(/[^\w\s\?\.\!\,\:\;\(\)\-\'\"]/g, '').trim()}
+                  </p>
+                )}
               </div>
             </div>
 
