@@ -1572,7 +1572,17 @@ Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid gen
               </Button>
             </div>
 
-            {/* Question content */}
+            {/* Close button */}
+            <div className="absolute top-4 right-4 z-10">
+              <Button
+                onClick={() => setIsFullScreen(false)}
+                variant="ghost"
+                size="sm"
+                className="text-white hover:bg-white/20 p-2"
+              >
+                <X className="w-6 h-6" />
+              </Button>
+            </div>
             <div 
               className="flex-1 flex items-center justify-center p-8 select-none cursor-pointer"
               onTouchStart={handleTouchStart}
@@ -1584,20 +1594,24 @@ Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid gen
                     <p className="text-lg sm:text-xl md:text-2xl font-bold text-white leading-tight mb-4 sm:mb-6">
                       {currentStarters[currentQuestionIndex].statement}
                     </p>
-                    <div className="space-y-2 sm:space-y-3">
+                    <div className="space-y-2 sm:space-y-3 max-h-[60vh] overflow-y-auto">
                       {currentStarters[currentQuestionIndex].options.map((option) => (
                         <Button
                           key={option.key}
                           onClick={() => setSelectedAnswer(option.key)}
                           variant={selectedAnswer === option.key ? "default" : "outline"}
-                          className={`w-full p-3 sm:p-4 text-left justify-start text-sm sm:text-base ${
+                          className={`w-full p-2 sm:p-3 text-left justify-start min-h-[auto] h-auto ${
                             selectedAnswer === option.key 
                               ? "bg-primary text-primary-foreground" 
                               : "bg-white/10 text-white border-white/20 hover:bg-white/20"
                           }`}
                         >
-                          <span className="font-bold mr-2 sm:mr-3 text-base sm:text-lg flex-shrink-0">{option.key}.</span>
-                          <span className="leading-snug text-left break-words">{option.text}</span>
+                          <div className="flex items-start w-full">
+                            <span className="font-bold mr-2 text-sm sm:text-base flex-shrink-0 mt-0.5">{option.key}.</span>
+                            <span className="text-xs sm:text-sm leading-tight text-left break-words whitespace-normal flex-1">
+                              {option.text}
+                            </span>
+                          </div>
                         </Button>
                       ))}
                     </div>
