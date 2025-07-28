@@ -1749,8 +1749,6 @@ Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid gen
           </div>
         </DialogContent>
       </Dialog>
-        </div>
-      )}
     </div>
   );
 };
