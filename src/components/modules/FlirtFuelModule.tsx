@@ -30,6 +30,7 @@ interface FlirtFuelModuleProps {
 
 const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
   const [activeSection, setActiveSection] = useState<'starters' | 'practice' | 'textgenie'>('starters');
+  const [showCategoryGrid, setShowCategoryGrid] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('Relationship Talk');
   const [customKeywords, setCustomKeywords] = useState('');
   const [currentStarters, setCurrentStarters] = useState<(string | { statement: string; options: { key: string; text: string; }[] })[]>([]);
@@ -98,6 +99,65 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
     }
   };
   
+  // Category data with icons and descriptions
+  const categoryData = [
+    {
+      name: "First Date Deep Dive",
+      icon: "💭",
+      description: "Get past small talk and into meaningful conversation on your first date"
+    },
+    {
+      name: "Date Night Debates",
+      icon: "⚖️", 
+      description: "Spicy takes and controversial topics to spark heated discussions"
+    },
+    {
+      name: "Relationship Clarity",
+      icon: "💕",
+      description: "Understand love languages and emotional needs in partnerships"
+    },
+    {
+      name: "Boundaries & Values", 
+      icon: "🛡️",
+      description: "Navigate personal limits and core beliefs in relationships"
+    },
+    {
+      name: "Trust & Transparency",
+      icon: "🔐",
+      description: "Build honest foundations and address jealousy concerns"
+    },
+    {
+      name: "Intimacy & Connection",
+      icon: "🔥",
+      description: "Explore physical and emotional intimacy with your partner"
+    },
+    {
+      name: "Communication & Conflict",
+      icon: "💬",
+      description: "Learn to fight fair and communicate during disagreements"
+    },
+    {
+      name: "Red Flags & Green Flags",
+      icon: "🚩",
+      description: "Identify warning signs and positive relationship indicators"
+    },
+    {
+      name: "Emotional Intelligence",
+      icon: "🧠",
+      description: "Develop self-awareness and emotional responsibility"
+    },
+    {
+      name: "Values & Future Vision",
+      icon: "🌟",
+      description: "Align on life goals, money, and long-term compatibility"
+    },
+    {
+      name: "Self-Awareness & Growth",
+      icon: "🌱",
+      description: "Personal development and breaking family patterns"
+    }
+  ];
+
   const conversationStarters = [
     {
       category: "First Date Deep Dive",
@@ -697,7 +757,17 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
       setCurrentQuestionIndex(prev => prev - 1);
     }
   };
+  
+  const handleCategorySelect = (categoryName: string) => {
+    setSelectedCategory(categoryName);
+    setShowCategoryGrid(false);
+    setIsCustom(false);
+  };
 
+  const goBackToCategoryGrid = () => {
+    setShowCategoryGrid(true);
+    setSelectedAnswer(null);
+  };
   const handleCardSwipe = (direction: 'left' | 'right') => {
     if (direction === 'left') {
       nextQuestion();
@@ -975,16 +1045,66 @@ Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid gen
       {/* Conversation Starters */}
       {activeSection === 'starters' && (
         <div className="space-y-4 animate-fade-in-up">
-          {/* Section Heading */}
-          <div className="flex items-center justify-center space-x-2">
-            <h2 className="text-xl font-semibold text-primary">Conversation Starters</h2>
-            <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center cursor-pointer hover:bg-primary/20 transition-colors">
-              <InfoDialog
-                title="Conversation Starters"
-                description="Discover engaging questions and topics that spark meaningful conversations. Swipe through cards or use our AI to generate custom questions based on your interests and dating style."
-              />
+          {showCategoryGrid ? (
+            // Category Grid View
+            <div className="space-y-4">
+              <div className="flex items-center justify-center space-x-2 mb-6">
+                <h2 className="text-xl font-semibold text-primary">Choose Your Category</h2>
+                <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center cursor-pointer hover:bg-primary/20 transition-colors">
+                  <InfoDialog
+                    title="Conversation Starters"
+                    description="Discover engaging questions and topics that spark meaningful conversations. Choose a category that matches your vibe and dive into thought-provoking discussions."
+                  />
+                </div>
+              </div>
+              
+              <div className="space-y-3">
+                {categoryData.map((category) => (
+                  <Card 
+                    key={category.name}
+                    className="bg-gradient-to-r from-card/80 to-card/60 border-primary/20 hover:border-primary/40 transition-all duration-300 cursor-pointer transform hover:scale-[1.02] shadow-soft"
+                    onClick={() => handleCategorySelect(category.name)}
+                  >
+                    <CardContent className="p-4 sm:p-6">
+                      <div className="flex items-center space-x-4">
+                        <div className="text-2xl sm:text-3xl flex-shrink-0">
+                          {category.icon}
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="text-base sm:text-lg font-bold text-foreground mb-1">
+                            {category.name.toUpperCase()}
+                          </h3>
+                          <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                            {category.description}
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             </div>
-          </div>
+          ) : (
+            // Existing Question Interface  
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Button
+                  onClick={goBackToCategoryGrid}
+                  variant="ghost"
+                  className="text-primary hover:text-primary/80 p-2"
+                >
+                  ← Categories
+                </Button>
+                <div className="flex items-center space-x-2">
+                  <h2 className="text-lg font-semibold text-primary">Conversation Starters</h2>
+                  <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center cursor-pointer hover:bg-primary/20 transition-colors">
+                    <InfoDialog
+                      title="Conversation Starters"
+                      description="Swipe through thought-provoking conversation starters designed to deepen your connections. Adjust the depth level to fit the moment."
+                    />
+                  </div>
+                </div>
+              </div>
 
           {/* Category Dropdown */}
           <Card className="shadow-soft border-primary/10">
@@ -1630,8 +1750,14 @@ Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid gen
           </div>
         </DialogContent>
       </Dialog>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
+
+export default FlirtFuelModule;
 
 export default FlirtFuelModule;
