@@ -98,10 +98,14 @@ serve(async (req) => {
       allow_promotion_codes: true,
       payment_method_types: ['card'],
       automatic_tax: { enabled: true },
-      customer_update: {
-        address: 'auto',
-      },
     };
+
+    // Only add customer_update if we have an existing customer
+    if (customerId) {
+      sessionConfig.customer_update = {
+        address: 'auto',
+      };
+    }
 
     // Add free trial for yearly plan if requested
     if (plan === 'yearly' && hasTrial) {
