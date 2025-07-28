@@ -986,87 +986,173 @@ Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid gen
             </div>
           </div>
 
-          {/* Category Dropdown */}
-          <Card className="shadow-soft border-primary/10">
-            <CardContent className="pt-6">
-              <div className="space-y-3">
-                <Label htmlFor="category-select" className="text-sm font-medium">Choose Category:</Label>
-                <Select value={selectedCategory} onValueChange={selectCategory}>
-                  <SelectTrigger className="w-full bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20 hover:border-primary/40 transition-all duration-300 z-50">
-                    <SelectValue placeholder="Select a category" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-card border border-border shadow-xl z-50 backdrop-blur-sm">
-                    <SelectItem 
-                      value="Customize"
-                      className="bg-gradient-to-r from-primary/10 to-primary/5 hover:from-primary/20 hover:to-primary/10 cursor-pointer font-medium text-primary border-b border-primary/10 mb-1"
-                    >
-                      <div className="flex items-center space-x-2">
-                        <span className="text-primary">✨</span>
-                        <span>Customize</span>
+          {/* Category Grid */}
+          <div className="space-y-3">
+            <Label className="text-sm font-medium">Choose Category:</Label>
+            <div className="grid grid-cols-1 gap-3">
+              {/* Customize Option */}
+              <Card 
+                className={`cursor-pointer transition-all duration-200 border-2 ${
+                  selectedCategory === "Customize" 
+                    ? 'border-primary bg-primary/5 shadow-md' 
+                    : 'border-border hover:border-primary/50 hover:shadow-sm'
+                }`}
+                onClick={() => selectCategory("Customize")}
+              >
+                <CardContent className="flex items-center p-4 space-x-4">
+                  <div className="text-2xl">
+                    ✨
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-foreground mb-1">
+                      Customize
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      Generate personalized conversation starters with AI
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Dynamic categories from conversationStarters */}
+              {conversationStarters.map((starter) => {
+                const categoryEmojis: { [key: string]: string } = {
+                  "First Date Deep Dive": "💬",
+                  "Relationship Clarity": "❤️",
+                  "Boundaries & Values": "🏠", 
+                  "Trust & Transparency": "🔐",
+                  "Intimacy & Connection": "💝",
+                  "Communication & Conflict": "🗣️",
+                  "Red Flags & Green Flags": "🚩",
+                  "Emotional Intelligence": "🧠",
+                  "Values & Future Vision": "🔮",
+                  "Self-Awareness & Growth": "🌱",
+                  "Date Night Debates": "🎯",
+                  "Relationship Talk": "💕",
+                  "Getting to Know You": "🤝",
+                  "Future Plans": "🏡",
+                  "Personal Growth": "🌟",
+                  "Fun & Playful": "🎭"
+                };
+
+                const getDescription = (category: string): string => {
+                  const descriptions: { [key: string]: string } = {
+                    "First Date Deep Dive": "Explore deeper conversations and meaningful connections",
+                    "Relationship Clarity": "Understand love languages and emotional needs",
+                    "Boundaries & Values": "Navigate healthy limits and personal values",
+                    "Trust & Transparency": "Build trust through honest communication",
+                    "Intimacy & Connection": "Deepen physical and emotional bonds",
+                    "Communication & Conflict": "Master healthy disagreement and resolution",
+                    "Red Flags & Green Flags": "Identify positive and concerning relationship signs",
+                    "Emotional Intelligence": "Develop awareness and empathy skills",
+                    "Values & Future Vision": "Align on long-term goals and priorities",
+                    "Self-Awareness & Growth": "Foster personal development and healing",
+                    "Date Night Debates": "Spark engaging discussions with thought-provoking topics",
+                    "Relationship Talk": "Open conversations about your connection",
+                    "Getting to Know You": "Discover each other's personalities and histories",
+                    "Future Plans": "Discuss dreams, goals, and shared visions",
+                    "Personal Growth": "Explore self-improvement and development",
+                    "Fun & Playful": "Light-hearted questions for laughs and bonding"
+                  };
+                  return descriptions[category] || "Explore meaningful conversation topics";
+                };
+
+                return (
+                  <Card 
+                    key={starter.category}
+                    className={`cursor-pointer transition-all duration-200 border-2 ${
+                      selectedCategory === starter.category 
+                        ? 'border-primary bg-primary/5 shadow-md' 
+                        : 'border-border hover:border-primary/50 hover:shadow-sm'
+                    }`}
+                    onClick={() => selectCategory(starter.category)}
+                  >
+                    <CardContent className="flex items-center p-4 space-x-4">
+                      <div className="text-2xl">
+                        {categoryEmojis[starter.category] || "💭"}
                       </div>
-                    </SelectItem>
-                    {conversationStarters.map((category) => (
-                      <SelectItem 
-                        key={category.category} 
-                        value={category.category}
-                        className="bg-card hover:bg-gradient-to-r hover:from-muted/50 hover:to-muted/20 cursor-pointer transition-all duration-300 group"
-                      >
-                        <div className="flex items-center space-x-2">
-                          <span className="w-2 h-2 rounded-full bg-primary/60 group-hover:bg-primary transition-colors"></span>
-                          <span className="group-hover:text-primary transition-colors">{category.category}</span>
-                          {category.type === 'multiple-choice' && (
-                            <span className="text-xs bg-accent text-accent-foreground px-2 py-0.5 rounded-full ml-auto">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-semibold text-foreground">
+                            {starter.category}
+                          </h3>
+                          {starter.type === 'multiple-choice' && (
+                            <span className="text-xs bg-accent text-accent-foreground px-2 py-0.5 rounded-full">
                               Debate
                             </span>
                           )}
                         </div>
-                      </SelectItem>
-                    ))}
-                    {Object.keys(customCategories).map((categoryName) => (
-                      <SelectItem 
-                        key={categoryName} 
-                        value={categoryName}
-                        className="bg-card hover:bg-gradient-to-r hover:from-muted/50 hover:to-muted/20 cursor-pointer transition-all duration-300 group"
-                      >
-                        <div className="flex items-center space-x-2">
-                          <span className="w-2 h-2 rounded-full bg-secondary/60 group-hover:bg-secondary transition-colors"></span>
-                          <span className="group-hover:text-secondary transition-colors">{categoryName}</span>
-                          <span className="text-xs bg-secondary/20 text-secondary px-2 py-0.5 rounded-full ml-auto">
-                            Custom
-                          </span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                
-                {/* Save/Manage button for custom categories */}
-                {isCustom && currentStarters.length > 0 && (
-                  <div className="space-y-2">
-                    {!savedPacks[selectedCategory] ? (
-                      <Button
-                        onClick={saveCurrentCustom}
-                        variant="romance"
-                        size="sm"
-                        className="w-full"
-                      >
-                        Save This Pack
-                      </Button>
-                    ) : (
-                      <Button
-                        onClick={() => setShowManage(true)}
-                        variant="outline"
-                        size="sm"
-                        className="w-full"
-                      >
-                        Manage this Category
-                      </Button>
-                    )}
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {getDescription(starter.category)}
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+              
+              {/* Custom Categories */}
+              {Object.keys(customCategories).map((categoryName) => (
+                <Card 
+                  key={categoryName}
+                  className={`cursor-pointer transition-all duration-200 border-2 ${
+                    selectedCategory === categoryName 
+                      ? 'border-primary bg-primary/5 shadow-md' 
+                      : 'border-border hover:border-primary/50 hover:shadow-sm'
+                  }`}
+                  onClick={() => selectCategory(categoryName)}
+                >
+                  <CardContent className="flex items-center p-4 space-x-4">
+                    <div className="text-2xl">
+                      <Users className="w-6 h-6 text-secondary" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-semibold text-foreground">
+                          {categoryName}
+                        </h3>
+                        <span className="text-xs bg-secondary/20 text-secondary px-2 py-0.5 rounded-full">
+                          Custom
+                        </span>
+                      </div>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Your personalized conversation topics
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+
+          {/* Save/Manage button for custom categories */}
+          {isCustom && currentStarters.length > 0 && (
+            <Card className="shadow-soft border-primary/10">
+              <CardContent className="pt-6">
+                <div className="space-y-2">
+                  {!savedPacks[selectedCategory] ? (
+                    <Button
+                      onClick={saveCurrentCustom}
+                      variant="romance"
+                      size="sm"
+                      className="w-full"
+                    >
+                      Save This Pack
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={() => setShowManage(true)}
+                      variant="outline"
+                      size="sm"
+                      className="w-full"
+                    >
+                      Manage this Category
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Custom Input - Only show when Customize is selected */}
           {selectedCategory === 'Customize' && (
