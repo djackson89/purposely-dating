@@ -1305,21 +1305,46 @@ Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid gen
               onTouchEnd={handleTouchEnd}
             >
               <div className="text-center w-full max-w-6xl mx-auto">
-                {isMultipleChoice(currentStarters[currentQuestionIndex]) ? (
-                  <div className="w-full">
-                    {/* Question with dark gradient background */}
-                    <div className="relative inline-block mb-8 sm:mb-12">
-                      <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-black/60 rounded-2xl backdrop-blur-sm"></div>
-                      <p className="relative text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-white leading-tight px-6 py-4">
-                        {currentStarters[currentQuestionIndex].statement}
-                      </p>
-                    </div>
-                    
-                    {/* Answer choices with dark gradient background */}
-                    <div className="space-y-4 sm:space-y-6 text-left max-w-5xl mx-auto px-4">
-                      <div className="relative">
-                        <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-black/30 to-black/50 rounded-xl backdrop-blur-sm"></div>
-                        <div className="relative px-6 py-4 space-y-3">
+                {/* Category with emoji */}
+                <div className="mb-6">
+                  <div className="flex items-center justify-center gap-3 mb-4">
+                    <span className="text-3xl">
+                      {(() => {
+                        const categoryEmojis: { [key: string]: string } = {
+                          "First Date Deep Dive": "💬",
+                          "Relationship Clarity": "❤️",
+                          "Boundaries & Values": "🏠",
+                          "Trust & Transparency": "🔐",
+                          "Intimacy & Connection": "💝",
+                          "Communication & Conflict": "🗣️",
+                          "Red Flags & Green Flags": "🚩",
+                          "Emotional Intelligence": "🧠",
+                          "Values & Future Vision": "🔮",
+                          "Self-Awareness & Growth": "🌱",
+                          "Relationship Talk": "💭",
+                          "Intimacy": "💗",
+                          "Customize": "⚙️"
+                        };
+                        return categoryEmojis[selectedCategory] || "💭";
+                      })()}
+                    </span>
+                    <h2 className="text-lg sm:text-xl font-medium text-white/90">{selectedCategory}</h2>
+                  </div>
+                </div>
+
+                {/* Single gradient background for both question and answers */}
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-black/60 rounded-2xl backdrop-blur-sm"></div>
+                  <div className="relative px-6 py-6">
+                    {isMultipleChoice(currentStarters[currentQuestionIndex]) ? (
+                      <div className="w-full">
+                        {/* Question */}
+                        <p className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-white leading-tight mb-8">
+                          {currentStarters[currentQuestionIndex].statement}
+                        </p>
+                        
+                        {/* Answer choices */}
+                        <div className="space-y-4 sm:space-y-6 text-left max-w-5xl mx-auto">
                           {currentStarters[currentQuestionIndex].options.map((option) => (
                             <div key={option.key} className="text-white/90">
                               <span className="font-bold text-xl sm:text-2xl md:text-3xl mr-4">{option.key}.</span>
@@ -1330,17 +1355,14 @@ Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid gen
                           ))}
                         </div>
                       </div>
-                    </div>
+                    ) : (
+                      // Single question
+                      <p className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl 2xl:text-7xl font-bold text-white leading-tight max-w-5xl mx-auto">
+                        {getQuestionText(currentStarters[currentQuestionIndex])?.replace(/\*\*/g, '').replace(/[""'']/g, '"').replace(/[^\w\s\?\.\!\,\:\;\(\)\-\'\"]/g, '').trim()}
+                      </p>
+                    )}
                   </div>
-                ) : (
-                  // Single question with dark gradient background
-                  <div className="relative inline-block">
-                    <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-black/60 rounded-2xl backdrop-blur-sm"></div>
-                    <p className="relative text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl 2xl:text-7xl font-bold text-white leading-tight px-6 py-4 max-w-5xl">
-                      {getQuestionText(currentStarters[currentQuestionIndex])?.replace(/\*\*/g, '').replace(/[""'']/g, '"').replace(/[^\w\s\?\.\!\,\:\;\(\)\-\'\"]/g, '').trim()}
-                    </p>
-                  </div>
-                )}
+                </div>
               </div>
             </div>
 
@@ -1374,9 +1396,13 @@ Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid gen
               </div>
             </div>
 
-            {/* Swipe instructions - moved up */}
+            {/* Swipe instructions with arrows */}
             <div className="absolute bottom-36 left-1/2 transform -translate-x-1/2">
-              <p className="text-white/70 text-sm">Swipe or tap arrows to navigate</p>
+              <div className="flex items-center gap-3 text-white/70 text-sm">
+                <ChevronLeft className="w-4 h-4" />
+                <span>Swipe</span>
+                <ChevronRight className="w-4 h-4" />
+              </div>
             </div>
           </div>
         </DialogContent>
