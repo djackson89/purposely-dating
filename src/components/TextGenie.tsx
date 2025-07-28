@@ -295,14 +295,32 @@ const TextGenie: React.FC<TextGenieProps> = ({ userProfile }) => {
         contextText += (contextText ? '\n\n' : '') + `Screenshot Analysis:\n${screenshotAnalysis}`;
       }
 
-      const prompt = `Based on this context: ${contextText}
+      // First, analyze the incoming message tone to determine appropriate response strategy
+      const analysisPrompt = `Analyze the tone and intent of this incoming message/situation: ${contextText}
 
-Please generate 3 text message reply suggestions with these tones:
-1. Sweet (passive, fun, flirty, assuming best intentions)
-2. Mild (assertive/neutral, stoic, emotionally intelligent, curious)  
-3. Spicy (aggressive, direct, cut-throat, savage, for boundaries or flirty)
+Classify this as one of these categories:
+1. DEROGATORY - The message is rude, disrespectful, mean, insulting, dismissive, condescending, or hurtful
+2. KIND_NEUTRAL - The message is friendly, sweet, neutral, caring, supportive, or shows genuine interest
+3. UNCLEAR - The message is ambiguous, confusing, or needs clarification
 
-For each reply, also provide a brief "Purposely Perspective" explaining how the reply should land (max 2 sentences, warm and personable).
+Respond with just the category (DEROGATORY, KIND_NEUTRAL, or UNCLEAR) followed by a brief explanation of why.`;
+
+      const toneAnalysis = await getFlirtSuggestion(analysisPrompt, userProfile);
+      const messageCategory = toneAnalysis.split('\n')[0].trim().toUpperCase();
+
+      // Generate contextually appropriate responses based on the message tone
+      let responsePrompt = '';
+      
+      if (messageCategory.includes('DEROGATORY')) {
+        responsePrompt = `The incoming message appears to be derogatory or disrespectful: ${contextText}
+
+Generate 3 response suggestions focused on BOUNDARY SETTING and CLARITY:
+
+1. Sweet: A gentle response that seeks understanding while maintaining self-respect
+2. Mild: An emotionally intelligent response that requests clarification or sets a boundary diplomatically  
+3. Spicy: A direct, assertive response that firmly establishes boundaries without being cruel
+
+For each reply, provide a "Purposely Perspective" explaining the strategic purpose behind the response (max 2 sentences).
 
 Format as:
 Sweet: [reply text]
@@ -314,9 +332,57 @@ Perspective: [explanation]
 Spicy: [reply text]
 Perspective: [explanation]
 
-Keep replies concise (max 2 sentences each).`;
+Keep replies concise (max 2 sentences each). Focus on responses that either seek clarity about their intentions or help establish healthy boundaries.`;
 
-      const response = await getFlirtSuggestion(prompt, userProfile);
+      } else if (messageCategory.includes('KIND_NEUTRAL')) {
+        responsePrompt = `The incoming message appears to be kind-hearted or neutral: ${contextText}
+
+Generate 3 response suggestions focused on CONNECTION and FLIRTATION:
+
+1. Sweet: A warm, affectionate response that builds emotional connection
+2. Mild: A playfully engaging response that shows interest and invites more conversation
+3. Spicy: A confident, flirtatious response that creates attraction and romantic tension
+
+For each reply, provide a "Purposely Perspective" explaining how this response builds connection and intrigue (max 2 sentences).
+
+Format as:
+Sweet: [reply text]
+Perspective: [explanation]
+
+Mild: [reply text]  
+Perspective: [explanation]
+
+Spicy: [reply text]
+Perspective: [explanation]
+
+Keep replies concise (max 2 sentences each). Focus on responses that build chemistry, show interest, and create romantic momentum.`;
+
+      } else {
+        // UNCLEAR or fallback
+        responsePrompt = `The incoming message needs clarification: ${contextText}
+
+Generate 3 response suggestions focused on UNDERSTANDING and ENGAGEMENT:
+
+1. Sweet: A curious, caring response that seeks to understand their meaning
+2. Mild: A direct but friendly response that asks for clarification
+3. Spicy: A confident response that either clarifies your position or playfully calls out the ambiguity
+
+For each reply, provide a "Purposely Perspective" explaining the strategic approach (max 2 sentences).
+
+Format as:
+Sweet: [reply text]
+Perspective: [explanation]
+
+Mild: [reply text]  
+Perspective: [explanation]
+
+Spicy: [reply text]
+Perspective: [explanation]
+
+Keep replies concise (max 2 sentences each). Focus on responses that either seek clarity or demonstrate confidence.`;
+      }
+
+      const response = await getFlirtSuggestion(responsePrompt, userProfile);
       
       // Parse the response into structured suggestions
       const suggestions = parseAIResponse(response);
