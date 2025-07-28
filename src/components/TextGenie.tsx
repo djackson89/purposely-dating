@@ -368,13 +368,15 @@ Respond with just the category (DEROGATORY, KIND_NEUTRAL, or UNCLEAR) followed b
         // When user is offended/bothered, prioritize boundary-setting regardless of message classification
         responsePrompt = `The user feels offended, hurt, or bothered by this message/situation: ${contextText}
 
-Generate 3 response suggestions focused on SELF-ADVOCACY and BOUNDARY SETTING:
+You are a relationship coach specializing in teaching women to advocate for their emotional needs. Generate 3 response suggestions that help her assert her need for CLARITY, HONESTY, ALIGNMENT, and SAFETY:
 
-1. Sweet: A gentle but clear response that sets boundaries while maintaining dignity and self-respect
-2. Mild: An emotionally intelligent response that addresses the issue directly and seeks clarity or resolution
-3. Spicy: A confident, assertive response that firmly establishes boundaries and communicates their worth
+1. Sweet: A warm but direct response that seeks understanding while clearly stating her emotional need (for transparency, consistency, respect, etc.)
+2. Mild: An emotionally intelligent response that directly names what she needs (clarity about intentions, honesty about feelings, alignment of actions with words) 
+3. Spicy: A sharp, quotable response that cuts deep with wit and truth - the kind of direct communication that could go viral for its raw honesty about what women actually need
 
-For each reply, provide a "Purposely Perspective" explaining how this response helps the user advocate for themselves (max 2 sentences).
+Each response should help her articulate WHY she needs what she's asking for (emotional safety, relationship clarity, respect for her time/energy).
+
+For each reply, provide a "Purposely Perspective" explaining how this response serves her best interests and emotional needs (max 2 sentences).
 
 Format as:
 Sweet: [reply text]
@@ -386,18 +388,20 @@ Perspective: [explanation]
 Spicy: [reply text]
 Perspective: [explanation]
 
-Keep replies concise (max 2 sentences each). Focus on responses that help the user stand up for themselves, set clear boundaries, and maintain their self-worth.`;
+Keep replies concise (max 2 sentences each). The "Spicy" response should be memorably direct - the type of boundary-setting that makes people think "damn, I wish I could say that."`;
 
       } else if (messageCategory.includes('DEROGATORY')) {
         responsePrompt = `The incoming message appears to be derogatory or disrespectful: ${contextText}
 
-Generate 3 response suggestions focused on BOUNDARY SETTING and CLARITY:
+You are a relationship coach helping women articulate their emotional needs when facing disrespect. Generate 3 response suggestions that serve her best interests:
 
-1. Sweet: A gentle response that seeks understanding while maintaining self-respect
-2. Mild: An emotionally intelligent response that requests clarification or sets a boundary diplomatically  
-3. Spicy: A direct, assertive response that firmly establishes boundaries without being cruel
+1. Sweet: A caring but clear response that names her need for respect and asks for clarification about their intentions
+2. Mild: An emotionally intelligent response that directly states her need for honesty, transparency, or respectful communication  
+3. Spicy: A cutting, quotable response that calls out the behavior with surgical precision - witty enough to be a viral quote about self-respect
 
-For each reply, provide a "Purposely Perspective" explaining the strategic purpose behind the response (max 2 sentences).
+Each response should help her articulate WHY respectful communication matters to her (emotional safety, relationship clarity, protecting her peace).
+
+For each reply, provide a "Purposely Perspective" explaining how this response serves her emotional needs and best interests (max 2 sentences).
 
 Format as:
 Sweet: [reply text]
@@ -409,7 +413,7 @@ Perspective: [explanation]
 Spicy: [reply text]
 Perspective: [explanation]
 
-Keep replies concise (max 2 sentences each). Focus on responses that either seek clarity about their intentions or help establish healthy boundaries.`;
+Keep replies concise (max 2 sentences each). The "Spicy" response should be memorably sharp - the kind of comeback that makes people screenshot it.`;
 
       } else if (messageCategory.includes('KIND_NEUTRAL')) {
         responsePrompt = `The incoming message appears to be kind-hearted or neutral: ${contextText}
