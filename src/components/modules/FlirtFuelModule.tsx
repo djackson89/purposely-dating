@@ -1285,33 +1285,23 @@ Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid gen
               </Button>
             </div>
 
-            {/* Close button */}
-            <div className="absolute top-4 right-4 z-10">
-              <Button
-                onClick={() => setIsFullScreen(false)}
-                variant="ghost"
-                size="sm"
-                className="text-white hover:bg-white/20 p-2"
-              >
-                <X className="w-6 h-6" />
-              </Button>
-            </div>
+            {/* Main content area - enlarged to take up 50%+ of screen */}
             <div 
-              className="flex-1 flex items-center justify-center p-8 select-none cursor-pointer"
+              className="flex-1 flex items-center justify-center px-4 py-16 select-none cursor-pointer"
               onTouchStart={handleTouchStart}
               onTouchEnd={handleTouchEnd}
             >
-              <div className="text-center max-w-full px-4 sm:px-8">
+              <div className="text-center w-full max-w-6xl mx-auto">
                 {isMultipleChoice(currentStarters[currentQuestionIndex]) ? (
                   <div className="w-full">
-                    <p className="text-xl sm:text-2xl md:text-3xl font-bold text-white leading-tight mb-6 sm:mb-8">
+                    <p className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-white leading-tight mb-8 sm:mb-12 px-4">
                       {currentStarters[currentQuestionIndex].statement}
                     </p>
-                    <div className="space-y-3 sm:space-y-4 text-left max-w-4xl mx-auto">
+                    <div className="space-y-4 sm:space-y-6 text-left max-w-5xl mx-auto px-4">
                       {currentStarters[currentQuestionIndex].options.map((option) => (
                         <div key={option.key} className="text-white/90">
-                          <span className="font-bold text-lg sm:text-xl mr-3">{option.key}.</span>
-                          <span className="text-base sm:text-lg leading-relaxed break-words">
+                          <span className="font-bold text-xl sm:text-2xl md:text-3xl mr-4">{option.key}.</span>
+                          <span className="text-lg sm:text-xl md:text-2xl leading-relaxed break-words">
                             {option.text}
                           </span>
                         </div>
@@ -1319,15 +1309,28 @@ Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid gen
                     </div>
                   </div>
                 ) : (
-                  <p className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-white leading-tight px-2">
+                  <p className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl 2xl:text-7xl font-bold text-white leading-tight px-4 max-w-5xl mx-auto">
                     {getQuestionText(currentStarters[currentQuestionIndex])?.replace(/\*\*/g, '').replace(/[""'']/g, '"').replace(/[^\w\s\?\.\!\,\:\;\(\)\-\'\"]/g, '').trim()}
                   </p>
                 )}
               </div>
             </div>
 
-            {/* Navigation indicators */}
-            <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
+            {/* Share button at bottom */}
+            <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-10">
+              <Button
+                onClick={() => handleShare(getQuestionText(currentStarters[currentQuestionIndex]))}
+                variant="ghost"
+                size="lg"
+                className="text-white hover:bg-white/20 rounded-full px-6 py-3 bg-white/10 backdrop-blur-sm border border-white/20"
+              >
+                <Share className="w-5 h-5 mr-2" />
+                Share
+              </Button>
+            </div>
+
+            {/* Navigation indicators - moved up to make room for share button */}
+            <div className="absolute bottom-24 left-1/2 transform -translate-x-1/2">
               <div className="flex space-x-3">
                 {currentStarters.map((_, index) => (
                   <div
@@ -1343,8 +1346,8 @@ Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid gen
               </div>
             </div>
 
-            {/* Swipe instructions */}
-            <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2">
+            {/* Swipe instructions - moved up */}
+            <div className="absolute bottom-36 left-1/2 transform -translate-x-1/2">
               <p className="text-white/70 text-sm">Swipe or tap arrows to navigate</p>
             </div>
           </div>
