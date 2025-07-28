@@ -1424,8 +1424,8 @@ Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid gen
         </div>
       )}
 
-      {/* Text Genie - Debug: This should be at root level */}
-      {activeSection === 'textgenie' && (
+      {/* Text Genie */}
+      {(activeSection as 'starters' | 'practice' | 'textgenie') === 'textgenie' && (
         <div className="animate-fade-in-up">
           {/* Section Heading */}
           <div className="flex items-center justify-center space-x-2 mb-6">
@@ -1441,8 +1441,8 @@ Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid gen
         </div>
       )}
 
-      {/* AI Practice */}
-      {activeSection === 'practice' && (
+      {/* AI Practice Partner */}
+      {(activeSection as 'starters' | 'practice' | 'textgenie') === 'practice' && (
         <div className="space-y-4 animate-fade-in-up">
           {/* Section Heading */}
           <div className="flex items-center justify-center space-x-2">
