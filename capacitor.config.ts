@@ -1,7 +1,7 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.derrick.purposley',
+  appId: 'com.derrick.purposely.dating',
   appName: 'Purposely',
   webDir: 'dist',
   bundledWebRuntime: false,
