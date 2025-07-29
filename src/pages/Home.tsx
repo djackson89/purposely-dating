@@ -145,7 +145,9 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
     
     let scenarioIndex;
     if (savedScenarioIndex) {
-      scenarioIndex = parseInt(savedScenarioIndex);
+      // Cycle to next scenario for demonstration
+      scenarioIndex = (parseInt(savedScenarioIndex) + 1) % askPurposelyScenarios.length;
+      localStorage.setItem(`dailyScenarioIndex_${today}`, scenarioIndex.toString());
     } else {
       scenarioIndex = Math.floor(Math.random() * askPurposelyScenarios.length);
       localStorage.setItem(`dailyScenarioIndex_${today}`, scenarioIndex.toString());
