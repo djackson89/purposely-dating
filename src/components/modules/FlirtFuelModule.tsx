@@ -63,8 +63,6 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
   // Optimized cache for pre-loaded questions
   const [questionCache, setQuestionCache] = useState<Map<string, any>>(new Map());
   
-  // Memoized conversation starters to prevent re-renders
-  const memoizedConversationStarters = React.useMemo(() => conversationStarters, []);
   
   const { getFlirtSuggestion, getAIResponse, isLoading } = useRelationshipAI();
 
@@ -433,7 +431,7 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
   // Smart initialization with lazy loading
   React.useEffect(() => {
     const initializeQuestions = () => {
-      const defaultCategory = memoizedConversationStarters.find(cat => cat.category === selectedCategory);
+      const defaultCategory = conversationStarters.find(cat => cat.category === selectedCategory);
       if (defaultCategory && !isCustom) {
         // Set original questions immediately for instant display
         setCurrentStarters(defaultCategory.prompts);
@@ -531,7 +529,7 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
       if (isCustom) {
         baseQuestions = customCategories[selectedCategory] || [];
       } else {
-        const defaultCategory = memoizedConversationStarters.find(cat => cat.category === selectedCategory);
+        const defaultCategory = conversationStarters.find(cat => cat.category === selectedCategory);
         baseQuestions = defaultCategory ? defaultCategory.prompts : [];
       }
       
