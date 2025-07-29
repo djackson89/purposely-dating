@@ -65,7 +65,7 @@ interface ConversationStartersSectionProps {
   getQuestionText: (question: string | { statement: string; options: { key: string; text: string; }[] }) => string;
 }
 
-const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = ({
+const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = React.memo(({
   userProfile,
   conversationStarters,
   selectedCategory,
@@ -107,7 +107,8 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
   isMultipleChoice,
   getQuestionText,
 }) => {
-  const categoryEmojis: { [key: string]: string } = {
+  // Memoized category emojis to prevent recreation
+  const categoryEmojis = React.useMemo(() => ({
     "First Date Deep Dive": "💬",
     "Relationship Clarity": "❤️",
     "Boundaries & Values": "🏠",
@@ -124,29 +125,31 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
     "Future Plans": "🏡",
     "Personal Growth": "🌟",
     "Fun & Playful": "🎭"
-  };
+  }), []);
 
-  const getDescription = (category: string): string => {
-    const descriptions: { [key: string]: string } = {
-      "First Date Deep Dive": "Explore deeper conversations and meaningful connections",
-      "Relationship Clarity": "Understand love languages and emotional needs",
-      "Boundaries & Values": "Navigate healthy limits and personal values",
-      "Trust & Transparency": "Build trust through honest communication",
-      "Intimacy & Connection": "Deepen physical and emotional bonds",
-      "Communication & Conflict": "Master healthy disagreement and resolution",
-      "Red Flags & Green Flags": "Identify positive and concerning relationship signs",
-      "Emotional Intelligence": "Develop awareness and empathy skills",
-      "Values & Future Vision": "Align on long-term goals and priorities",
-      "Self-Awareness & Growth": "Foster personal development and healing",
-      "Date Night Debates": "Spark engaging discussions with thought-provoking topics",
-      "Relationship Talk": "Open conversations about your connection",
-      "Getting to Know You": "Discover each other's personalities and histories",
-      "Future Plans": "Discuss dreams, goals, and shared visions",
-      "Personal Growth": "Explore self-improvement and development",
-      "Fun & Playful": "Light-hearted questions for laughs and bonding"
-    };
+  // Memoized descriptions to prevent recreation
+  const descriptions = React.useMemo(() => ({
+    "First Date Deep Dive": "Explore deeper conversations and meaningful connections",
+    "Relationship Clarity": "Understand love languages and emotional needs",
+    "Boundaries & Values": "Navigate healthy limits and personal values",
+    "Trust & Transparency": "Build trust through honest communication",
+    "Intimacy & Connection": "Deepen physical and emotional bonds",
+    "Communication & Conflict": "Master healthy disagreement and resolution",
+    "Red Flags & Green Flags": "Identify positive and concerning relationship signs",
+    "Emotional Intelligence": "Develop awareness and empathy skills",
+    "Values & Future Vision": "Align on long-term goals and priorities",
+    "Self-Awareness & Growth": "Foster personal development and healing",
+    "Date Night Debates": "Spark engaging discussions with thought-provoking topics",
+    "Relationship Talk": "Open conversations about your connection",
+    "Getting to Know You": "Discover each other's personalities and histories",
+    "Future Plans": "Discuss dreams, goals, and shared visions",
+    "Personal Growth": "Explore self-improvement and development",
+    "Fun & Playful": "Light-hearted questions for laughs and bonding"
+  }), []);
+
+  const getDescription = React.useCallback((category: string): string => {
     return descriptions[category] || "Explore meaningful conversation topics";
-  };
+  }, [descriptions]);
 
   return (
     <div className="space-y-4 animate-fade-in-up">
@@ -586,6 +589,6 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
       )}
     </div>
   );
-};
+});
 
 export default ConversationStartersSection;

@@ -60,12 +60,11 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
   const [isTransforming, setIsTransforming] = useState(false);
   const [isDepthChanging, setIsDepthChanging] = useState(false);
   
-  // Cache for pre-loaded questions at different depths
-  const [cachedQuestions, setCachedQuestions] = useState<{
-    [category: string]: {
-      [depth: number]: (string | { statement: string; options: { key: string; text: string; }[] })[]
-    }
-  }>({});
+  // Optimized cache for pre-loaded questions
+  const [questionCache, setQuestionCache] = useState<Map<string, any>>(new Map());
+  
+  // Memoized conversation starters to prevent re-renders
+  const memoizedConversationStarters = React.useMemo(() => conversationStarters, []);
   
   const { getFlirtSuggestion, getAIResponse, isLoading } = useRelationshipAI();
 
@@ -397,28 +396,31 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
   ];
 
 
-  // Function to adjust question depth based on slider
-  const adjustQuestionDepth = async (originalQuestion: string, depth: number) => {
+  // Optimized question depth adjustment with smart caching
+  const adjustQuestionDepth = React.useCallback(async (originalQuestion: string, depth: number): Promise<string> => {
+    const cacheKey = `${originalQuestion}_${depth}`;
+    
+    // Check cache first
+    if (questionCache.has(cacheKey)) {
+      return questionCache.get(cacheKey);
+    }
+
     try {
       const depthInstructions = {
-        0: "Make this witty, sarcastic, and playfully humorous. Keep it under 120 characters. Return ONLY the transformed question.",
-        1: "Make this engaging and balanced. Keep it under 120 characters. Return ONLY the transformed question.", 
-        2: "Make this deep and psychological. Keep it under 120 characters. Return ONLY the transformed question."
+        0: "Make this witty and sarcastic (80 chars max). ONLY return the question.",
+        1: "Make this balanced and engaging (80 chars max). ONLY return the question.", 
+        2: "Make this deep and psychological (80 chars max). ONLY return the question."
       };
 
-      const prompt = `Transform: "${originalQuestion}"\n\n${depthInstructions[depth as keyof typeof depthInstructions]}\n\nIMPORTANT: Return ONLY the question, no explanations.`;
+      const prompt = `Transform: "${originalQuestion}"\n\n${depthInstructions[depth as keyof typeof depthInstructions]}`;
       
       const response = await getAIResponse(prompt, userProfile, 'general');
       
-      // Fast, aggressive cleaning
-      let result = response.trim()
-        .replace(/^["']|["']$/g, '')
-        .split('\n')[0]
-        .trim();
+      // Ultra-fast cleaning
+      const result = response.trim().replace(/^["']|["']$/g, '').split('\n')[0].substring(0, 120);
       
-      if (result.length > 150) {
-        result = result.substring(0, 147) + '...';
-      }
+      // Cache the result
+      questionCache.set(cacheKey, result);
       
       return result || originalQuestion;
       
@@ -426,79 +428,15 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
       console.error('Error adjusting question depth:', error);
       return originalQuestion;
     }
-  };
+  }, [questionCache, userProfile, getAIResponse]);
 
-
-  // Initialize current starters with default category and preload all depths
+  // Smart initialization with lazy loading
   React.useEffect(() => {
-    const preloadQuestionsForCategory = async (category: string, baseQuestions: (string | { statement: string; options: { key: string; text: string; }[] })[]) => {
-      const cacheKey = category;
-      
-      // Check if already cached
-      if (cachedQuestions[cacheKey]) {
-        return cachedQuestions[cacheKey];
-      }
-
-      try {
-        const allDepthQuestions: { [depth: number]: any[] } = {};
-        
-        // Process all 3 depth levels concurrently
-        const depthPromises = [0, 1, 2].map(async (depth) => {
-          const transformedQuestions = await Promise.all(
-            baseQuestions.map(async (question) => {
-              if (typeof question === 'string') {
-                return await adjustQuestionDepth(question, depth);
-              } else {
-                const transformedStatement = await adjustQuestionDepth(question.statement, depth);
-                return {
-                  statement: transformedStatement,
-                  options: question.options
-                };
-              }
-            })
-          );
-          return { depth, questions: transformedQuestions };
-        });
-
-        const results = await Promise.all(depthPromises);
-        
-        // Store results in cache
-        results.forEach(({ depth, questions }) => {
-          allDepthQuestions[depth] = questions;
-        });
-
-        // Update cache
-        setCachedQuestions(prev => ({
-          ...prev,
-          [cacheKey]: allDepthQuestions
-        }));
-
-        return allDepthQuestions;
-      } catch (error) {
-        console.error('Error preloading questions:', error);
-        return null;
-      }
-    };
-
-    const initializeQuestions = async () => {
-      const defaultCategory = conversationStarters.find(cat => cat.category === selectedCategory);
+    const initializeQuestions = () => {
+      const defaultCategory = memoizedConversationStarters.find(cat => cat.category === selectedCategory);
       if (defaultCategory && !isCustom) {
-        try {
-          // Pre-load questions for all depth levels
-          const preloadedQuestions = await preloadQuestionsForCategory(selectedCategory, defaultCategory.prompts);
-          
-          if (preloadedQuestions) {
-            // Set current starters to the current depth level
-            setCurrentStarters(preloadedQuestions[depthLevel[0]] || defaultCategory.prompts);
-          } else {
-            // Fallback to original questions
-            setCurrentStarters(defaultCategory.prompts);
-          }
-        } catch (error) {
-          console.error('Error initializing questions:', error);
-          // Fallback to original questions
-          setCurrentStarters(defaultCategory.prompts);
-        }
+        // Set original questions immediately for instant display
+        setCurrentStarters(defaultCategory.prompts);
         
         // Get or set daily question index
         const today = new Date().toDateString();
@@ -507,10 +445,16 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
         if (savedQuestionIndex) {
           setCurrentQuestionIndex(parseInt(savedQuestionIndex, 10));
         } else {
-          // Generate new daily question index
           const randomIndex = Math.floor(Math.random() * defaultCategory.prompts.length);
           setCurrentQuestionIndex(randomIndex);
           localStorage.setItem(`dailyQuestionIndex_${selectedCategory}_${today}`, randomIndex.toString());
+        }
+
+        // Background preload current depth only (lazy loading)
+        if (depthLevel[0] !== 1) { // Only if not default casual level
+          setTimeout(() => {
+            transformQuestionsForDepth(defaultCategory.prompts, depthLevel[0]);
+          }, 100);
         }
       }
     };
@@ -518,60 +462,86 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
     initializeQuestions();
   }, [selectedCategory, isCustom]);
 
-  // Transform questions immediately when depth changes - use cached questions for instant switching
-  React.useEffect(() => {
-    const switchToDepth = () => {
-      if (currentStarters.length === 0) return;
+  // Optimized depth transformation with minimal calls
+  const transformQuestionsForDepth = React.useCallback(async (
+    questions: (string | { statement: string; options: { key: string; text: string; }[] })[], 
+    depth: number
+  ) => {
+    if (depth === 1) {
+      // Casual is default - no transformation needed
+      return questions;
+    }
+
+    setIsDepthChanging(true);
+    
+    try {
+      // Process only 3 questions at a time to prevent overload
+      const batchSize = 3;
+      const transformedQuestions = [...questions]; // Start with originals
       
-      // Check if we have cached questions for this category and depth
-      const cacheKey = selectedCategory;
-      if (cachedQuestions[cacheKey] && cachedQuestions[cacheKey][depthLevel[0]]) {
-        // Instant switch using cached questions
-        setCurrentStarters(cachedQuestions[cacheKey][depthLevel[0]]);
-        return;
+      for (let i = 0; i < questions.length; i += batchSize) {
+        const batch = questions.slice(i, i + batchSize);
+        
+        const batchResults = await Promise.all(
+          batch.map(async (question, batchIndex) => {
+            const actualIndex = i + batchIndex;
+            
+            if (typeof question === 'string') {
+              return await adjustQuestionDepth(question, depth);
+            } else {
+              const transformedStatement = await adjustQuestionDepth(question.statement, depth);
+              return {
+                statement: transformedStatement,
+                options: question.options
+              };
+            }
+          })
+        );
+        
+        // Update results in batches for responsive UI
+        batchResults.forEach((result, batchIndex) => {
+          transformedQuestions[i + batchIndex] = result;
+        });
+        
+        // Update UI progressively
+        setCurrentStarters([...transformedQuestions]);
+        
+        // Small delay to prevent overwhelming the API
+        if (i + batchSize < questions.length) {
+          await new Promise(resolve => setTimeout(resolve, 200));
+        }
       }
       
-      // If no cached questions, fall back to the slower transformation process
-      setIsDepthChanging(true);
+      return transformedQuestions;
+    } catch (error) {
+      console.error('Error transforming questions:', error);
+      return questions;
+    } finally {
+      setIsDepthChanging(false);
+    }
+  }, [adjustQuestionDepth]);
+
+  // Ultra-fast depth switching with smart fallbacks
+  React.useEffect(() => {
+    const switchDepth = async () => {
+      if (currentStarters.length === 0) return;
       
-      setTimeout(async () => {
-        try {
-          // Get the base questions
-          let baseQuestions: (string | { statement: string; options: { key: string; text: string; }[] })[];
-          
-          if (isCustom) {
-            baseQuestions = customCategories[selectedCategory] || [];
-          } else {
-            const defaultCategory = conversationStarters.find(cat => cat.category === selectedCategory);
-            baseQuestions = defaultCategory ? defaultCategory.prompts : [];
-          }
-          
-          // Transform questions for current depth only
-          if (baseQuestions.length > 0) {
-            const transformedQuestions = await Promise.all(
-              baseQuestions.map(async (question) => {
-                if (typeof question === 'string') {
-                  return await adjustQuestionDepth(question, depthLevel[0]);
-                } else {
-                  const transformedStatement = await adjustQuestionDepth(question.statement, depthLevel[0]);
-                  return {
-                    statement: transformedStatement,
-                    options: question.options
-                  };
-                }
-              })
-            );
-            setCurrentStarters(transformedQuestions);
-          }
-        } catch (error) {
-          console.error('Error transforming questions for depth:', error);
-        } finally {
-          setIsDepthChanging(false);
-        }
-      }, 100); // Small delay to show loading state
+      let baseQuestions: (string | { statement: string; options: { key: string; text: string; }[] })[];
+      
+      if (isCustom) {
+        baseQuestions = customCategories[selectedCategory] || [];
+      } else {
+        const defaultCategory = memoizedConversationStarters.find(cat => cat.category === selectedCategory);
+        baseQuestions = defaultCategory ? defaultCategory.prompts : [];
+      }
+      
+      if (baseQuestions.length === 0) return;
+      
+      // Transform questions for new depth
+      await transformQuestionsForDepth(baseQuestions, depthLevel[0]);
     };
     
-    switchToDepth();
+    switchDepth();
   }, [depthLevel]);
 
 
