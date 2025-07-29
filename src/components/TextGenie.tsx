@@ -777,15 +777,15 @@ Give the user a fresh but equally protective way to view the situation.`;
             </CardContent>
           </Card>
 
-          {/* Retry Button */}
+          {/* Try Again Button */}
           <Button
             onClick={retryGeneration}
-            variant="outline"
+            variant="romance"
             className="w-full"
             disabled={isProcessing || isLoading || isAnalyzingImages || isRetrying}
           >
             <RefreshCw className={`w-4 h-4 mr-2 ${isRetrying ? 'animate-spin' : ''}`} />
-            {isRetrying ? 'Generating...' : 'Retry'}
+            {isRetrying ? 'Generating...' : 'Try Again'}
           </Button>
         </div>
       )}
