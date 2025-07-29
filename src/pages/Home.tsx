@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Share2, MessageCircle, Send } from 'lucide-react';
+import { Heart, Share2, ThumbsUp, ThumbsDown, MessageCircle, Send } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useRelationshipAI } from '@/hooks/useRelationshipAI';
 
@@ -30,7 +30,6 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
   const [currentScenarioIndex, setCurrentScenarioIndex] = useState(0);
   const { toast } = useToast();
   const { getAIResponse } = useRelationshipAI();
-  
 
   // Relationship Talk conversation starters
   const relationshipTalkQuestions = [
@@ -239,18 +238,6 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
                     {getCurrentScenario().answer}
                   </p>
                 </div>
-              </div>
-              
-              {/* Share Section */}
-              <div className="flex justify-center">
-                <Button
-                  onClick={handleShare}
-                  variant="soft"
-                  className="flex items-center space-x-2"
-                >
-                  <Share2 className="w-4 h-4" />
-                  <span>Share This</span>
-                </Button>
               </div>
               
               <div className="flex space-x-2">
