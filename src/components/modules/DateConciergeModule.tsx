@@ -747,25 +747,8 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
       {activeSection === 'suggestions' && !showDatingOnboarding && !showFavorites && (
         <div className="space-y-4 animate-fade-in-up">
           {/* Section Heading */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <h2 className="text-xl font-semibold text-primary">Dating Planner</h2>
-              <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center cursor-pointer hover:bg-primary/20 transition-colors">
-                <InfoDialog
-                  title="Dating Planner"
-                  description="Get personalized date ideas perfectly tailored to your preferences, love language, and personality."
-                />
-              </div>
-            </div>
-            <div className="flex items-center space-x-3">
-              <Button 
-                onClick={resetPreferences}
-                variant="ghost"
-                size="sm"
-                className="text-muted-foreground hover:text-primary"
-              >
-                Reset Preferences
-              </Button>
+          <div className="relative text-center">
+            <div className="absolute top-0 right-0">
               <Button 
                 onClick={() => setShowFavorites(true)}
                 variant="ghost"
@@ -773,6 +756,26 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
                 className="text-primary hover:text-primary/80"
               >
                 Favorites ({favoriteDates.length})
+              </Button>
+            </div>
+            
+            <div className="space-y-1">
+              <div className="flex items-center justify-center space-x-2">
+                <h2 className="text-xl font-semibold text-primary">Dating Planner</h2>
+                <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center cursor-pointer hover:bg-primary/20 transition-colors">
+                  <InfoDialog
+                    title="Dating Planner"
+                    description="Get personalized date ideas perfectly tailored to your preferences, love language, and personality."
+                  />
+                </div>
+              </div>
+              <Button 
+                onClick={resetPreferences}
+                variant="ghost"
+                size="sm"
+                className="text-muted-foreground hover:text-primary text-sm"
+              >
+                Edit Preferences
               </Button>
             </div>
           </div>
