@@ -250,11 +250,27 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
       onTouchEnd={onTouchEnd}
     >
       {/* Header */}
-      <div className="text-center space-y-2">
+      <div className="text-center space-y-4">
         <h1 className="text-2xl font-bold bg-gradient-romance bg-clip-text text-transparent">
-          Welcome to Purposely 💕
+          Purposely 💕
         </h1>
-        <p className="text-muted-foreground">Your daily dose of relationship growth</p>
+        
+        {/* Invite Partner Banner */}
+        <Card className="w-full shadow-elegant border-burgundy/20 bg-gradient-to-r from-burgundy to-primary">
+          <CardContent className="p-6 flex flex-col justify-center items-center text-center">
+            <p className="text-lg font-bold text-white leading-relaxed">
+              Know someone else who's dating with purpose?
+            </p>
+            <Button
+              onClick={handleShare}
+              variant="outline"
+              className="mt-4 bg-white/20 border-white/30 text-white hover:bg-white/30 font-semibold"
+            >
+              <Share2 className="w-4 h-4 mr-2" />
+              Invite a Friend
+            </Button>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Daily Question of the Day */}
@@ -386,27 +402,6 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
 
       {/* Quick Start Module */}
       <QuickStartModule onNavigateToModule={handleQuickStartNavigation} />
-
-      {/* Invite a Friend */}
-      <div className="space-y-4">
-        <Card className="w-full shadow-elegant border-primary/20 bg-gradient-burgundy">
-          <CardContent className="p-8 flex flex-col justify-center items-center text-center">
-            <div className="flex items-center justify-center h-full w-full">
-              <p className="text-xl font-bold text-white leading-relaxed">
-                Side Note: Purposely App is better with friends!
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-        <Button
-          onClick={handleShare}
-          variant="romance"
-          className="w-full"
-        >
-          <Share2 className="w-4 h-4 mr-2" />
-          Invite a Friend to Try Purposely
-        </Button>
-      </div>
     </div>
   );
 };
