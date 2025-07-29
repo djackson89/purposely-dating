@@ -38,14 +38,18 @@ export const usePopulateEngagement = () => {
       let bots = existingBots || [];
 
       if (bots.length < 10) {
-        // Create missing bots with a system user ID
-        const systemUserId = '00000000-0000-0000-0000-000000000000';
+        // Get the current user to use as creator
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          throw new Error('Must be logged in to create bots');
+        }
+
         const botsToCreate = botNames.slice(bots.length).map(name => ({
           name: name,
           bio: `Empowering women to know their worth 💖`,
           personality_traits: { supportive: true, direct: true },
           is_active: true,
-          created_by: systemUserId
+          created_by: user.id
         }));
 
         console.log('Creating bots:', botsToCreate.length);
