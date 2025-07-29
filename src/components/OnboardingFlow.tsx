@@ -31,8 +31,8 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
     },
     {
       icon: MessageCircle,
-      title: "Flirt Fuel - Spark Connections ✨",
-      description: "Get personalized conversation starters, practice with AI partners, and craft perfect texts to boost your confidence!"
+      title: "Clarity Coach - Spark Connections ✨",
+      description: "Get personalized conversation starters, clarity-building challenges, and practice with AI to boost your confidence!"
     },
     {
       icon: Calendar,

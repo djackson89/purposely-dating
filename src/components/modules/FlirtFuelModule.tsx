@@ -28,6 +28,7 @@ interface FlirtFuelModuleProps {
   userProfile: OnboardingData;
 }
 
+
 const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
   const [activeSection, setActiveSection] = useState<'starters' | 'practice' | 'textgenie'>('starters');
   
@@ -41,7 +42,18 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
   const [sessionFeedback, setSessionFeedback] = useState('');
   const [showFeedback, setShowFeedback] = useState(false);
   
+  
   const { getFlirtSuggestion, getAIResponse, isLoading } = useRelationshipAI();
+
+  // Helper function to check if current question is multiple choice
+  const isMultipleChoice = (question: string | { statement: string; options: { key: string; text: string; }[] }): question is { statement: string; options: { key: string; text: string; }[] } => {
+    return typeof question === 'object' && 'statement' in question;
+  };
+
+  // Helper function to get question text
+  const getQuestionText = (question: string | { statement: string; options: { key: string; text: string; }[] }): string => {
+    return isMultipleChoice(question) ? question.statement : question;
+  };
 
   const handleShare = async (text: string) => {
     // Detect device type for appropriate app store link
@@ -289,189 +301,163 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
           statement: "Co-parenting only works when one parent gives up control.",
           options: [
             { key: "A", text: "Strongly Agree — Two CEOs crash the company" },
-            { key: "B", text: "Somewhat Agree — Someone has to lead" },
-            { key: "C", text: "Somewhat Disagree — It's about balance" },
-            { key: "D", text: "Strongly Disagree — Equal partnership is possible" }
+            { key: "B", text: "Somewhat Agree — Somebody has to pick peace over power" },
+            { key: "C", text: "Somewhat Disagree — Communication can balance power" },
+            { key: "D", text: "Strongly Disagree — Control isn't required, collaboration is" }
           ]
         },
         {
-          statement: "Women dating multiple men until commitment is manipulative.",
+          statement: "Men with money date younger women because they know women their age won't tolerate them.",
           options: [
-            { key: "A", text: "Strongly Agree — Pick one and invest" },
-            { key: "B", text: "Somewhat Agree — Mixed signals hurt people" },
-            { key: "C", text: "Somewhat Disagree — It's just smart dating" },
-            { key: "D", text: "Strongly Disagree — Men do it all the time" }
+            { key: "A", text: "Strongly Agree — It's not preference, it's escape" },
+            { key: "B", text: "Somewhat Agree — Age equals accountability" },
+            { key: "C", text: "Somewhat Disagree — Some just connect better younger" },
+            { key: "D", text: "Strongly Disagree — Love doesn't check birth dates" }
           ]
         },
         {
-          statement: "Modern dating apps have ruined genuine romantic connections.",
+          statement: "Marriage doesn't make people more loyal—it just makes cheating more expensive.",
           options: [
-            { key: "A", text: "Strongly Agree — It's all surface level now" },
-            { key: "B", text: "Somewhat Agree — Too many options, no depth" },
-            { key: "C", text: "Somewhat Disagree — Depends how you use them" },
-            { key: "D", text: "Strongly Disagree — Love finds a way" }
+            { key: "A", text: "Strongly Agree — Rings don't change habits" },
+            { key: "B", text: "Somewhat Agree — The affair just comes with paperwork" },
+            { key: "C", text: "Somewhat Disagree — Commitment still matters to some" },
+            { key: "D", text: "Strongly Disagree — That mindset belongs to cheaters" }
           ]
         },
         {
-          statement: "Your friends' opinions about your partner should heavily influence your decisions.",
+          statement: "If you're not sexually compatible, the relationship is already on life support.",
           options: [
-            { key: "A", text: "Strongly Agree — They see what you can't" },
-            { key: "B", text: "Somewhat Agree — Consider their perspective" },
-            { key: "C", text: "Somewhat Disagree — It's your relationship" },
-            { key: "D", text: "Strongly Disagree — Friends can be jealous too" }
+            { key: "A", text: "Strongly Agree — Chemistry is the foundation" },
+            { key: "B", text: "Somewhat Agree — Desire makes everything smoother" },
+            { key: "C", text: "Somewhat Disagree — Other things can keep it alive" },
+            { key: "D", text: "Strongly Disagree — Y'all sound addicted to vibes" }
           ]
         },
         {
-          statement: "Living together before marriage prevents divorce.",
+          statement: "Most women can't handle being with a man they have to take care of.",
           options: [
-            { key: "A", text: "Strongly Agree — Trial run is essential" },
-            { key: "B", text: "Somewhat Agree — Better to know beforehand" },
-            { key: "C", text: "Somewhat Disagree — Doesn't guarantee anything" },
-            { key: "D", text: "Strongly Disagree — Changes relationship dynamic" }
+            { key: "A", text: "Strongly Agree — Nurture isn't the same as support" },
+            { key: "B", text: "Somewhat Agree — The dynamic gets old fast" },
+            { key: "C", text: "Somewhat Disagree — Some are built for that life" },
+            { key: "D", text: "Strongly Disagree — Y'all underestimate feminine loyalty" }
           ]
         },
         {
-          statement: "Men should always pay on first dates, regardless of who asked.",
+          statement: "If you have to constantly ask your partner to touch you, you're not in a relationship—you're on an emotional payment plan.",
           options: [
-            { key: "A", text: "Strongly Agree — Traditional values matter" },
-            { key: "B", text: "Somewhat Agree — Shows intention and respect" },
-            { key: "C", text: "Somewhat Disagree — Split if she offered" },
-            { key: "D", text: "Strongly Disagree — Equality means going Dutch" }
+            { key: "A", text: "Strongly Agree — Affection shouldn't require begging" },
+            { key: "B", text: "Somewhat Agree — Attraction shows itself, not explains itself" },
+            { key: "C", text: "Somewhat Disagree — Not everyone is expressive" },
+            { key: "D", text: "Strongly Disagree — Love languages need reminders" }
           ]
         },
         {
-          statement: "Social media has made infidelity too easy and too common.",
+          statement: "Dating apps didn't ruin love—people did.",
           options: [
-            { key: "A", text: "Strongly Agree — DMs are relationship killers" },
-            { key: "B", text: "Somewhat Agree — Creates unnecessary temptation" },
-            { key: "C", text: "Somewhat Disagree — Cheaters gonna cheat anyway" },
-            { key: "D", text: "Strongly Disagree — It's about personal integrity" }
+            { key: "A", text: "Strongly Agree — It's the users, not the platform" },
+            { key: "B", text: "Somewhat Agree — People are the problem, not the pixels" },
+            { key: "C", text: "Somewhat Disagree — The swiping culture changed us" },
+            { key: "D", text: "Strongly Disagree — Apps were built for short-term flings" }
+          ]
+        },
+        {
+          statement: "Some people don't want love—they just want someone to serve them emotionally.",
+          options: [
+            { key: "A", text: "Strongly Agree — Therapy would ruin their hustle" },
+            { key: "B", text: "Somewhat Agree — They crave caretakers, not partners" },
+            { key: "C", text: "Somewhat Disagree — Some are just unaware" },
+            { key: "D", text: "Strongly Disagree — That's just trauma talking" }
+          ]
+        },
+        {
+          statement: "If your sex life requires alcohol to feel good, you're not compatible.",
+          options: [
+            { key: "A", text: "Strongly Agree — Liquor shouldn't be lube" },
+            { key: "B", text: "Somewhat Agree — Sober sex tells the truth" },
+            { key: "C", text: "Somewhat Disagree — Inhibitions are real" },
+            { key: "D", text: "Strongly Disagree — Y'all just need better drinks" }
+          ]
+        }
+      ]
+    },
+    
+    // Girl's Night Categories
+    {
+      category: "Pillow Talk & Tea",
+      masterCategory: "Girl's Night",
+      type: "multiple-choice",
+      prompts: [
+        {
+          statement: "What's your ultimate turn-on during a makeout session?",
+          options: [
+            { key: "A", text: "Neck kisses" },
+            { key: "B", text: "Whispering in my ear" },
+            { key: "C", text: "Hands exploring slowly" },
+            { key: "D", text: "Being pinned down" }
+          ]
+        },
+        {
+          statement: "Your biggest bedroom confession that you'd only tell your girls:",
+          options: [
+            { key: "A", text: "I fake it sometimes to end it faster" },
+            { key: "B", text: "I think about someone else during" },
+            { key: "C", text: "I've never had the Big O with a partner" },
+            { key: "D", text: "I'm way kinkier than I let on" }
+          ]
+        },
+        {
+          statement: "The sexiest thing a man can do outside the bedroom:",
+          options: [
+            { key: "A", text: "Cook me dinner without being asked" },
+            { key: "B", text: "Defend me when I'm not around" },
+            { key: "C", text: "Handle his business like a grown man" },
+            { key: "D", text: "Make me laugh until I cry" }
+          ]
+        },
+        {
+          statement: "What would make you instantly end a hookup?",
+          options: [
+            { key: "A", text: "Bad hygiene situation" },
+            { key: "B", text: "Selfish lover vibes" },
+            { key: "C", text: "Too aggressive too fast" },
+            { key: "D", text: "Weird dirty talk" }
           ]
         }
       ]
     },
     {
-      category: "Relationship Talk",
-      masterCategory: "Date Night",
-      prompts: [
-        "What's something about love that you believed in your teens but laugh at now?",
-        "How do you know the difference between settling and being realistic?",
-        "What's the most important thing you've learned about yourself through dating?",
-        "How has social media affected your expectations in relationships?",
-        "What does 'ready for a relationship' actually mean to you?",
-        "What's your biggest relationship fear that you're actively working on?",
-        "How do you balance independence with building something together?",
-        "What does emotional intelligence look like in dating for you?"
-      ]
-    },
-    {
-      category: "Getting to Know You",
-      masterCategory: "Date Night",
-      prompts: [
-        "What's something that instantly makes you lose interest in someone?",
-        "How do you prefer to resolve conflicts in relationships?",
-        "What's your idea of a perfect lazy Sunday together?",
-        "What childhood experience shaped your view of love the most?",
-        "How do you show someone you care without using words?",
-        "What's something you're passionate about that few people know?",
-        "How do you recharge when you're feeling emotionally drained?",
-        "What's your love language and how did you discover it?"
-      ]
-    },
-    {
-      category: "Future Plans",
-      masterCategory: "Date Night",
-      prompts: [
-        "How do you see your ideal life looking in 5 years?",
-        "What's something you want to accomplish together as a couple?",
-        "How important is it that we have similar financial goals?",
-        "What role do you want family to play in our relationship?",
-        "How do you want to handle major life decisions together?",
-        "What's your approach to balancing career and relationship?",
-        "How do you feel about the timeline for relationship milestones?",
-        "What does 'growing old together' mean to you?"
-      ]
-    },
-    {
-      category: "Personal Growth",
-      masterCategory: "Date Night",
-      prompts: [
-        "What's something you're actively working to improve about yourself?",
-        "How do you handle feedback or criticism in relationships?",
-        "What's a habit you want to develop together?",
-        "How do you support someone's growth without trying to change them?",
-        "What does self-care look like in your daily life?",
-        "How do you process stress and what helps you most?",
-        "What's something you've forgiven yourself for recently?",
-        "How do you know when you need space to work on yourself?"
-      ]
-    },
-    {
-      category: "Fun & Playful",
-      masterCategory: "Date Night",
-      prompts: [
-        "What's the most spontaneous thing you've ever done for love?",
-        "If we could go anywhere right now, where would you choose?",
-        "What's your most embarrassing dating story?",
-        "What song always gets you in a good mood?",
-        "What's something silly that you find attractive in people?",
-        "If you could have any superpower for dating, what would it be?",
-        "What's your go-to karaoke song?",
-        "What's the weirdest place you've ever been asked out?"
-      ]
-    },
-    {
-      category: "Pillow Talk & Tea",
-      masterCategory: "Girl's Night",
-      prompts: [
-        "What's the spiciest text you've ever received that still makes you blush?",
-        "What's your most embarrassing hookup story that you can laugh about now?",
-        "What's something freaky you want to try but haven't told anyone?",
-        "What's the most romantic thing someone's ever done that also turned you on?",
-        "What's your biggest turn-on that most people wouldn't expect?",
-        "What's something you pretended to like in bed but absolutely hated?",
-        "What's the weirdest place you've ever gotten frisky?",
-        "What's a sexual fantasy you'd actually want to live out?",
-        "What's the best compliment you've ever received about your body?",
-        "What's something you learned about sex way too late in life?",
-        "What's your go-to move that never fails to drive someone wild?",
-        "What's the most adventurous thing you've done between the sheets?"
-      ]
-    },
-    {
       category: "Retrograde & Regrets",
       masterCategory: "Girl's Night",
+      type: "true-false",
       prompts: [
-        "What's your sign's biggest red flag when it comes to relationships?",
-        "Which zodiac sign always seems to break your heart and why do you keep going back?",
-        "What does your Venus sign say about your love language?",
-        "What's your most toxic trait according to your star chart?",
-        "Which moon phase makes you the most emotionally unhinged in relationships?",
-        "What's the most 'your sign' thing you've ever done in a relationship?",
-        "Which planet in retrograde affects your dating life the most?",
-        "What's your rising sign's dating superpower?",
-        "Which zodiac signs are you most sexually compatible with?",
-        "What does your birth chart say about your daddy issues?",
-        "Which sign do you clash with the most and why can't you stay away?",
-        "What manifestation ritual actually brought you your best relationship?"
+        "True or False: You always fall hardest when Mercury is in retrograde and you're ghosting a Libra.",
+        "True or False: Air signs give the best head but the worst commitment.",
+        "True or False: Dating a Scorpio is like signing up for beautiful trauma.",
+        "True or False: Earth signs are boring in bed but amazing at building a life.",
+        "True or False: Fire signs will have you catching feelings and catching flights.",
+        "True or False: Your ex's zodiac sign explains 90% of why y'all didn't work.",
+        "True or False: Water signs will drown you in emotions then act surprised when you're suffocating.",
+        "True or False: Every time you check your horoscope, it's basically asking your ex back.",
+        "True or False: Geminis are just commitment-phobic Virgos who haven't found their person yet.",
+        "True or False: Leo season makes everyone think they deserve better than they do."
       ]
     },
     {
       category: "Vulnerable & Valid",
       masterCategory: "Girl's Night",
       prompts: [
-        "What's a dating insecurity you're still healing from?",
-        "What's something about love that scares you but you want anyway?",
-        "What's a toxic pattern you've broken that you're proud of?",
-        "What's the kindest thing you've ever done for yourself after a breakup?",
-        "What's a boundary you wish you'd set sooner in relationships?",
-        "What's something about your past that you're no longer ashamed of?",
-        "What's a fear about commitment that you're working through?",
-        "What's the most healing thing someone has ever said to you about love?",
-        "What's something you need to hear when you're feeling unlovable?",
-        "What's a way you've grown that your younger self wouldn't recognize?",
-        "What's a truth about relationships that took you too long to accept?",
-        "What's something you're ready to release to make space for real love?"
+        "What's one way you've outgrown the version of yourself who accepted the bare minimum in love?",
+        "How has healing your relationship with your father changed what you look for in men?",
+        "What's a fear about love that you're still working through with your therapist?",
+        "When did you realize that being alone was better than being with the wrong person?",
+        "What's something you need to forgive yourself for in your past relationships?",
+        "How do you show yourself the love you wish you'd received growing up?",
+        "What's a boundary you had to set that felt mean but was necessary for your peace?",
+        "What's the most healing thing someone has ever said to you about your worth?",
+        "How do you know when someone is safe enough to share your triggers with?",
+        "What does unconditional self-love look like when you're having an off day?",
+        "What's a toxic pattern you inherited that you're determined not to pass on?",
+        "How has your definition of emotional safety evolved as you've gotten older?"
       ]
     },
     {
@@ -493,280 +479,1156 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
     }
   ];
 
-  // Practice scenarios
-  const practiceScenarios = {
-    first_date: {
-      title: "First Date Conversation",
-      description: "Practice having engaging first date conversations",
-      context: "You're on a coffee date with someone you matched with on a dating app. They seem nervous but interested."
-    },
-    relationship_check_in: {
-      title: "Relationship Check-in",
-      description: "Practice having deeper conversations with your partner",
-      context: "You've been dating for a few months and want to have a conversation about where things are going."
-    },
-    conflict_resolution: {
-      title: "Conflict Resolution",
-      description: "Practice navigating disagreements constructively",
-      context: "You and your partner had a disagreement about plans. Practice resolving it calmly and lovingly."
-    },
-    intimacy_conversation: {
-      title: "Intimacy & Boundaries",
-      description: "Practice discussing physical and emotional intimacy",
-      context: "You want to have an open conversation about physical intimacy and boundaries with your partner."
+
+  // Optimized question depth adjustment with smart caching
+  const adjustQuestionDepth = React.useCallback(async (originalQuestion: string, depth: number): Promise<string> => {
+    const cacheKey = `${originalQuestion}_${depth}`;
+    
+    // Check cache first
+    if (questionCache.has(cacheKey)) {
+      return questionCache.get(cacheKey);
+    }
+
+    try {
+      const depthInstructions = {
+        0: "Make this witty and sarcastic (80 chars max). ONLY return the question.",
+        1: "Make this balanced and engaging (80 chars max). ONLY return the question.", 
+        2: "Make this deep and psychological (80 chars max). ONLY return the question."
+      };
+
+      const prompt = `Transform: "${originalQuestion}"\n\n${depthInstructions[depth as keyof typeof depthInstructions]}`;
+      
+      const response = await getAIResponse(prompt, userProfile, 'general');
+      
+      // Ultra-fast cleaning
+      const result = response.trim().replace(/^["']|["']$/g, '').split('\n')[0].substring(0, 120);
+      
+      // Cache the result
+      questionCache.set(cacheKey, result);
+      
+      return result || originalQuestion;
+      
+    } catch (error) {
+      console.error('Error adjusting question depth:', error);
+      return originalQuestion;
+    }
+  }, [questionCache, userProfile, getAIResponse]);
+
+  // Smart initialization with lazy loading
+  React.useEffect(() => {
+    const initializeQuestions = () => {
+      const defaultCategory = conversationStarters.find(cat => cat.category === selectedCategory);
+      if (defaultCategory && !isCustom) {
+        // Set original questions immediately for instant display
+        setCurrentStarters(defaultCategory.prompts);
+        
+        // Get or set daily question index
+        const today = new Date().toDateString();
+        const savedQuestionIndex = localStorage.getItem(`dailyQuestionIndex_${selectedCategory}_${today}`);
+        
+        if (savedQuestionIndex) {
+          setCurrentQuestionIndex(parseInt(savedQuestionIndex, 10));
+        } else {
+          const randomIndex = Math.floor(Math.random() * defaultCategory.prompts.length);
+          setCurrentQuestionIndex(randomIndex);
+          localStorage.setItem(`dailyQuestionIndex_${selectedCategory}_${today}`, randomIndex.toString());
+        }
+
+        // Background preload current depth only (lazy loading)
+        if (depthLevel[0] !== 1) { // Only if not default casual level
+          setTimeout(() => {
+            transformQuestionsForDepth(defaultCategory.prompts, depthLevel[0]);
+          }, 100);
+        }
+      }
+    };
+    
+    initializeQuestions();
+  }, [selectedCategory, isCustom]);
+
+  // Optimized depth transformation with minimal calls
+  const transformQuestionsForDepth = React.useCallback(async (
+    questions: (string | { statement: string; options: { key: string; text: string; }[] })[], 
+    depth: number
+  ) => {
+    if (depth === 1) {
+      // Casual is default - no transformation needed
+      return questions;
+    }
+
+    setIsDepthChanging(true);
+    
+    try {
+      // Process only 3 questions at a time to prevent overload
+      const batchSize = 3;
+      const transformedQuestions = [...questions]; // Start with originals
+      
+      for (let i = 0; i < questions.length; i += batchSize) {
+        const batch = questions.slice(i, i + batchSize);
+        
+        const batchResults = await Promise.all(
+          batch.map(async (question, batchIndex) => {
+            const actualIndex = i + batchIndex;
+            
+            if (typeof question === 'string') {
+              return await adjustQuestionDepth(question, depth);
+            } else {
+              const transformedStatement = await adjustQuestionDepth(question.statement, depth);
+              return {
+                statement: transformedStatement,
+                options: question.options
+              };
+            }
+          })
+        );
+        
+        // Update results in batches for responsive UI
+        batchResults.forEach((result, batchIndex) => {
+          transformedQuestions[i + batchIndex] = result;
+        });
+        
+        // Update UI progressively
+        setCurrentStarters([...transformedQuestions]);
+        
+        // Small delay to prevent overwhelming the API
+        if (i + batchSize < questions.length) {
+          await new Promise(resolve => setTimeout(resolve, 200));
+        }
+      }
+      
+      return transformedQuestions;
+    } catch (error) {
+      console.error('Error transforming questions:', error);
+      return questions;
+    } finally {
+      setIsDepthChanging(false);
+    }
+  }, [adjustQuestionDepth]);
+
+  // Ultra-fast depth switching with smart fallbacks
+  React.useEffect(() => {
+    const switchDepth = async () => {
+      if (currentStarters.length === 0) return;
+      
+      let baseQuestions: (string | { statement: string; options: { key: string; text: string; }[] })[];
+      
+      if (isCustom) {
+        baseQuestions = customCategories[selectedCategory] || [];
+      } else {
+        const defaultCategory = conversationStarters.find(cat => cat.category === selectedCategory);
+        baseQuestions = defaultCategory ? defaultCategory.prompts : [];
+      }
+      
+      if (baseQuestions.length === 0) return;
+      
+      // Transform questions for new depth
+      await transformQuestionsForDepth(baseQuestions, depthLevel[0]);
+    };
+    
+    switchDepth();
+  }, [depthLevel]);
+
+
+  // Check for stored practice scenario from Home page navigation
+  React.useEffect(() => {
+    const storedScenario = localStorage.getItem('practiceScenario');
+    const activePracticeSection = localStorage.getItem('activePracticeSection');
+    
+    if (storedScenario && activePracticeSection === 'practice') {
+      setActiveSection('practice');
+      setCurrentScenarioText(storedScenario);
+      setPracticeMessages([{ role: 'ai', message: storedScenario }]);
+      setPracticePartnerActive(true);
+      setShowPracticeInput(true);
+      
+      // Clear the stored data after using it
+      localStorage.removeItem('practiceScenario');
+      localStorage.removeItem('activePracticeSection');
+    }
+  }, []);
+
+  const generateCustomStarters = async () => {
+    if (!customKeywords.trim()) return;
+    
+    try {
+      const prompt = `Generate 8 emotionally intelligent conversation starter questions based on these keywords: ${customKeywords}. The questions should go beyond surface-level topics and explore relationship boundaries, emotional dynamics, and authentic connection. Make them specific enough that someone thinks "Wow, I never thought to ask that before." Focus on topics that reveal character, values, and emotional maturity while incorporating the mood/themes of the keywords provided.`;
+      const aiType = selectedCategory === 'Intimacy' ? 'intimacy' : 'flirt';
+      const response = await getAIResponse(prompt, userProfile, aiType);
+      
+      // Parse the response into an array of questions
+      const questions = response.split('\n').filter(line => 
+        line.trim() && 
+        (line.includes('?') || line.match(/^\d+\.?/))
+      ).map(line => 
+        line.replace(/^\d+\.?\s*/, '').replace(/\*\*/g, '').replace(/[""'']/g, "'").replace(/[^\w\s\?\.\!\,\:\;\(\)\-\'\"]/g, '').trim()
+      ).slice(0, 8);
+      
+      // Generate unique custom category name
+      const customIndex = Object.keys(customCategories).length + 1;
+      const categoryName = `Custom${customIndex}`;
+      
+      // Save to custom categories
+      setCustomCategories(prev => ({
+        ...prev,
+        [categoryName]: questions
+      }));
+      
+      setCurrentStarters(questions);
+      setCurrentQuestionIndex(0);
+      setIsCustom(true);
+      setSelectedCategory(categoryName);
+      setCustomKeywords(''); // Clear input after generating
+    } catch (error) {
+      console.error('Error generating custom starters:', error);
     }
   };
 
-  // Practice conversation functions
-  const startPracticeSession = (scenario: string) => {
-    setPracticeScenario(scenario);
+  const saveCurrentCustom = () => {
+    if (!isCustom || currentStarters.length === 0) return;
+    
+    const customIndex = Object.keys(customCategories).length + 1;
+    const categoryName = `Custom${customIndex}`;
+    
+    setCustomCategories(prev => ({
+      ...prev,
+      [categoryName]: currentStarters
+    }));
+    
+    // Mark as saved pack
+    setSavedPacks(prev => ({
+      ...prev,
+      [categoryName]: true
+    }));
+    
+    setSelectedCategory(categoryName);
+  };
+
+  const deleteCustomCategory = (categoryName: string) => {
+    if (!customCategories[categoryName]) return;
+    
+    // Remove from custom categories
+    setCustomCategories(prev => {
+      const newCategories = { ...prev };
+      delete newCategories[categoryName];
+      return newCategories;
+    });
+    
+    // Remove from saved packs
+    setSavedPacks(prev => {
+      const newPacks = { ...prev };
+      delete newPacks[categoryName];
+      return newPacks;
+    });
+    
+    // Reset to default if this was the selected category
+    if (selectedCategory === categoryName) {
+      setSelectedCategory('Relationship Talk');
+      setIsCustom(false);
+    }
+    
+    setShowManage(false);
+  };
+
+  const renameCustomCategory = () => {
+    if (!newCategoryName.trim() || !isCustom) return;
+    
+    const oldName = selectedCategory;
+    const questions = customCategories[oldName];
+    
+    if (questions) {
+      setCustomCategories(prev => {
+        const newCategories = { ...prev };
+        delete newCategories[oldName];
+        newCategories[newCategoryName.trim()] = questions;
+        return newCategories;
+      });
+      
+      // Update saved packs if it was saved
+      if (savedPacks[oldName]) {
+        setSavedPacks(prev => {
+          const newPacks = { ...prev };
+          delete newPacks[oldName];
+          newPacks[newCategoryName.trim()] = true;
+          return newPacks;
+        });
+      }
+      
+      setSelectedCategory(newCategoryName.trim());
+    }
+    
+    setShowRename(false);
+    setShowManage(false);
+    setNewCategoryName('');
+  };
+
+  const loadMoreStarters = async () => {
+    if (isCustom && customCategories[selectedCategory]) {
+      // Generate more questions for custom category
+      const existingQuestions = customCategories[selectedCategory];
+      const prompt = `Generate 8 new conversation starter questions similar to these but completely different: ${existingQuestions.join(', ')}`;
+      try {
+        const aiType = selectedCategory === 'Intimacy' ? 'intimacy' : 'flirt';
+        const response = await getAIResponse(prompt, userProfile, aiType);
+        const questions = response.split('\n').filter(line => 
+          line.trim() && 
+          (line.includes('?') || line.match(/^\d+\.?/))
+        ).map(line => 
+          line.replace(/^\d+\.?\s*/, '').replace(/\*\*/g, '').replace(/[""'']/g, "'").replace(/[^\w\s\?\.\!\,\:\;\(\)\-\'\"]/g, '').trim()
+        ).slice(0, 8);
+        
+        if (questions.length > 0) {
+          // Apply depth adjustment to custom category questions
+          const adjustedQuestions = await Promise.all(
+            questions.map(async (question) => {
+              if (typeof question === 'string') {
+                return await adjustQuestionDepth(question, depthLevel[0]);
+              }
+              return question; // Keep complex objects as-is
+            })
+          );
+          setCurrentStarters(adjustedQuestions);
+          setCurrentQuestionIndex(0);
+        }
+      } catch (error) {
+        console.error('Error loading more starters:', error);
+        // Fallback: shuffle the existing questions and apply depth adjustment
+        const shuffled = [...customCategories[selectedCategory]].sort(() => Math.random() - 0.5);
+        try {
+          const adjustedQuestions = await Promise.all(
+            shuffled.map(async (question) => {
+              if (typeof question === 'string') {
+                return await adjustQuestionDepth(question, depthLevel[0]);
+              }
+              return question; // Keep complex objects as-is
+            })
+          );
+          setCurrentStarters(adjustedQuestions);
+        } catch (adjustError) {
+          // Ultimate fallback: use original questions
+          setCurrentStarters(shuffled);
+        }
+        setCurrentQuestionIndex(0);
+      }
+    } else {
+      const category = conversationStarters.find(cat => cat.category === selectedCategory);
+      if (category) {
+        // Enhanced prompt based on category type for deeper, more emotionally intelligent questions
+        let prompt = '';
+        
+        if (selectedCategory === 'Trust & Transparency') {
+          prompt = `Generate 8 new "True or False" conversation starter statements that explore trust, transparency, and boundaries in modern relationships. Focus on situations that make people think "I never considered that perspective before." Address topics like digital boundaries, emotional fidelity, communication transparency, and relationship security. Each should start with "True or False:" and be thought-provoking enough to reveal someone's deeper values. Make them different from these examples: ${category.prompts.slice(0, 5).join(', ')}`;
+        } else if (selectedCategory === 'Boundaries & Values') {
+          prompt = `Generate 8 new conversation starter questions that explore relationship boundaries and values at a deep level. Focus on situations couples actually face but don't often discuss openly - like social media boundaries, opposite-sex friendships, transparency expectations, and personal autonomy within partnerships. Make them specific enough that someone thinks "Wow, I never thought to ask that before." Make them different from these examples: ${category.prompts.slice(0, 5).join(', ')}`;
+        } else if (selectedCategory === 'Communication & Conflict') {
+          prompt = `Generate 8 new conversation starter questions about emotional intelligence, conflict resolution, and communication patterns in relationships. Focus on the nuanced aspects of how people handle disagreements, express needs, and navigate misunderstandings. Address topics like emotional regulation, defensive patterns, and authentic expression. Make them insightful enough to help someone understand their partner's emotional world better. Make them different from these examples: ${category.prompts.slice(0, 5).join(', ')}`;
+        } else if (selectedCategory === 'Red Flags & Green Flags') {
+          prompt = `Generate 8 new conversation starter questions that help people identify healthy versus unhealthy relationship patterns. Focus on subtle signs of emotional intelligence, respect, and compatibility that people might overlook. Address topics like emotional availability, authentic interest, and behavioral consistency. Make them reveal character traits that aren't immediately obvious. Make them different from these examples: ${category.prompts.slice(0, 5).join(', ')}`;
+        } else if (selectedCategory === 'Emotional Intelligence') {
+          prompt = `Generate 8 new conversation starter questions that explore emotional maturity, self-awareness, and psychological health in relationships. Focus on how people handle their own emotions, support others, and navigate complex feelings like jealousy, insecurity, and vulnerability. Address topics like emotional responsibility, trauma awareness, and personal growth. Make them profound enough to spark deep self-reflection. Make them different from these examples: ${category.prompts.slice(0, 5).join(', ')}`;
+        } else if (selectedCategory === 'Values & Future Vision') {
+          prompt = `Generate 8 new conversation starter questions that explore life values, future compatibility, and shared vision in relationships. Focus on practical aspects of building a life together like financial philosophy, family dynamics, career priorities, and lifestyle preferences. Address topics that reveal fundamental compatibility beyond initial attraction. Make them specific enough to uncover potential areas of conflict or harmony. Make them different from these examples: ${category.prompts.slice(0, 5).join(', ')}`;
+        } else if (selectedCategory === 'Self-Awareness & Growth') {
+          prompt = `Generate 8 new conversation starter questions that explore personal development, self-awareness, and emotional growth within relationships. Focus on how people understand themselves, work on their issues, and show up authentically in partnerships. Address topics like attachment styles, family patterns, and individual responsibility. Make them introspective enough to promote meaningful self-discovery. Make them different from these examples: ${category.prompts.slice(0, 5).join(', ')}`;
+        } else if (selectedCategory === 'Intimacy & Connection') {
+          prompt = `Generate 8 new conversation starter questions that explore emotional and physical intimacy in relationships. Focus on the deeper aspects of connection, vulnerability, and authentic sharing between partners. Address topics like emotional safety, sexual communication, and intimate bonding. Make them thoughtful enough to deepen understanding of each other's intimate needs. Make them different from these examples: ${category.prompts.slice(0, 5).join(', ')}`;
+        } else {
+          prompt = `Generate 8 new conversation starter questions in the style of "${selectedCategory}" category that go beyond surface-level dating questions. Make them emotionally intelligent, boundary-aware, and specific enough that someone thinks "That's such a good question, I never thought about that." Focus on relationship dynamics, emotional maturity, and authentic connection. They should be similar to these examples but completely different: ${category.prompts.slice(0, 5).join(', ')}. Make them engaging, thought-provoking, and perfect for sparking meaningful conversations about real relationship topics.`;
+        }
+        
+        try {
+          const aiType = selectedCategory === 'Intimacy' ? 'intimacy' : 'flirt';
+          const response = await getAIResponse(prompt, userProfile, aiType);
+          let questions = [];
+          
+          if (selectedCategory === 'True or False') {
+            // Parse True/False statements
+            questions = response.split('\n').filter(line => 
+              line.trim() && line.toLowerCase().includes('true or false')
+            ).map(line => 
+              line.replace(/^\d+\.?\s*/, '').replace(/\*\*/g, '').replace(/[""'']/g, "'").replace(/[^\w\s\?\.\!\,\:\;\(\)\-\'\"]/g, '').trim()
+            ).slice(0, 8);
+          } else {
+            // Parse regular questions
+            questions = response.split('\n').filter(line => 
+              line.trim() && 
+              (line.includes('?') || line.match(/^\d+\.?/))
+            ).map(line => 
+              line.replace(/^\d+\.?\s*/, '').replace(/\*\*/g, '').replace(/[""'']/g, "'").replace(/[^\w\s\?\.\!\,\:\;\(\)\-\'\"]/g, '').trim()
+            ).slice(0, 8);
+          }
+          
+          if (questions.length > 0) {
+            // Apply depth transformation to new questions
+            try {
+              const transformedQuestions = await Promise.all(
+                questions.map(async (question) => {
+                  if (typeof question === 'string') {
+                    return await adjustQuestionDepth(question, depthLevel[0]);
+                  }
+                  return question; // Keep multiple choice objects as-is
+                })
+              );
+              setCurrentStarters(transformedQuestions);
+            } catch (depthError) {
+              console.error('Error applying depth transformation:', depthError);
+              setCurrentStarters(questions); // Fallback to untransformed questions
+            }
+            setCurrentQuestionIndex(0);
+          } else {
+            throw new Error('No valid questions generated');
+          }
+        } catch (error) {
+          console.error('Error loading more starters:', error);
+          // Fallback: shuffle the original questions and apply depth transformation
+          const shuffled = [...category.prompts].sort(() => Math.random() - 0.5);
+          try {
+            const transformedQuestions = await Promise.all(
+              shuffled.map(async (question) => {
+                if (typeof question === 'string') {
+                  return await adjustQuestionDepth(question, depthLevel[0]);
+                }
+                return question; // Keep multiple choice objects as-is
+              })
+            );
+            setCurrentStarters(transformedQuestions);
+          } catch (depthError) {
+            console.error('Error applying depth transformation to fallback:', depthError);
+            setCurrentStarters(shuffled); // Ultimate fallback
+          }
+          setCurrentQuestionIndex(0);
+        }
+      }
+    }
+  };
+
+  const selectCategory = (categoryName: string) => {
+    if (categoryName === 'Customize') {
+      // Set to custom mode and clear current starters
+      setSelectedCategory('Customize');
+      setIsCustom(false); // Reset custom flag
+      setCurrentStarters([]); // Clear current starters to show customize interface
+      setCustomKeywords('');
+      setShowCategorySelection(true); // Stay on category selection for customize
+      return;
+    }
+    
+    setSelectedCategory(categoryName);
+    
+    // Check if it's a custom category
+    if (customCategories[categoryName]) {
+      setIsCustom(true);
+      // Apply depth adjustment to custom category questions
+      const applyDepthToCustomCategory = async () => {
+        try {
+          const adjustedQuestions = await Promise.all(
+            customCategories[categoryName].map(async (question) => {
+              if (typeof question === 'string') {
+                return await adjustQuestionDepth(question, depthLevel[0]);
+              }
+              return question; // Keep complex objects as-is
+            })
+          );
+          setCurrentStarters(adjustedQuestions);
+        } catch (error) {
+          console.error('Error adjusting custom category depth:', error);
+          setCurrentStarters(customCategories[categoryName]); // Fallback to original
+        }
+      };
+      applyDepthToCustomCategory();
+      setCurrentQuestionIndex(0);
+      setShowCategorySelection(false); // Move to question display
+    } else {
+      setIsCustom(false);
+      const category = conversationStarters.find(cat => cat.category === categoryName);
+      if (category) {
+        // Apply depth transformation to regular category questions
+        const applyDepthToCategory = async () => {
+          try {
+            const transformedQuestions = await Promise.all(
+              category.prompts.map(async (question) => {
+                if (typeof question === 'string') {
+                  return await adjustQuestionDepth(question, depthLevel[0]);
+                }
+                return question; // Keep multiple choice objects as-is
+              })
+            );
+            setCurrentStarters(transformedQuestions);
+          } catch (error) {
+            console.error('Error adjusting category depth:', error);
+            setCurrentStarters(category.prompts); // Fallback to original
+          }
+        };
+        applyDepthToCategory();
+        setCurrentQuestionIndex(0);
+        setShowCategorySelection(false); // Move to question display
+      }
+    }
+  };
+
+  const nextQuestion = async () => {
+    if (currentQuestionIndex < currentStarters.length - 1) {
+      setCurrentQuestionIndex(prev => prev + 1);
+    } else {
+      // When reaching the end, always load more questions for smooth experience
+      await loadMoreStarters();
+    }
+  };
+
+  const previousQuestion = () => {
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex(prev => prev - 1);
+    }
+  };
+
+  const handleCardSwipe = (direction: 'left' | 'right') => {
+    if (direction === 'left') {
+      nextQuestion();
+    } else {
+      previousQuestion();
+    }
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStart({
+      x: e.touches[0].clientX,
+      y: e.touches[0].clientY
+    });
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    setTouchEnd({
+      x: e.changedTouches[0].clientX,
+      y: e.changedTouches[0].clientY
+    });
+    
+    const deltaX = touchStart.x - e.changedTouches[0].clientX;
+    const deltaY = touchStart.y - e.changedTouches[0].clientY;
+    
+    // Only trigger swipe if horizontal movement is greater than vertical
+    if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50) {
+      if (deltaX > 0) {
+        // Swiped left - next question
+        nextQuestion();
+      } else {
+        // Swiped right - previous question
+        previousQuestion();
+      }
+    }
+  };
+
+  const openFullScreen = () => {
+    setIsFullScreen(true);
+  };
+
+  const closeFullScreen = () => {
+    setIsFullScreen(false);
+  };
+
+  // AI Practice Partner methods
+  const practiceScenarios = [
+    { id: 'first_date', name: 'First Date', description: 'Practice conversation for a first date scenario' },
+    { id: 'relationship_talk', name: 'Relationship Talk', description: 'Practice discussing relationship topics' },
+    { id: 'conflict_resolution', name: 'Conflict Resolution', description: 'Practice handling disagreements constructively' },
+    { id: 'flirting', name: 'Flirting', description: 'Practice playful and romantic conversation' },
+    { id: 'vulnerable_sharing', name: 'Vulnerable Sharing', description: 'Practice sharing deeper feelings and thoughts' }
+  ];
+
+  const generateScenario = async (scenarioType: string) => {
+    const scenarioTemplates = {
+      first_date: [
+        "Hi! Let's practice first date conversation. The scenario is that we just sat down at a cozy coffee shop for our first date. You seem a bit nervous, which is endearing. I smile warmly and say, 'I'm so glad we finally got to meet in person! How has your day been so far?'",
+        "Hi! Let's practice first date conversation. The scenario is that we're walking through a park after dinner on our first date. There's a comfortable silence, and then I point to a street musician and say, 'Oh, I love this song! Do you have any musicians or artists you're really into lately?'",
+        "Hi! Let's practice first date conversation. We're at a bookstore café for our first date, and I notice you looking at the book section. I approach with our drinks and say, 'I see you eyeing those books! Are you much of a reader? I'd love to know what kind of stories you're drawn to.'"
+      ],
+      relationship_talk: [
+        "Hi! Let's practice relationship conversation. The scenario is that we've been dating for a few months, and we're having a quiet evening at home. I look over at you while we're watching TV and say, 'I've been thinking... I really appreciate how you always make me laugh when I'm stressed. What's something I do that you appreciate?'",
+        "Hi! Let's practice relationship conversation. We're lying in bed on a Sunday morning, and I turn to you with a thoughtful expression and say, 'I feel like we have such good chemistry. What do you think makes us work so well together?'",
+        "Hi! Let's practice relationship conversation. We're cooking dinner together and I pause, looking at you with a smile, and say, 'You know, I feel really comfortable with you. Is there anything you'd like us to talk about more or do differently together?'"
+      ],
+      conflict_resolution: [
+        "Hi! Let's practice conflict resolution. The scenario is that I said something that deeply offended you a week ago, but it's still on your mind. You feel resentful towards me but I'm pretending everything is normal which makes you feel even more upset. I just got home and asked you, 'Something seems off about you. You okay?'",
+        "Hi! Let's practice conflict resolution. We had plans to spend the weekend together, but I canceled last minute to hang out with friends instead. You felt like I prioritized them over you. Now it's Monday evening and there's tension between us. I finally bring it up: 'I feel like you've been distant since the weekend. Can we talk about what's going on?'",
+        "Hi! Let's practice conflict resolution. We've been disagreeing about how much time we spend together - you want more quality time, but I've been saying I need more space. It's created tension for weeks. I sit down next to you and say, 'I know we've been going in circles about this. Help me understand what you're really feeling.'"
+      ],
+      flirting: [
+        "Hi! Let's practice flirting. The scenario is that we're at a party and have been chatting and laughing all evening. We're in a quieter corner now, and I lean in closer with a playful smile and say, 'I have to admit, you're much more charming than I expected. Are you always this good at making conversation?'",
+        "Hi! Let's practice flirting. We're on our third date, walking along the beach at sunset. I stop walking and turn to face you with a mischievous grin and say, 'You know, I keep finding myself thinking about you when we're apart. Should I be worried about that?'",
+        "Hi! Let's practice flirting. We're cooking together in your kitchen, and I keep catching you looking at me. I brush past you to reach for something, then turn around with a teasing smile and say, 'You seem distracted. Is the cooking really that interesting, or is it something else?'"
+      ],
+      vulnerable_sharing: [
+        "Hi! Let's practice vulnerable conversation. The scenario is that we've been dating for a while and are getting more serious. We're cuddled up on the couch, and I take a deep breath and say, 'I want to share something with you that I don't usually talk about. I sometimes struggle with anxiety, especially in relationships. I wanted you to know because I trust you.'",
+        "Hi! Let's practice vulnerable conversation. We're having a deep late-night conversation, and I look at you with uncertainty and say, 'Can I tell you something that scares me? I'm really starting to fall for you, and that terrifies me because I've been hurt before. How are you feeling about us?'",
+        "Hi! Let's practice vulnerable conversation. We're walking together after a difficult family dinner I invited you to. I stop and say, 'I'm sorry if tonight was awkward. My family can be... complicated. I wanted you to see that part of my life, but I'm worried about what you think now.'"
+      ]
+    };
+
+    const templates = scenarioTemplates[scenarioType as keyof typeof scenarioTemplates] || scenarioTemplates.first_date;
+    
+    // Get or set daily scenario index for this scenario type
+    const today = new Date().toDateString();
+    const savedScenarioIndex = localStorage.getItem(`dailyScenarioIndex_${scenarioType}_${today}`);
+    
+    let scenarioIndex;
+    if (savedScenarioIndex) {
+      scenarioIndex = parseInt(savedScenarioIndex, 10);
+    } else {
+      // Generate new daily scenario index
+      scenarioIndex = Math.floor(Math.random() * templates.length);
+      localStorage.setItem(`dailyScenarioIndex_${scenarioType}_${today}`, scenarioIndex.toString());
+    }
+    
+    return templates[scenarioIndex];
+  };
+
+  const startPracticeSession = async () => {
     setPracticePartnerActive(true);
     setPracticeMessages([]);
+    setShowPracticeInput(false);
+    
+    try {
+      const scenarioText = await generateScenario(practiceScenario);
+      setCurrentScenarioText(scenarioText);
+      setPracticeMessages([{ role: 'ai', message: scenarioText }]);
+    } catch (error) {
+      console.error('Error generating scenario:', error);
+      const fallbackMessage = "Hi! I'm your AI practice partner. Let's practice some conversation skills together!";
+      setCurrentScenarioText(fallbackMessage);
+      setPracticeMessages([{ role: 'ai', message: fallbackMessage }]);
+    }
+  };
+
+  const tryDifferentScenario = async () => {
+    setShowPracticeInput(false);
+    try {
+      // Force generate a new random scenario by clearing the daily storage
+      const today = new Date().toDateString();
+      localStorage.removeItem(`dailyScenarioIndex_${practiceScenario}_${today}`);
+      
+      const scenarioText = await generateScenario(practiceScenario);
+      setCurrentScenarioText(scenarioText);
+      setPracticeMessages([{ role: 'ai', message: scenarioText }]);
+    } catch (error) {
+      console.error('Error generating new scenario:', error);
+    }
+  };
+
+  const handleReplyToScenario = () => {
     setShowPracticeInput(true);
-    
-    const scenarioData = practiceScenarios[scenario as keyof typeof practiceScenarios];
-    setCurrentScenarioText(scenarioData.context);
-    
-    // AI opens with a scenario-appropriate message
-    const openingMessages = {
-      first_date: "Hi! Thanks for meeting me here. This place has great coffee. How was your day?",
-      relationship_check_in: "I've been thinking about us lately, and I'd love to talk about how things have been going between us.",
-      conflict_resolution: "I know we disagreed about this weekend's plans. Can we talk about it? I want to understand your perspective.",
-      intimacy_conversation: "I feel really comfortable with you, and I think we should talk about what we're both comfortable with physically."
-    };
-    
-    const aiMessage = openingMessages[scenario as keyof typeof openingMessages];
-    setPracticeMessages([{ role: 'ai', message: aiMessage }]);
   };
 
   const sendPracticeMessage = async () => {
     if (!currentPracticeMessage.trim()) return;
     
-    const userMessage = currentPracticeMessage;
+    const userMessage = currentPracticeMessage.trim();
+    const updatedMessages = [...practiceMessages, { role: 'user' as const, message: userMessage }];
+    setPracticeMessages(updatedMessages);
     setCurrentPracticeMessage('');
     
-    // Add user message
-    setPracticeMessages(prev => [...prev, { role: 'user', message: userMessage }]);
-    
     try {
-      // Get AI response based on scenario
-      const scenarioData = practiceScenarios[practiceScenario as keyof typeof practiceScenarios];
-      const prompt = `You are roleplaying as someone in this scenario: ${scenarioData.context}. 
-      The user just said: "${userMessage}". 
-      Respond naturally and appropriately for this scenario. Keep it conversational and realistic. 
-      Don't be overly agreeable - sometimes push back a little or ask follow-up questions like a real person would.
-      Consider the user's profile: they are ${userProfile.age}, ${userProfile.relationshipStatus}, with ${userProfile.loveLanguage} love language.`;
+      const scenario = practiceScenarios.find(s => s.id === practiceScenario);
+      const conversationHistory = updatedMessages.map(m => 
+        `${m.role === 'user' ? 'User' : 'Practice Partner'}: ${m.message}`
+      ).join('\n');
       
-      const aiResponse = await getAIResponse(prompt, userProfile, 'general');
-      
-      // Add AI response
-      setPracticeMessages(prev => [...prev, { role: 'ai', message: aiResponse }]);
-      
+      const prompt = `You are an AI practice partner helping someone improve their dating conversation skills. You're roleplaying as a potential romantic partner in a ${scenario?.name.toLowerCase()} scenario.
+
+Context: ${scenario?.description}
+User Profile: Love Language: ${userProfile.loveLanguage}, Personality: ${userProfile.personalityType}
+
+Conversation so far:
+${conversationHistory}
+
+Respond naturally as someone they might be dating. Be engaging, realistic, and provide subtle feedback through your responses. Keep responses conversational and authentic. If they say something particularly good or something that needs improvement, respond naturally as a real person would.`;
+
+      const response = await getFlirtSuggestion(prompt, userProfile);
+      setPracticeMessages(prev => [...prev, { role: 'ai', message: response }]);
     } catch (error) {
       console.error('Error getting AI response:', error);
-      setPracticeMessages(prev => [...prev, { 
-        role: 'ai', 
-        message: "I need a moment to think about that. Can you tell me more about how you're feeling?" 
-      }]);
+      setPracticeMessages(prev => [...prev, { role: 'ai', message: "Sorry, I'm having trouble responding right now. Let's try again!" }]);
+    }
+  };
+
+  const generateSessionFeedback = async () => {
+    if (practiceMessages.length <= 1) return "Not enough conversation to provide feedback.";
+
+    const scenario = practiceScenarios.find(s => s.id === practiceScenario);
+    const conversationHistory = practiceMessages.map(m => 
+      `${m.role === 'user' ? 'User' : 'Practice Partner'}: ${m.message}`
+    ).join('\n');
+
+    // Category-specific feedback prompts
+    const feedbackPrompts = {
+      first_date: `Analyze this first date practice conversation and provide encouraging but constructive feedback. Focus on: conversation flow, showing genuine interest, asking engaging follow-up questions, being authentic while staying engaging, and creating comfort. Highlight what they did well and offer 2-3 specific tips for future first dates.`,
+      
+      relationship_talk: `Analyze this relationship conversation practice and provide thoughtful feedback. Focus on: emotional intelligence, vulnerability, active listening, expressing appreciation, and healthy communication patterns. Acknowledge their strengths and provide 2-3 specific suggestions for deeper relationship conversations.`,
+      
+      conflict_resolution: `Analyze this conflict resolution practice conversation and provide constructive feedback. Focus on: staying calm under pressure, using "I" statements vs. "you" accusations, finding middle ground without compromising core boundaries, de-escalation techniques, and showing empathy while standing firm. Highlight what they did well and offer 2-3 specific strategies for handling future conflicts more effectively.`,
+      
+      flirting: `Analyze this flirting practice conversation and provide playful yet helpful feedback. Focus on: playfulness and light-heartedness, building romantic tension, confidence without being pushy, humor and charm, and creating intrigue. Celebrate what they did well and offer 2-3 specific tips to be more fun, engaging, and naturally seductive in future interactions.`,
+      
+      vulnerable_sharing: `Analyze this vulnerable sharing practice conversation and provide supportive feedback. Focus on: emotional openness, appropriate pacing of vulnerability, creating safe space for deep connection, authenticity, and reciprocal sharing. Acknowledge their courage and provide 2-3 specific suggestions for sharing more effectively in intimate conversations.`
+    };
+
+    const scenarioPrompt = feedbackPrompts[practiceScenario as keyof typeof feedbackPrompts] || feedbackPrompts.first_date;
+
+    const prompt = `You are a dating and relationship coach providing personalized feedback after a practice conversation session.
+
+Scenario Type: ${scenario?.name}
+User Profile: Love Language: ${userProfile.loveLanguage}, Personality: ${userProfile.personalityType}
+
+Conversation:
+${conversationHistory}
+
+${scenarioPrompt}
+
+Format your feedback as:
+1. Start with genuine encouragement about what they did well
+2. Provide 2-3 specific, actionable improvements
+3. End with motivation for their next real-world interaction
+
+Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid generic advice - make it personal to their conversation.`;
+
+    try {
+      const feedback = await getFlirtSuggestion(prompt, userProfile);
+      return feedback;
+    } catch (error) {
+      console.error('Error generating feedback:', error);
+      return "Great job practicing! Keep working on your conversation skills - every interaction is a chance to improve.";
     }
   };
 
   const endPracticeSession = async () => {
-    // Generate feedback
-    try {
-      const conversationSummary = practiceMessages.map(msg => 
-        `${msg.role === 'user' ? 'You' : 'Partner'}: ${msg.message}`
-      ).join('\n');
-      
-      const feedbackPrompt = `Based on this practice conversation, provide encouraging feedback:
-      Scenario: ${practiceScenarios[practiceScenario as keyof typeof practiceScenarios].description}
-      
-      Conversation:
-      ${conversationSummary}
-      
-      Provide 2-3 positive points about their communication and 1-2 gentle suggestions for improvement. 
-      Be encouraging and specific. Consider their profile: ${userProfile.loveLanguage} love language, ${userProfile.personalityType} personality.`;
-      
-      const feedback = await getAIResponse(feedbackPrompt, userProfile, 'general');
-      setSessionFeedback(feedback);
-      setShowFeedback(true);
-      
-    } catch (error) {
-      console.error('Error generating feedback:', error);
-      setSessionFeedback("Great job practicing! Remember that real conversations take practice. Keep working on being authentic and listening actively.");
-      setShowFeedback(true);
+    // Generate feedback before ending the session
+    setShowFeedback(false);
+    setSessionFeedback('');
+    
+    if (practiceMessages.length > 1) {
+      try {
+        const feedback = await generateSessionFeedback();
+        setSessionFeedback(feedback);
+        setShowFeedback(true);
+      } catch (error) {
+        console.error('Error generating session feedback:', error);
+      }
     }
     
     setPracticePartnerActive(false);
+    setPracticeMessages([]);
+    setCurrentPracticeMessage('');
     setShowPracticeInput(false);
   };
 
-  const renderPracticePartner = () => (
-    <Card className="mt-4">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <MessageCircle className="w-5 h-5" />
-          Practice Partner
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {!practicePartnerActive ? (
-          <>
-            <p className="text-muted-foreground">
-              Practice having meaningful conversations with our AI partner. Choose a scenario to begin:
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {Object.entries(practiceScenarios).map(([key, scenario]) => (
-                <Button
-                  key={key}
-                  variant="outline"
-                  className="h-auto p-4 flex flex-col items-start gap-2"
-                  onClick={() => startPracticeSession(key)}
-                >
-                  <span className="font-semibold">{scenario.title}</span>
-                  <span className="text-sm text-muted-foreground">{scenario.description}</span>
-                </Button>
-              ))}
-            </div>
-          </>
-        ) : (
-          <>
-            <div className="bg-muted p-3 rounded-lg">
-              <p className="text-sm text-muted-foreground mb-2">Scenario:</p>
-              <p className="text-sm">{currentScenarioText}</p>
-            </div>
-            
-            <div className="max-h-64 overflow-y-auto space-y-3">
-              {practiceMessages.map((msg, index) => (
-                <div
-                  key={index}
-                  className={`p-3 rounded-lg ${
-                    msg.role === 'user'
-                      ? 'bg-primary text-primary-foreground ml-8'
-                      : 'bg-muted mr-8'
-                  }`}
-                >
-                  <p className="text-sm">{msg.message}</p>
-                </div>
-              ))}
-            </div>
-            
-            {showPracticeInput && (
-              <div className="flex gap-2">
-                <Input
-                  value={currentPracticeMessage}
-                  onChange={(e) => setCurrentPracticeMessage(e.target.value)}
-                  placeholder="Type your response..."
-                  onKeyPress={(e) => e.key === 'Enter' && sendPracticeMessage()}
-                />
-                <Button onClick={sendPracticeMessage} disabled={isLoading}>
-                  <Send className="w-4 h-4" />
-                </Button>
-              </div>
-            )}
-            
-            <div className="flex gap-2">
-              <Button onClick={endPracticeSession} variant="outline">
-                End Session & Get Feedback
-              </Button>
-            </div>
-          </>
-        )}
-      </CardContent>
-    </Card>
-  );
-
-  const renderTextGenie = () => (
-    <div className="mt-4">
-      <TextGenie userProfile={userProfile} />
-    </div>
-  );
-
-  const renderActiveSection = () => {
-    switch (activeSection) {
-      case 'starters':
-        return (
-          <ConversationStartersSection 
-            userProfile={userProfile}
-            conversationStarters={conversationStarters}
-            handleShare={handleShare}
-          />
-        );
-      case 'practice':
-        return renderPracticePartner();
-      case 'textgenie':
-        return renderTextGenie();
-      default:
-        return null;
-    }
-  };
+  const sections = [
+    { id: 'starters', label: 'Conversation Starters', icon: MessageCircle },
+    { id: 'textgenie', label: 'Text Genie', icon: Wand2 },
+    { id: 'practice', label: 'AI Practice', icon: Zap }
+  ];
 
   return (
-    <div className="space-y-6">
+    <div className="pb-20 pt-6 px-4 space-y-6 bg-gradient-soft min-h-screen">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-primary/10 rounded-lg">
-            <Zap className="w-6 h-6 text-primary" />
-          </div>
-          <div>
-            <h2 className="text-2xl font-bold">Flirt Fuel</h2>
-            <p className="text-muted-foreground">Conversation starters, practice & text assistance</p>
-          </div>
-        </div>
-        <InfoDialog
-          title="About Flirt Fuel"
-          description="Get personalized conversation starters, practice with AI partners, and get help crafting the perfect texts. All tailored to your relationship style and goals."
-        />
+      <div className="text-center space-y-2">
+        <h1 className="text-2xl font-bold bg-gradient-romance bg-clip-text text-transparent">
+          Clarity Coach ✨
+        </h1>
+        <p className="text-muted-foreground">No more second-guessing—just powerful connection</p>
       </div>
 
-      {/* Section Tabs */}
-      <div className="flex gap-2 border-b">
-        <Button
-          variant={activeSection === 'starters' ? 'default' : 'ghost'}
-          onClick={() => setActiveSection('starters')}
-          className="rounded-b-none"
-        >
-          <MessageCircle className="w-4 h-4 mr-2" />
-          Conversation Starters
-        </Button>
-        <Button
-          variant={activeSection === 'practice' ? 'default' : 'ghost'}
-          onClick={() => setActiveSection('practice')}
-          className="rounded-b-none"
-        >
-          <Users className="w-4 h-4 mr-2" />
-          Practice Partner
-        </Button>
-        <Button
-          variant={activeSection === 'textgenie' ? 'default' : 'ghost'}
-          onClick={() => setActiveSection('textgenie')}
-          className="rounded-b-none"
-        >
-          <Wand2 className="w-4 h-4 mr-2" />
-          Text Genie
-        </Button>
-      </div>
-
-      {/* Active Section Content */}
-      {renderActiveSection()}
-
-      {/* Feedback Dialog */}
-      <Dialog open={showFeedback} onOpenChange={setShowFeedback}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Practice Session Feedback</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="bg-muted p-4 rounded-lg">
-              <p className="text-sm whitespace-pre-line">{sessionFeedback}</p>
-            </div>
-            <Button 
-              onClick={() => setShowFeedback(false)}
-              className="w-full"
+      {/* Section Tabs - Icons Only */}
+      <div className="grid grid-cols-3 gap-2 mb-6">
+        {sections.map((section) => {
+          const IconComponent = section.icon;
+          return (
+            <Button
+              key={section.id}
+              onClick={() => setActiveSection(section.id as any)}
+              variant={activeSection === section.id ? "romance" : "soft"}
+              size="sm"
+              className="flex items-center justify-center p-3 h-12 w-full"
+              title={section.label}
             >
-              Continue Practicing
+              <IconComponent className="w-5 h-5" />
             </Button>
+          );
+        })}
+      </div>
+
+
+      {/* Conversation Starters */}
+      {activeSection === 'starters' && (
+        <ConversationStartersSection
+          userProfile={userProfile}
+          conversationStarters={conversationStarters}
+          handleShare={handleShare}
+        />
+      )}
+
+
+      {/* Text Genie */}
+      {activeSection === 'textgenie' && (
+        <div className="animate-fade-in-up">
+          {/* Section Heading */}
+          <div className="flex items-center justify-center space-x-2 mb-6">
+            <h2 className="text-xl font-semibold text-primary">Text Genie</h2>
+            <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center cursor-pointer hover:bg-primary/20 transition-colors">
+              <InfoDialog
+                title="Text Genie"
+                description="Get AI-powered help crafting the perfect text message replies. Share context through text, photos, or voice recordings, and receive personalized response suggestions with different tones and explanations."
+              />
+            </div>
+          </div>
+          <TextGenie userProfile={userProfile} />
+        </div>
+      )}
+
+      {/* AI Practice */}
+      {activeSection === 'practice' && (
+        <div className="space-y-4 animate-fade-in-up">
+          {/* Section Heading */}
+          <div className="flex items-center justify-center space-x-2">
+            <h2 className="text-xl font-semibold text-primary">AI Practice</h2>
+            <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center cursor-pointer hover:bg-primary/20 transition-colors">
+              <InfoDialog
+                title="AI Practice"
+                description="Practice conversations with AI partners in a safe, judgment-free space. Build confidence and improve your communication skills before real dates."
+              />
+            </div>
+          </div>
+        {!practicePartnerActive ? (
+          <Card className="shadow-romance border-primary/20">
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Users className="w-5 h-5 text-primary animate-heart-pulse" />
+                <span>AI Practice Partner</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-3">
+                <Label htmlFor="scenario-select" className="text-sm font-medium">Choose Practice Scenario:</Label>
+                <Select value={practiceScenario} onValueChange={setPracticeScenario}>
+                  <SelectTrigger className="w-full bg-card">
+                    <SelectValue placeholder="Select a scenario" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-card border border-border shadow-lg">
+                    {practiceScenarios.map((scenario) => (
+                      <SelectItem 
+                        key={scenario.id} 
+                        value={scenario.id}
+                        className="bg-card hover:bg-muted cursor-pointer"
+                      >
+                        {scenario.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  {practiceScenarios.find(s => s.id === practiceScenario)?.description}
+                </p>
+              </div>
+              
+              <Button 
+                onClick={startPracticeSession}
+                disabled={isLoading}
+                variant="romance" 
+                className="w-full"
+              >
+                {isLoading ? 'Starting...' : 'Start Practice Session ✨'}
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card className="shadow-romance border-primary/20">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="flex items-center space-x-2">
+                <Users className="w-5 h-5 text-primary animate-heart-pulse" />
+                <span>Practice Session</span>
+              </CardTitle>
+              <Button 
+                onClick={endPracticeSession}
+                variant="outline"
+                size="sm"
+              >
+                End Session
+              </Button>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Chat Messages */}
+              <div className="space-y-3 max-h-96 overflow-y-auto p-4 bg-muted/20 rounded-lg border">
+                {practiceMessages.map((message, index) => (
+                  <div
+                    key={index}
+                    className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div
+                      className={`max-w-[80%] p-3 rounded-lg ${
+                        message.role === 'user'
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-card border border-border'
+                      }`}
+                    >
+                      <p className="text-lg">{message.message}</p>
+                    </div>
+                  </div>
+                ))}
+                {isLoading && (
+                  <div className="flex justify-start">
+                    <div className="bg-card border border-border p-3 rounded-lg">
+                      <p className="text-sm text-muted-foreground">Practice partner is typing...</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+              
+              {/* Initial Scenario Buttons */}
+              {!showPracticeInput && practiceMessages.length === 1 && (
+                <div className="flex flex-col gap-3">
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={handleReplyToScenario}
+                      variant="romance"
+                      className="flex-1"
+                    >
+                      Reply
+                    </Button>
+                    <Button
+                      onClick={tryDifferentScenario}
+                      disabled={isLoading}
+                      variant="outline"
+                      className="flex-1"
+                    >
+                      {isLoading ? 'Loading...' : 'Try a Different Scenario'}
+                    </Button>
+                  </div>
+                </div>
+              )}
+              
+              {/* Message Input - Only show after Reply is clicked or during conversation */}
+              {showPracticeInput && (
+                <div className="space-y-3">
+                  <div className="flex gap-2">
+                    <Textarea
+                      value={currentPracticeMessage}
+                      onChange={(e) => setCurrentPracticeMessage(e.target.value)}
+                      placeholder="Type your message..."
+                      className="flex-1 min-h-[60px] resize-none"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault();
+                          sendPracticeMessage();
+                        }
+                      }}
+                    />
+                    <Button
+                      onClick={sendPracticeMessage}
+                      disabled={isLoading || !currentPracticeMessage.trim()}
+                      variant="romance"
+                      className="h-auto self-end"
+                    >
+                      Send
+                    </Button>
+                  </div>
+                  
+                  {/* Persistent Try Another Scenario Button */}
+                  <Button
+                    onClick={tryDifferentScenario}
+                    disabled={isLoading}
+                    variant="soft"
+                    size="sm"
+                    className="w-full"
+                  >
+                    {isLoading ? 'Loading...' : 'Try Another Scenario'}
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+        
+        {/* Session Feedback Modal */}
+        {showFeedback && sessionFeedback && (
+          <Card className="shadow-romance border-primary/20 bg-gradient-soft">
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <HeartIcon className="w-5 h-5 text-primary animate-heart-pulse" size={20} />
+                <span>Practice Session Feedback</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="p-4 bg-muted/20 rounded-lg border">
+                <p className="text-lg leading-relaxed whitespace-pre-wrap">{sessionFeedback}</p>
+              </div>
+              
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => {
+                    setShowFeedback(false);
+                    setSessionFeedback('');
+                  }}
+                  variant="romance"
+                  className="flex-1"
+                >
+                  Got it! ✨
+                </Button>
+                <Button
+                  onClick={startPracticeSession}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  Practice Again
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+        </div>
+      )}
+
+      {/* Full Screen Question Modal */}
+      <Dialog open={isFullScreen} onOpenChange={setIsFullScreen}>
+        <DialogContent className="max-w-full max-h-full w-screen h-screen m-0 p-0 rounded-none border-none bg-gradient-romance [&>button]:hidden">
+          <div className="relative h-full flex flex-col">
+            {/* Close button */}
+            <div className="absolute top-4 right-4 z-10">
+              <Button
+                onClick={closeFullScreen}
+                variant="ghost"
+                size="sm"
+                className="text-white hover:bg-white/20 rounded-full w-10 h-10"
+              >
+                <X className="w-5 h-5" />
+              </Button>
+            </div>
+
+
+            {/* Main content area - enlarged to take up 50%+ of screen */}
+            <div 
+              className="flex-1 flex items-center justify-center px-4 py-16 select-none cursor-pointer"
+              onTouchStart={handleTouchStart}
+              onTouchEnd={handleTouchEnd}
+            >
+              <div className="text-center w-full max-w-6xl mx-auto">
+                {/* Category with emoji */}
+                <div className="mb-6">
+                  <div className="flex items-center justify-center gap-3 mb-4">
+                    <span className="text-3xl">
+                      {(() => {
+                        const categoryEmojis: { [key: string]: string } = {
+                          "First Date Deep Dive": "💬",
+                          "Relationship Clarity": "❤️",
+                          "Boundaries & Values": "🏠",
+                          "Trust & Transparency": "🔐",
+                          "Intimacy & Connection": "💝",
+                          "Communication & Conflict": "🗣️",
+                          "Red Flags & Green Flags": "🚩",
+                          "Emotional Intelligence": "🧠",
+                          "Values & Future Vision": "🔮",
+                          "Self-Awareness & Growth": "🌱",
+                          "Relationship Talk": "💭",
+                          "Intimacy": "💗",
+                          "Customize": "⚙️"
+                        };
+                        return categoryEmojis[selectedCategory] || "💭";
+                      })()}
+                    </span>
+                    <h2 className="text-lg sm:text-xl font-medium text-white/90">{selectedCategory}</h2>
+                  </div>
+                </div>
+
+                {/* Single gradient background for both question and answers */}
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-black/60 rounded-2xl backdrop-blur-sm"></div>
+                  <div className="relative px-6 py-6">
+                    {isMultipleChoice(currentStarters[currentQuestionIndex]) ? (
+                      <div className="w-full">
+                        {/* Question */}
+                        <p className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-white leading-tight mb-8">
+                          {currentStarters[currentQuestionIndex].statement}
+                        </p>
+                        
+                        {/* Answer choices */}
+                        <div className="space-y-4 sm:space-y-6 text-left max-w-5xl mx-auto">
+                          {currentStarters[currentQuestionIndex].options.map((option) => (
+                            <div key={option.key} className="text-white/90">
+                              <span className="font-bold text-xl sm:text-2xl md:text-3xl mr-4">{option.key}.</span>
+                              <span className="text-lg sm:text-xl md:text-2xl leading-relaxed break-words">
+                                {option.text}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      // Single question with line break support for formatted text
+                      <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl 2xl:text-7xl font-bold text-white leading-tight max-w-5xl mx-auto">
+                        {getQuestionText(currentStarters[currentQuestionIndex])?.replace(/\*\*/g, '').replace(/[""'']/g, '"').replace(/[^\w\s\?\.\!\,\:\;\(\)\-\'"]/g, '').trim().split('\n').map((line, index) => (
+                          <div key={index} className={
+                            index === 0 ? "mb-6" : 
+                            line.match(/^[A-D]\.\s/) ? "text-left text-lg sm:text-xl md:text-2xl font-bold mb-3 max-w-4xl mx-auto" : 
+                            "text-left text-xl sm:text-2xl md:text-3xl mb-2 max-w-4xl mx-auto"
+                          }>
+                            {line}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Share button at bottom */}
+            <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-10">
+              <Button
+                onClick={() => handleShare(getQuestionText(currentStarters[currentQuestionIndex]))}
+                variant="ghost"
+                size="lg"
+                className="text-white hover:bg-white/20 rounded-full px-6 py-3 bg-white/10 backdrop-blur-sm border border-white/20"
+              >
+                <Send className="w-5 h-5 mr-2" />
+                Ask a friend
+              </Button>
+            </div>
+
+            {/* Navigation indicators - moved up to make room for share button */}
+            <div className="absolute bottom-24 left-1/2 transform -translate-x-1/2">
+              <div className="flex space-x-3">
+                {currentStarters.map((_, index) => (
+                  <div
+                    key={index}
+                    className={`w-3 h-3 rounded-full transition-colors cursor-pointer ${
+                      index === currentQuestionIndex 
+                        ? 'bg-white' 
+                        : 'bg-white/40 hover:bg-white/60'
+                    }`}
+                    onClick={() => setCurrentQuestionIndex(index)}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Swipe instructions with functional arrows */}
+            <div className="absolute bottom-36 left-1/2 transform -translate-x-1/2">
+              <div className="flex items-center gap-3 text-white/70 text-sm">
+                <Button
+                  onClick={previousQuestion}
+                  variant="ghost"
+                  size="sm"
+                  className="text-white/70 hover:text-white hover:bg-white/20 rounded-full w-8 h-8 p-0 transition-all"
+                  disabled={currentQuestionIndex === 0}
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </Button>
+                <span>Swipe</span>
+                <Button
+                  onClick={nextQuestion}
+                  variant="ghost"
+                  size="sm"
+                  className="text-white/70 hover:text-white hover:bg-white/20 rounded-full w-8 h-8 p-0 transition-all"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
