@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -11,6 +11,7 @@ import { Calendar, MapPin, Sparkles, Heart, Users, Coffee, Plus, ChevronDown, Ch
 import { HeartIcon } from '@/components/ui/heart-icon';
 import { InfoDialog } from '@/components/ui/info-dialog';
 import { useRelationshipAI } from '@/hooks/useRelationshipAI';
+import DatingPreferencesOnboarding, { DatingPreferences } from '@/components/DatingPreferencesOnboarding';
 
 interface OnboardingData {
   loveLanguage: string;
@@ -79,6 +80,10 @@ interface DateConciergeModuleProps {
 const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }) => {
   const [activeSection, setActiveSection] = useState<'prospects' | 'suggestions' | 'local' | 'planning'>('prospects');
   
+  // Dating Preferences state
+  const [datingPreferences, setDatingPreferences] = useState<DatingPreferences | null>(null);
+  const [showDatingOnboarding, setShowDatingOnboarding] = useState(false);
+  
   // Dating Prospects state
   const [prospects, setProspects] = useState<DatingProspect[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -87,6 +92,21 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
   const [showMoreMetrics, setShowMoreMetrics] = useState<{ [key: string]: boolean }>({});
   const [aiContext, setAiContext] = useState<{ [key: string]: string }>({});
   const { getFlirtSuggestion, isLoading } = useRelationshipAI();
+
+  // Load dating preferences from localStorage on mount
+  useEffect(() => {
+    const savedPreferences = localStorage.getItem('datingPreferences');
+    if (savedPreferences) {
+      setDatingPreferences(JSON.parse(savedPreferences));
+    }
+  }, []);
+
+  // Check if user needs dating onboarding when switching to suggestions
+  useEffect(() => {
+    if (activeSection === 'suggestions' && !datingPreferences) {
+      setShowDatingOnboarding(true);
+    }
+  }, [activeSection, datingPreferences]);
   
   // Dating Prospects functions
   const addNewProspect = () => {
@@ -196,6 +216,17 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
     const newAiContext = { ...aiContext };
     delete newAiContext[prospectId];
     setAiContext(newAiContext);
+  };
+
+  // Dating Preferences handlers
+  const handleDatingPreferencesComplete = (preferences: DatingPreferences) => {
+    setDatingPreferences(preferences);
+    localStorage.setItem('datingPreferences', JSON.stringify(preferences));
+    setShowDatingOnboarding(false);
+  };
+
+  const handleSkipDatingOnboarding = () => {
+    setShowDatingOnboarding(false);
   };
 
   // AI-powered date suggestions based on user profile
@@ -526,8 +557,16 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
         </div>
       )}
 
+      {/* Dating Preferences Onboarding */}
+      {showDatingOnboarding && (
+        <DatingPreferencesOnboarding
+          onComplete={handleDatingPreferencesComplete}
+          onSkip={handleSkipDatingOnboarding}
+        />
+      )}
+
       {/* AI Date Suggestions */}
-      {activeSection === 'suggestions' && (
+      {activeSection === 'suggestions' && !showDatingOnboarding && (
         <div className="space-y-4 animate-fade-in-up">
           {/* Section Heading */}
           <div className="flex items-center justify-center space-x-2">
@@ -535,21 +574,61 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
             <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center cursor-pointer hover:bg-primary/20 transition-colors">
               <InfoDialog
                 title="Dating Planner"
-                description="Get personalized date ideas perfectly tailored to your love language, personality, and relationship goals."
+                description="Get personalized date ideas perfectly tailored to your preferences, love language, and personality."
               />
             </div>
           </div>
+          
           <Card className="shadow-romance border-primary/20">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <HeartIcon className="w-5 h-5 text-primary animate-heart-pulse" size={20} />
-                <span>Perfect for {userProfile.loveLanguage} lovers</span>
+                <span>Personalized Date Suggestions</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground mb-4">
-                These dates are personalized based on your love language and personality
+                Based on your preferences and {userProfile.loveLanguage} love language
               </p>
+              
+              {/* Show user's liked preferences as bubbles */}
+              {datingPreferences && (
+                <div className="space-y-3">
+                  <div>
+                    <p className="text-xs font-medium text-muted-foreground mb-2">Your favorite activities:</p>
+                    <div className="flex flex-wrap gap-2">
+                      {datingPreferences.likedActivities.map((activity) => (
+                        <Badge key={activity} variant="default" className="text-xs">
+                          {activity}
+                        </Badge>
+                      ))}
+                      {datingPreferences.customLikes.map((activity) => (
+                        <Badge key={activity} variant="default" className="text-xs">
+                          {activity}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  {(datingPreferences.dislikedActivities.length > 0 || datingPreferences.customDislikes.length > 0) && (
+                    <div>
+                      <p className="text-xs font-medium text-muted-foreground mb-2">Activities to avoid:</p>
+                      <div className="flex flex-wrap gap-2">
+                        {datingPreferences.dislikedActivities.map((activity) => (
+                          <Badge key={activity} variant="destructive" className="text-xs">
+                            {activity}
+                          </Badge>
+                        ))}
+                        {datingPreferences.customDislikes.map((activity) => (
+                          <Badge key={activity} variant="destructive" className="text-xs">
+                            {activity}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
 
