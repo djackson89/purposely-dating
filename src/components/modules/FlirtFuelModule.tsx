@@ -420,8 +420,11 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
             defaultCategory.prompts.map(async (question) => {
               if (typeof question === 'string') {
                 return await adjustQuestionDepth(question, depthLevel[0]);
+              } else {
+                // For multiple choice questions, transform the statement and keep the structure
+                const transformedStatement = await adjustQuestionDepth(question.statement, depthLevel[0]);
+                return transformedStatement; // Return as string to be parsed by rendering logic
               }
-              return question; // Keep multiple choice objects as-is
             })
           );
           setCurrentStarters(transformedQuestions);
@@ -471,8 +474,11 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
             baseQuestions.map(async (question) => {
               if (typeof question === 'string') {
                 return await adjustQuestionDepth(question, depthLevel[0]);
+              } else {
+                // For multiple choice questions, transform the statement and keep the structure
+                const transformedStatement = await adjustQuestionDepth(question.statement, depthLevel[0]);
+                return transformedStatement; // Return as string to be parsed by rendering logic
               }
-              return question; // Keep multiple choice objects as-is
             })
           );
           setCurrentStarters(transformedQuestions);

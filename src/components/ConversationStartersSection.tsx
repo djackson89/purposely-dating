@@ -354,7 +354,7 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
                         {(currentStarters[currentQuestionIndex] as any).options.map((option: any) => (
                           <div key={option.key} className="text-white/90">
                             <span className="font-bold text-sm">{option.key}. </span>
-                            <span className="text-xs leading-tight break-words">
+                            <span className="text-sm font-bold leading-tight break-words">
                               {option.text}
                             </span>
                           </div>
@@ -364,7 +364,11 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
                   ) : (
                     <div className="text-xl sm:text-2xl font-bold text-white leading-relaxed text-center px-4">
                       {getQuestionText(currentStarters[currentQuestionIndex]).split('\n').map((line, index) => (
-                        <div key={index} className={index === 0 ? "mb-3" : "text-left text-base mb-1"}>
+                        <div key={index} className={
+                          index === 0 ? "mb-3" : 
+                          line.match(/^[A-D]\.\s/) ? "text-left text-sm font-bold mb-1" : 
+                          "text-left text-base mb-1"
+                        }>
                           {line}
                         </div>
                       ))}
