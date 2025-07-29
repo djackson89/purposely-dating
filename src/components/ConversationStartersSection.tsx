@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
-import { Share, Users, Trash2, Expand } from 'lucide-react';
+import { Share, Users, Trash2, Expand, Send } from 'lucide-react';
 import { InfoDialog } from '@/components/ui/info-dialog';
 
 interface OnboardingData {
@@ -471,11 +471,11 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
           <div className="space-y-3">
             <Button
               onClick={() => handleShare(getQuestionText(currentStarters[currentQuestionIndex]))}
-              variant="outline"
+              variant="romance"
               className="w-full"
             >
-              <Share className="w-4 h-4 mr-2" />
-              Share This Question
+              <Send className="w-4 h-4 mr-2" />
+              Ask A Friend
             </Button>
           </div>
 
