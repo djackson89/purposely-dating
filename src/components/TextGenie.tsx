@@ -325,7 +325,7 @@ const TextGenie: React.FC<TextGenieProps> = ({ userProfile }) => {
       });
 
       // Mild response - Use therapy mode for direct, revealing questions
-      const mildPrompt = `Generate a Mild response to this situation. Be very direct without being disrespectful. Ask hard questions that reveal definitive intentions or reword as a question for more context. No generic phrases like "can we discuss". Keep it under 2 sentences: ${contextText}`;
+      const mildPrompt = `Generate a Mild response to this situation as if I am speaking directly to the person. Write in first person as if I am sending this message myself. Be very direct without being disrespectful. Ask hard questions that reveal definitive intentions or reword as a question for more context. No generic phrases like "can we discuss". Keep it under 2 sentences. Write as if I am talking directly to them: ${contextText}`;
       const mildResponse = await getAIResponse(mildPrompt, userProfile, 'therapy');
       suggestions.push({
         text: mildResponse.trim().replace(/^["']|["']$/g, '').replace(/\*/g, ''),
