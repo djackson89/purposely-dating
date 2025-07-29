@@ -1,15 +1,11 @@
-import React, { memo, useState } from 'react';
+import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
-import { Share, ChevronLeft, ChevronRight, Users, Trash2, Expand, Send } from 'lucide-react';
+import { Slider } from '@/components/ui/slider';
+import { Share, Users, Trash2, Expand, Send } from 'lucide-react';
 import { InfoDialog } from '@/components/ui/info-dialog';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import ConversationStartersCategories from './ConversationStartersCategories';
-import ConversationStartersDisplay from './ConversationStartersDisplay';
-import { useConversationStarters } from '@/hooks/useConversationStarters';
 
 interface OnboardingData {
   loveLanguage: string;
@@ -29,79 +25,144 @@ interface ConversationStarter {
 interface ConversationStartersSectionProps {
   userProfile: OnboardingData;
   conversationStarters: ConversationStarter[];
+  masterCategory: string;
+  selectedCategory: string;
+  customKeywords: string;
+  currentStarters: (string | { statement: string; options: { key: string; text: string; }[] })[];
+  currentQuestionIndex: number;
+  isCustom: boolean;
+  customCategories: {[key: string]: (string | { statement: string; options: { key: string; text: string; }[] })[]};
+  savedPacks: {[key: string]: boolean};
+  showRename: boolean;
+  showManage: boolean;
+  newCategoryName: string;
+  depthLevel: number[];
+  isLoading: boolean;
+  isFullScreen: boolean;
+  touchStart: { x: number; y: number };
+  touchEnd: { x: number; y: number };
+  showCategorySelection: boolean;
+  setMasterCategory: (category: string) => void;
+  setShowCategorySelection: (show: boolean) => void;
+  setSelectedCategory: (category: string) => void;
+  setCustomKeywords: (keywords: string) => void;
+  setCurrentQuestionIndex: (index: number) => void;
+  setShowRename: (show: boolean) => void;
+  setShowManage: (show: boolean) => void;
+  setNewCategoryName: (name: string) => void;
+  setDepthLevel: (level: number[]) => void;
+  setTouchStart: (touch: { x: number; y: number }) => void;
+  setTouchEnd: (touch: { x: number; y: number }) => void;
+  selectCategory: (category: string) => void;
+  generateCustomStarters: () => void;
+  saveCurrentCustom: () => void;
+  deleteCustomCategory: (category: string) => void;
+  renameCustomCategory: () => void;
+  previousQuestion: () => void;
+  nextQuestion: () => void;
+  openFullScreen: () => void;
+  handleTouchStart: (e: React.TouchEvent) => void;
+  handleTouchEnd: (e: React.TouchEvent) => void;
   handleShare: (text: string) => void;
+  isMultipleChoice: (question: string | { statement: string; options: { key: string; text: string; }[] }) => question is { statement: string; options: { key: string; text: string; }[] };
+  getQuestionText: (question: string | { statement: string; options: { key: string; text: string; }[] }) => string;
 }
 
-const ConversationStartersSection = memo<ConversationStartersSectionProps>(({
+const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = React.memo(({
   userProfile,
   conversationStarters,
+  masterCategory,
+  selectedCategory,
+  customKeywords,
+  currentStarters,
+  currentQuestionIndex,
+  isCustom,
+  customCategories,
+  savedPacks,
+  showRename,
+  showManage,
+  newCategoryName,
+  depthLevel,
+  isLoading,
+  touchStart,
+  touchEnd,
+  showCategorySelection,
+  setMasterCategory,
+  setShowCategorySelection,
+  setSelectedCategory,
+  setCustomKeywords,
+  setCurrentQuestionIndex,
+  setShowRename,
+  setShowManage,
+  setNewCategoryName,
+  setDepthLevel,
+  setTouchStart,
+  setTouchEnd,
+  selectCategory,
+  generateCustomStarters,
+  saveCurrentCustom,
+  deleteCustomCategory,
+  renameCustomCategory,
+  previousQuestion,
+  nextQuestion,
+  openFullScreen,
+  handleTouchStart,
+  handleTouchEnd,
   handleShare,
+  isMultipleChoice,
+  getQuestionText,
 }) => {
-  // Use the optimized hook for all conversation starters logic
-  const {
-    masterCategory,
-    selectedCategory,
-    currentStarters,
-    currentQuestionIndex,
-    customKeywords,
-    isCustom,
-    customCategories,
-    savedPacks,
-    depthLevel,
-    isTransforming,
-    setMasterCategory,
-    setCustomKeywords,
-    setDepthLevel,
-    selectCategory,
-    generateCustomStarters,
-    nextQuestion,
-    previousQuestion,
-    saveCurrentCustom,
-    deleteCustomCategory,
-    isMultipleChoice,
-    getQuestionText,
-    filteredStarters,
-  } = useConversationStarters(userProfile, conversationStarters);
+  // Memoized category emojis to prevent recreation
+  const categoryEmojis = React.useMemo(() => ({
+    "First Date Deep Dive": "💬",
+    "Relationship Clarity": "❤️",
+    "Boundaries & Values": "🏠",
+    "Trust & Transparency": "🔐",
+    "Intimacy & Connection": "💝",
+    "Communication & Conflict": "🗣️",
+    "Red Flags & Green Flags": "🚩",
+    "Emotional Intelligence": "🧠",
+    "Values & Future Vision": "🔮",
+    "Self-Awareness & Growth": "🌱",
+    "Date Night Debates": "🎯",
+    "Relationship Talk": "💕",
+    "Getting to Know You": "🤝",
+    "Future Plans": "🏡",
+    "Personal Growth": "🌟",
+    "Fun & Playful": "🎭",
+    "Pillow Talk & Tea": "🛏️",
+    "Retrograde & Regrets": "🌙",
+    "Vulnerable & Valid": "💕",
+    "Hot Mess Express": "🚂"
+  }), []);
 
-  // Local UI state
-  const [showCategorySelection, setShowCategorySelection] = useState(true);
-  const [showRename, setShowRename] = useState(false);
-  const [showManage, setShowManage] = useState(false);
-  const [newCategoryName, setNewCategoryName] = useState('');
-  const [isFullScreen, setIsFullScreen] = useState(false);
-  const [touchStart, setTouchStart] = useState({ x: 0, y: 0 });
-  const [touchEnd, setTouchEnd] = useState({ x: 0, y: 0 });
+  // Memoized descriptions to prevent recreation
+  const descriptions = React.useMemo(() => ({
+    "First Date Deep Dive": "Explore deeper conversations and meaningful connections",
+    "Relationship Clarity": "Understand love languages and emotional needs",
+    "Boundaries & Values": "Navigate healthy limits and personal values",
+    "Trust & Transparency": "Build trust through honest communication",
+    "Intimacy & Connection": "Deepen physical and emotional bonds",
+    "Communication & Conflict": "Master healthy disagreement and resolution",
+    "Red Flags & Green Flags": "Identify positive and concerning relationship signs",
+    "Emotional Intelligence": "Develop awareness and empathy skills",
+    "Values & Future Vision": "Align on long-term goals and priorities",
+    "Self-Awareness & Growth": "Foster personal development and healing",
+    "Date Night Debates": "Spark engaging discussions with thought-provoking topics",
+    "Relationship Talk": "Open conversations about your connection",
+    "Getting to Know You": "Discover each other's personalities and histories",
+    "Future Plans": "Discuss dreams, goals, and shared visions",
+    "Personal Growth": "Explore self-improvement and development",
+    "Fun & Playful": "Light-hearted questions for laughs and bonding",
+    "Pillow Talk & Tea": "Spill your secrets with a flirty twist - bedroom confessions & sexy secrets",
+    "Retrograde & Regrets": "Let the stars drag your dating life - zodiac-inspired relationship questions",
+    "Vulnerable & Valid": "Safe space conversations for emotional intimacy and growth",
+    "Hot Mess Express": "Unleash your chaos queen - girl-talk about dating drama"
+  }), []);
 
-  // Touch handlers for swipe gestures
-  const handleTouchStart = (e: React.TouchEvent) => {
-    setTouchStart({ x: e.targetTouches[0].clientX, y: e.targetTouches[0].clientY });
-  };
-
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    setTouchEnd({ x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY });
-    
-    const deltaX = touchStart.x - e.changedTouches[0].clientX;
-    const deltaY = Math.abs(touchStart.y - e.changedTouches[0].clientY);
-    
-    // Only trigger swipe if horizontal movement is greater than vertical
-    if (Math.abs(deltaX) > 50 && deltaY < 100) {
-      if (deltaX > 0) {
-        nextQuestion();
-      } else {
-        previousQuestion();
-      }
-    }
-  };
-
-  const openFullScreen = () => setIsFullScreen(true);
-
-  const renameCustomCategory = () => {
-    if (newCategoryName.trim()) {
-      // Logic for renaming would go here
-      setShowRename(false);
-      setNewCategoryName('');
-    }
-  };
+  const getDescription = React.useCallback((category: string): string => {
+    return descriptions[category] || "Explore meaningful conversation topics";
+  }, [descriptions]);
 
   return (
     <div className="space-y-4 animate-fade-in-up">
@@ -118,21 +179,132 @@ const ConversationStartersSection = memo<ConversationStartersSectionProps>(({
         </div>
       </div>
 
-      {/* Category Selection */}
+      {/* Master Category Selection */}
       {showCategorySelection && (
-        <ConversationStartersCategories
-          filteredStarters={filteredStarters}
-          customCategories={customCategories}
-          selectedCategory={selectedCategory}
-          masterCategory={masterCategory}
-          onSelectCategory={(category) => {
-            selectCategory(category);
-            if (category !== 'Customize') {
-              setShowCategorySelection(false);
-            }
-          }}
-          onSetMasterCategory={setMasterCategory}
-        />
+        <div className="space-y-3">
+          <div className="flex items-center gap-3">
+            <Label className="text-sm font-medium">Choose Category:</Label>
+            <div className="flex gap-2">
+              <Button
+                variant={masterCategory === 'Date Night' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setMasterCategory('Date Night')}
+                className="rounded-full px-4 py-1 text-xs"
+              >
+                🌹 Date Night
+              </Button>
+              <Button
+                variant={masterCategory === "Girl's Night" ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setMasterCategory("Girl's Night")}
+                className="rounded-full px-4 py-1 text-xs"
+              >
+                👯‍♀️ Girl's Night
+              </Button>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 gap-3">
+            {/* Filtered categories based on master category */}
+            {conversationStarters
+              .filter(starter => 
+                (starter.masterCategory || 'Date Night') === masterCategory
+              )
+              .map((starter) => (
+                <Card
+                  key={starter.category}
+                  className={`cursor-pointer transition-all duration-200 border-2 ${
+                    selectedCategory === starter.category
+                      ? 'border-primary bg-primary/5 shadow-md'
+                      : 'border-border hover:border-primary/50 hover:shadow-sm'
+                  }`}
+                  onClick={() => selectCategory(starter.category)}
+                >
+                  <CardContent className="flex items-center p-4 space-x-4">
+                    <div className="text-2xl">
+                      {categoryEmojis[starter.category] || "💭"}
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-semibold text-foreground">
+                          {starter.category}
+                        </h3>
+                        {starter.type === 'multiple-choice' && (
+                          <span className="text-xs bg-accent text-accent-foreground px-2 py-0.5 rounded-full">
+                            Multiple Choice
+                          </span>
+                        )}
+                        {starter.type === 'true-false' && (
+                          <span className="text-xs bg-secondary text-secondary-foreground px-2 py-0.5 rounded-full">
+                            True/False
+                          </span>
+                        )}
+                        {starter.type === 'would-you-rather' && (
+                          <span className="text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded-full">
+                            Would You Rather
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {getDescription(starter.category)}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+
+            {/* Custom Categories */}
+            {Object.keys(customCategories).map((categoryName) => (
+              <Card
+                key={categoryName}
+                className={`cursor-pointer transition-all duration-200 border-2 ${
+                  selectedCategory === categoryName
+                    ? 'border-primary bg-primary/5 shadow-md'
+                    : 'border-border hover:border-primary/50 hover:shadow-sm'
+                }`}
+                onClick={() => selectCategory(categoryName)}
+              >
+                <CardContent className="flex items-center p-4 space-x-4">
+                  <div className="text-2xl">
+                    <Users className="w-6 h-6 text-secondary" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-semibold text-foreground">
+                        {categoryName}
+                      </h3>
+                      <span className="text-xs bg-secondary/20 text-secondary px-2 py-0.5 rounded-full">
+                        Custom
+                      </span>
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Your personalized conversation topics
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+
+            {/* Customize Option at the bottom */}
+            <Card
+              className={`cursor-pointer transition-all duration-200 border-2 ${
+                selectedCategory === "Customize"
+                  ? 'border-primary bg-primary/5 shadow-md'
+                  : 'border-border hover:border-primary/50 hover:shadow-sm'
+              }`}
+              onClick={() => selectCategory("Customize")}
+            >
+              <CardContent className="flex items-center p-4 space-x-4">
+                <div className="text-2xl">✨</div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-foreground mb-1">Customize</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Generate personalized conversation starters with AI
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       )}
 
       {/* Custom Input */}
@@ -147,15 +319,12 @@ const ConversationStartersSection = memo<ConversationStartersSectionProps>(({
                 className="flex-1 min-w-0"
               />
               <Button
-                onClick={() => {
-                  generateCustomStarters();
-                  setShowCategorySelection(false);
-                }}
-                disabled={isTransforming || !customKeywords.trim()}
+                onClick={generateCustomStarters}
+                disabled={isLoading || !customKeywords.trim()}
                 variant="romance"
                 className="whitespace-nowrap"
               >
-                {isTransforming ? '...' : 'Generate'}
+                {isLoading ? '...' : 'Generate'}
               </Button>
             </div>
           </CardContent>
@@ -175,16 +344,54 @@ const ConversationStartersSection = memo<ConversationStartersSectionProps>(({
             ← Back to Categories
           </Button>
 
-          {/* Question Display Component */}
-          <ConversationStartersDisplay
-            currentStarters={currentStarters}
-            currentQuestionIndex={currentQuestionIndex}
-            isMultipleChoice={isMultipleChoice}
-            getQuestionText={getQuestionText}
-            onExpand={openFullScreen}
-            onTouchStart={handleTouchStart}
-            onTouchEnd={handleTouchEnd}
-          />
+          {/* Question Card */}
+          <div className="relative min-h-[300px] flex items-center justify-center">
+            <Card
+              className="w-full max-w-md mx-auto shadow-elegant border-primary/20 bg-gradient-romance transform transition-all duration-300 hover:scale-105 cursor-pointer select-none"
+              style={{ minHeight: '250px' }}
+              onClick={openFullScreen}
+              onTouchStart={handleTouchStart}
+              onTouchEnd={handleTouchEnd}
+            >
+              <CardContent className="p-8 flex flex-col justify-center items-center text-center h-full relative">
+                <div className="absolute top-3 right-3">
+                  <Expand className="w-5 h-5 text-white/70" />
+                </div>
+
+                <div className="flex items-center justify-center h-full w-full px-4">
+                  {isMultipleChoice(currentStarters[currentQuestionIndex]) ? (
+                    <div className="w-full text-center">
+                      <p className="text-lg sm:text-xl font-bold text-white leading-tight mb-3">
+                        {(currentStarters[currentQuestionIndex] as any).statement}
+                      </p>
+                      <div className="space-y-2 text-left">
+                        {(currentStarters[currentQuestionIndex] as any).options.map((option: any) => (
+                          <div key={option.key} className="text-white/90">
+                            <span className="font-bold text-sm">{option.key}. </span>
+                            <span className="text-sm font-bold leading-tight break-words">
+                              {option.text}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-xl sm:text-2xl font-bold text-white leading-relaxed text-center px-4">
+                      {getQuestionText(currentStarters[currentQuestionIndex]).split('\n').map((line, index) => (
+                        <div key={index} className={
+                          index === 0 ? "mb-3" : 
+                          line.match(/^[A-D]\.\s/) ? "text-left text-sm font-bold mb-1" : 
+                          "text-left text-base mb-1"
+                        }>
+                          {line}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
 
           {/* Depth Slider */}
           <Card className="shadow-soft border-primary/10">
@@ -193,7 +400,7 @@ const ConversationStartersSection = memo<ConversationStartersSectionProps>(({
                 <div className="flex justify-between items-center text-sm">
                   <span className="font-medium text-primary">Question Depth</span>
                   <div className="flex items-center gap-2">
-                    {isTransforming && (
+                    {isLoading && (
                       <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                     )}
                     <span className="text-xs text-muted-foreground">
@@ -228,16 +435,17 @@ const ConversationStartersSection = memo<ConversationStartersSectionProps>(({
           <div className="flex justify-between items-center px-2 sm:px-4">
             <Button
               onClick={previousQuestion}
+              disabled={currentQuestionIndex === 0}
               variant="soft"
               size="lg"
               className="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-4"
             >
-              <ChevronLeft className="w-4 h-4" />
+              <span>←</span>
               <span className="hidden sm:inline">Previous</span>
             </Button>
 
             <div className="flex space-x-2">
-              {currentStarters.slice(0, 10).map((_, index) => (
+              {currentStarters.map((_, index) => (
                 <div
                   key={index}
                   className={`w-2 h-2 rounded-full transition-colors ${
@@ -247,18 +455,26 @@ const ConversationStartersSection = memo<ConversationStartersSectionProps>(({
                   }`}
                 />
               ))}
-              {currentStarters.length > 10 && <span className="text-xs text-muted-foreground">...</span>}
             </div>
 
             <Button
               onClick={nextQuestion}
-              disabled={isTransforming}
+              disabled={isLoading}
               variant="soft"
               size="lg"
               className="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-4"
             >
-              <span className="hidden sm:inline">Next</span>
-              <ChevronRight className="w-4 h-4" />
+              {isLoading ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                  <span className="hidden sm:inline">Loading</span>
+                </>
+              ) : (
+                <>
+                  <span>Next</span>
+                  <span>→</span>
+                </>
+              )}
             </Button>
           </div>
 
@@ -269,7 +485,7 @@ const ConversationStartersSection = memo<ConversationStartersSectionProps>(({
               variant="romance"
               className="w-full"
             >
-              <Share className="w-4 h-4 mr-2" />
+              <Send className="w-4 h-4 mr-2" />
               Ask A Friend
             </Button>
           </div>
@@ -382,48 +598,8 @@ const ConversationStartersSection = memo<ConversationStartersSectionProps>(({
           )}
         </div>
       )}
-
-      {/* Full Screen Dialog */}
-      <Dialog open={isFullScreen} onOpenChange={setIsFullScreen}>
-        <DialogContent className="w-full max-w-lg bg-gradient-romance border-0">
-          <DialogHeader className="sr-only">
-            <DialogTitle>Question View</DialogTitle>
-          </DialogHeader>
-          <div 
-            className="p-8 min-h-[400px] flex items-center justify-center text-center"
-            onTouchStart={handleTouchStart}
-            onTouchEnd={handleTouchEnd}
-          >
-            {currentStarters.length > 0 && (
-              <div className="text-white">
-                {isMultipleChoice(currentStarters[currentQuestionIndex]) ? (
-                  <div className="space-y-4">
-                    <p className="text-xl font-bold leading-tight">
-                      {(currentStarters[currentQuestionIndex] as any).statement}
-                    </p>
-                    <div className="space-y-3 text-left">
-                      {(currentStarters[currentQuestionIndex] as any).options.map((option: any) => (
-                        <div key={option.key} className="text-white/90">
-                          <span className="font-bold">{option.key}. </span>
-                          <span className="font-medium">{option.text}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ) : (
-                  <p className="text-xl font-bold leading-relaxed">
-                    {getQuestionText(currentStarters[currentQuestionIndex])}
-                  </p>
-                )}
-              </div>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 });
-
-ConversationStartersSection.displayName = 'ConversationStartersSection';
 
 export default ConversationStartersSection;
