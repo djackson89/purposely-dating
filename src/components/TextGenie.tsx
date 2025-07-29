@@ -19,11 +19,14 @@ import {
   ChevronUp,
   MessageSquare,
   Heart,
-  Flame
+  Flame,
+  Copy,
+  Send
 } from 'lucide-react';
 import { useCamera, PhotoResult } from '@/hooks/useCamera';
 import { useRelationshipAI } from '@/hooks/useRelationshipAI';
 import { useToast } from '@/hooks/use-toast';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
 
 interface OnboardingData {
@@ -66,6 +69,7 @@ const TextGenie: React.FC<TextGenieProps> = ({ userProfile }) => {
   const { selectPhoto } = useCamera();
   const { getFlirtSuggestion, isLoading } = useRelationshipAI();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -488,20 +492,20 @@ Keep replies concise (max 2 sentences each). Focus on responses that either seek
       if (section.includes('Sweet:')) {
         let text = section.match(/Sweet:\s*(.+?)(?=Perspective:|$)/s)?.[1]?.trim() || '';
         const perspective = section.match(/Perspective:\s*(.+?)(?=\n\n|$)/s)?.[1]?.trim() || '';
-        // Remove quotation marks from the text
-        text = text.replace(/^["']|["']$/g, '');
+        // Remove quotation marks and asterisks from the text
+        text = text.replace(/^["']|["']$/g, '').replace(/\*/g, '');
         if (text) suggestions.push({ text, tone: 'sweet', perspective });
       } else if (section.includes('Mild:')) {
         let text = section.match(/Mild:\s*(.+?)(?=Perspective:|$)/s)?.[1]?.trim() || '';
         const perspective = section.match(/Perspective:\s*(.+?)(?=\n\n|$)/s)?.[1]?.trim() || '';
-        // Remove quotation marks from the text
-        text = text.replace(/^["']|["']$/g, '');
+        // Remove quotation marks and asterisks from the text
+        text = text.replace(/^["']|["']$/g, '').replace(/\*/g, '');
         if (text) suggestions.push({ text, tone: 'mild', perspective });
       } else if (section.includes('Spicy:')) {
         let text = section.match(/Spicy:\s*(.+?)(?=Perspective:|$)/s)?.[1]?.trim() || '';
         const perspective = section.match(/Perspective:\s*(.+?)(?=\n\n|$)/s)?.[1]?.trim() || '';
-        // Remove quotation marks from the text
-        text = text.replace(/^["']|["']$/g, '');
+        // Remove quotation marks and asterisks from the text
+        text = text.replace(/^["']|["']$/g, '').replace(/\*/g, '');
         if (text) suggestions.push({ text, tone: 'spicy', perspective });
       }
     });
@@ -571,6 +575,53 @@ Give the user a fresh but equally protective way to view the situation.`;
 
   const removeImage = (index: number) => {
     setUploadedImages(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast({
+        title: "Copied!",
+        description: "Reply copied to clipboard",
+      });
+    } catch (error) {
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      
+      toast({
+        title: "Copied!",
+        description: "Reply copied to clipboard",
+      });
+    }
+  };
+
+  const shareText = async (text: string) => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          text: text,
+        });
+      } catch (error) {
+        // User cancelled or sharing failed, fallback to copy
+        await copyToClipboard(text);
+      }
+    } else {
+      // Fallback to copy if Web Share API is not available
+      await copyToClipboard(text);
+    }
+  };
+
+  const handleReplyInteraction = (text: string, action: 'copy' | 'share') => {
+    if (action === 'copy') {
+      copyToClipboard(text);
+    } else {
+      shareText(text);
+    }
   };
 
   return (
@@ -768,44 +819,83 @@ Give the user a fresh but equally protective way to view the situation.`;
             </CardHeader>
             <CardContent className="space-y-4">
               {replySuggestions.map((suggestion, index) => (
-                <div key={index} className="p-4 bg-muted/50 rounded-lg border border-border">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-center space-x-2">
-                      <span className="text-lg">{getToneEmoji(suggestion.tone)}</span>
-                      <Badge variant="outline" className="text-xs">
-                        {suggestion.tone.charAt(0).toUpperCase() + suggestion.tone.slice(1)}
-                      </Badge>
-                    </div>
-                  </div>
-                  
-                  <p className="text-foreground mb-3 leading-relaxed">
-                    {suggestion.text}
-                  </p>
-                  
-                  <div className="border-t border-border pt-3">
-                    <Button
-                      onClick={() => togglePerspective(index)}
-                      variant="ghost"
-                      size="sm"
-                      className="text-primary hover:text-primary/80"
-                    >
-                      <span className="underline">Why this</span>
-                      {expandedPerspectives[index] ? (
-                        <ChevronUp className="w-4 h-4 ml-1" />
-                      ) : (
-                        <ChevronDown className="w-4 h-4 ml-1" />
-                      )}
-                    </Button>
-                    
-                    {expandedPerspectives[index] && (
-                      <div className="mt-2 p-3 bg-primary/5 rounded-lg">
-                        <p className="text-sm text-muted-foreground italic">
-                          <strong>Purposely Perspective:</strong> {suggestion.perspective}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </div>
+                 <div key={index} className="p-4 bg-muted/50 rounded-lg border border-border">
+                   <div className="flex items-start justify-between mb-3">
+                     <div className="flex items-center space-x-2">
+                       <span className="text-lg">{getToneEmoji(suggestion.tone)}</span>
+                       <Badge variant="outline" className="text-xs">
+                         {suggestion.tone.charAt(0).toUpperCase() + suggestion.tone.slice(1)}
+                       </Badge>
+                     </div>
+                     <div className="flex items-center space-x-2">
+                       {/* Copy button for web, hidden on mobile */}
+                       {!isMobile && (
+                         <Button
+                           onClick={() => handleReplyInteraction(suggestion.text, 'copy')}
+                           variant="ghost"
+                           size="sm"
+                           className="p-2 hover:bg-muted"
+                         >
+                           <Copy className="w-4 h-4" />
+                         </Button>
+                       )}
+                       {/* Share button */}
+                       <Button
+                         onClick={() => handleReplyInteraction(suggestion.text, 'share')}
+                         variant="ghost"
+                         size="sm"
+                         className="p-2 hover:bg-muted"
+                       >
+                         <Send className="w-4 h-4" />
+                       </Button>
+                     </div>
+                   </div>
+                   
+                   <p 
+                     className="text-foreground mb-3 leading-relaxed cursor-pointer select-text"
+                     onTouchStart={isMobile ? () => {
+                       // For mobile: long press to copy
+                       let timeout = setTimeout(() => {
+                         handleReplyInteraction(suggestion.text, 'copy');
+                       }, 800);
+                       
+                       const cleanup = () => {
+                         clearTimeout(timeout);
+                         document.removeEventListener('touchend', cleanup);
+                         document.removeEventListener('touchmove', cleanup);
+                       };
+                       
+                       document.addEventListener('touchend', cleanup);
+                       document.addEventListener('touchmove', cleanup);
+                     } : undefined}
+                   >
+                     {suggestion.text}
+                   </p>
+                   
+                   <div className="border-t border-border pt-3">
+                     <Button
+                       onClick={() => togglePerspective(index)}
+                       variant="ghost"
+                       size="sm"
+                       className="text-primary hover:text-primary/80"
+                     >
+                       <span className="underline">Why this</span>
+                       {expandedPerspectives[index] ? (
+                         <ChevronUp className="w-4 h-4 ml-1" />
+                       ) : (
+                         <ChevronDown className="w-4 h-4 ml-1" />
+                       )}
+                     </Button>
+                     
+                     {expandedPerspectives[index] && (
+                       <div className="mt-2 p-3 bg-primary/5 rounded-lg">
+                         <p className="text-sm text-muted-foreground italic">
+                           <strong>Purposely Perspective:</strong> {suggestion.perspective}
+                         </p>
+                       </div>
+                     )}
+                   </div>
+                 </div>
               ))}
             </CardContent>
           </Card>
