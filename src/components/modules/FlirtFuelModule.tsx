@@ -311,93 +311,111 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
       type: "multiple-choice",
       prompts: [
         {
-          statement: "If a man is broke, he's automatically less attractive—no matter how good his heart is.",
+          statement: "Women who demand 50/50 in relationships but still expect men to pay for dates are hypocrites who want equality only when it benefits them.",
           options: [
-            { key: "A", text: "Strongly Agree — Struggle love expired in the 90s" },
-            { key: "B", text: "Somewhat Agree — Intentions don't pay bills" },
-            { key: "C", text: "Somewhat Disagree — Broke isn't forever" },
-            { key: "D", text: "Strongly Disagree — Y'all too materialistic to know real love" }
+            { key: "A", text: "Strongly Agree — Pick a lane and stay in it" },
+            { key: "B", text: "Somewhat Agree — You can't have it both ways" },
+            { key: "C", text: "Somewhat Disagree — Dating and relationships are different stages" },
+            { key: "D", text: "Strongly Disagree — Traditional gestures don't negate modern equality" }
           ]
         },
         {
-          statement: "Co-parenting only works when one parent gives up control.",
+          statement: "Men who are obsessed with virginity are telling on themselves—they're either terrible in bed or deeply insecure about their past.",
           options: [
-            { key: "A", text: "Strongly Agree — Two CEOs crash the company" },
-            { key: "B", text: "Somewhat Agree — Somebody has to pick peace over power" },
-            { key: "C", text: "Somewhat Disagree — Communication can balance power" },
-            { key: "D", text: "Strongly Disagree — Control isn't required, collaboration is" }
+            { key: "A", text: "Strongly Agree — The obsession screams inadequacy" },
+            { key: "B", text: "Somewhat Agree — It's definitely a red flag mindset" },
+            { key: "C", text: "Somewhat Disagree — Some just value different things" },
+            { key: "D", text: "Strongly Disagree — People have preferences for valid reasons" }
           ]
         },
         {
-          statement: "Men with money date younger women because they know women their age won't tolerate them.",
+          statement: "Any woman still defending cheating men after 30 has daddy issues so severe that therapy can't fix them.",
           options: [
-            { key: "A", text: "Strongly Agree — It's not preference, it's escape" },
-            { key: "B", text: "Somewhat Agree — Age equals accountability" },
-            { key: "C", text: "Somewhat Disagree — Some just connect better younger" },
-            { key: "D", text: "Strongly Disagree — Love doesn't check birth dates" }
+            { key: "A", text: "Strongly Agree — Grown women know better by now" },
+            { key: "B", text: "Somewhat Agree — Patterns that deep don't change overnight" },
+            { key: "C", text: "Somewhat Disagree — Trauma responses aren't that simple" },
+            { key: "D", text: "Strongly Disagree — Y'all love diagnosing women for everything" }
           ]
         },
         {
-          statement: "Marriage doesn't make people more loyal—it just makes cheating more expensive.",
+          statement: "Marriage is just legalized prostitution with a tax break—women trade sex and domestic labor for financial security.",
           options: [
-            { key: "A", text: "Strongly Agree — Rings don't change habits" },
-            { key: "B", text: "Somewhat Agree — The affair just comes with paperwork" },
-            { key: "C", text: "Somewhat Disagree — Commitment still matters to some" },
-            { key: "D", text: "Strongly Disagree — That mindset belongs to cheaters" }
+            { key: "A", text: "Strongly Agree — At least escorts are honest about the transaction" },
+            { key: "B", text: "Somewhat Agree — Most marriages are economic arrangements disguised as love" },
+            { key: "C", text: "Somewhat Disagree — That's a cynical view of genuine partnerships" },
+            { key: "D", text: "Strongly Disagree — Love and mutual support aren't transactions" }
           ]
         },
         {
-          statement: "If you're not sexually compatible, the relationship is already on life support.",
+          statement: "Women who constantly post about being 'independent' are usually the most desperate for male validation and financial support.",
           options: [
-            { key: "A", text: "Strongly Agree — Chemistry is the foundation" },
-            { key: "B", text: "Somewhat Agree — Desire makes everything smoother" },
-            { key: "C", text: "Somewhat Disagree — Other things can keep it alive" },
-            { key: "D", text: "Strongly Disagree — Y'all sound addicted to vibes" }
+            { key: "A", text: "Strongly Agree — The loudest ones are always the neediest" },
+            { key: "B", text: "Somewhat Agree — Real independence doesn't need constant announcements" },
+            { key: "C", text: "Somewhat Disagree — Some are genuinely celebrating their achievements" },
+            { key: "D", text: "Strongly Disagree — Y'all can't stand seeing women proud of themselves" }
           ]
         },
         {
-          statement: "Most women can't handle being with a man they have to take care of.",
+          statement: "Men who refuse to eat women out but expect blowjobs are selfish lovers who don't deserve sexual relationships with women.",
           options: [
-            { key: "A", text: "Strongly Agree — Nurture isn't the same as support" },
-            { key: "B", text: "Somewhat Agree — The dynamic gets old fast" },
-            { key: "C", text: "Somewhat Disagree — Some are built for that life" },
-            { key: "D", text: "Strongly Disagree — Y'all underestimate feminine loyalty" }
+            { key: "A", text: "Strongly Agree — Reciprocity is basic human decency" },
+            { key: "B", text: "Somewhat Agree — Sexual selfishness shows character flaws" },
+            { key: "C", text: "Somewhat Disagree — Everyone has boundaries and preferences" },
+            { key: "D", text: "Strongly Disagree — Sexual acts shouldn't be mandatory for anyone" }
           ]
         },
         {
-          statement: "If you have to constantly ask your partner to touch you, you're not in a relationship—you're on an emotional payment plan.",
+          statement: "Most 'traditional women' are just lazy gold diggers who weaponize femininity to avoid adult responsibilities.",
           options: [
-            { key: "A", text: "Strongly Agree — Affection shouldn't require begging" },
-            { key: "B", text: "Somewhat Agree — Attraction shows itself, not explains itself" },
-            { key: "C", text: "Somewhat Disagree — Not everyone is expressive" },
-            { key: "D", text: "Strongly Disagree — Love languages need reminders" }
+            { key: "A", text: "Strongly Agree — It's a hustle disguised as values" },
+            { key: "B", text: "Somewhat Agree — Many use it to avoid contributing equally" },
+            { key: "C", text: "Somewhat Disagree — Some genuinely prefer traditional roles" },
+            { key: "D", text: "Strongly Disagree — Different lifestyles work for different people" }
           ]
         },
         {
-          statement: "Dating apps didn't ruin love—people did.",
+          statement: "Men who constantly talk about women being 'ran through' are usually the ones with the most pathetic body counts and sexual insecurities.",
           options: [
-            { key: "A", text: "Strongly Agree — It's the users, not the platform" },
-            { key: "B", text: "Somewhat Agree — People are the problem, not the pixels" },
-            { key: "C", text: "Somewhat Disagree — The swiping culture changed us" },
-            { key: "D", text: "Strongly Disagree — Apps were built for short-term flings" }
+            { key: "A", text: "Strongly Agree — It's pure projection and misogyny" },
+            { key: "B", text: "Somewhat Agree — Insecure men always police women's sexuality" },
+            { key: "C", text: "Somewhat Disagree — Some genuinely care about values alignment" },
+            { key: "D", text: "Strongly Disagree — Men can have standards about sexual history" }
           ]
         },
         {
-          statement: "Some people don't want love—they just want someone to serve them emotionally.",
+          statement: "Women who stay with cheating men for financial reasons are prostitutes who just don't want to admit it.",
           options: [
-            { key: "A", text: "Strongly Agree — Therapy would ruin their hustle" },
-            { key: "B", text: "Somewhat Agree — They crave caretakers, not partners" },
-            { key: "C", text: "Somewhat Disagree — Some are just unaware" },
-            { key: "D", text: "Strongly Disagree — That's just trauma talking" }
+            { key: "A", text: "Strongly Agree — If money keeps you there, that's exactly what it is" },
+            { key: "B", text: "Somewhat Agree — Financial dependency compromises your dignity" },
+            { key: "C", text: "Somewhat Disagree — Complex situations don't deserve harsh judgments" },
+            { key: "D", text: "Strongly Disagree — Survival and sex work aren't the same thing" }
           ]
         },
         {
-          statement: "If your sex life requires alcohol to feel good, you're not compatible.",
+          statement: "Any man who makes his girlfriend split the bill while he's driving her car and sleeping in her bed is a certified loser who should be immediately dumped.",
           options: [
-            { key: "A", text: "Strongly Agree — Liquor shouldn't be lube" },
-            { key: "B", text: "Somewhat Agree — Sober sex tells the truth" },
-            { key: "C", text: "Somewhat Disagree — Inhibitions are real" },
-            { key: "D", text: "Strongly Disagree — Y'all just need better drinks" }
+            { key: "A", text: "Strongly Agree — That's hobosexual behavior at its finest" },
+            { key: "B", text: "Somewhat Agree — At minimum, contribute something substantial" },
+            { key: "C", text: "Somewhat Disagree — Relationships aren't always about who pays more" },
+            { key: "D", text: "Strongly Disagree — Love shouldn't be measured by financial contributions" }
+          ]
+        },
+        {
+          statement: "Most polyamorous people are just commitment-phobic narcissists who dress up their inability to love one person as enlightenment.",
+          options: [
+            { key: "A", text: "Strongly Agree — It's emotional immaturity with fancy packaging" },
+            { key: "B", text: "Somewhat Agree — Most use it to avoid deep emotional work" },
+            { key: "C", text: "Somewhat Disagree — Some genuinely function better in multiple relationships" },
+            { key: "D", text: "Strongly Disagree — Different relationship styles work for different people" }
+          ]
+        },
+        {
+          statement: "Women who say 'all men are trash' but keep dating the same type of toxic men are addicted to drama and don't actually want healthy relationships.",
+          options: [
+            { key: "A", text: "Strongly Agree — They're choosing chaos then blaming all men for it" },
+            { key: "B", text: "Somewhat Agree — Patterns reveal preferences more than complaints do" },
+            { key: "C", text: "Somewhat Disagree — Breaking trauma bonds takes time and therapy" },
+            { key: "D", text: "Strongly Disagree — Victim-blaming women for men's bad behavior is toxic" }
           ]
         }
       ]
