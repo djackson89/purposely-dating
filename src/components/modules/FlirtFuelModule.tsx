@@ -397,7 +397,7 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
       const depthInstructions = {
         0: "Transform this into a sarcastic, witty question with dark humor. Make it snarky and playfully provocative - like asking someone 'At what point did you realize you were toxic and are you still a walking red flag or have you completed rehab?' Keep it edgy but still conversational.",
         1: "Keep this question casual and balanced - mix of thought-provoking and light elements.",
-        2: "Make this question deeper, more complex, and thought-provoking for serious conversations that build thorough understanding."
+        2: "Transform this into a psychologically sophisticated question that a mental health professional might ask their dating partner. Focus on deep self-awareness, emotional patterns, attachment styles, and psychological insights. Instead of surface-level questions, explore the underlying psychological dynamics, personal growth, emotional regulation, and authentic self-understanding. For example, transform 'What's your favorite food?' into 'Do you see a person's diet as being linked to their relationship to themselves or do you believe it's merely a matter of preference?' The goal is expert-level psychological inquiry that promotes profound self-reflection and emotional intelligence."
       };
 
       const prompt = `Take this conversation starter: "${originalQuestion}" and ${depthInstructions[depth as keyof typeof depthInstructions]} Keep the core intent but adjust the tone and complexity. Return only the adjusted question.`;
