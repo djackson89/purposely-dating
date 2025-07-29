@@ -14,7 +14,7 @@ import {
   Heart, 
   Calendar
 } from 'lucide-react';
-import conversationCardsImage from '@/assets/conversation-cards.png';
+import conversationHeartsImage from '@/assets/conversation-hearts.png';
 
 interface QuickStartProps {
   onNavigateToModule: (module: string) => void;
@@ -27,7 +27,7 @@ const quickStartItems = [
     title: 'Ditch the Small Talk',
     subtitle: 'Deep conversations',
     icon: 'custom', // Custom image instead of icon
-    customImage: conversationCardsImage,
+    customImage: conversationHeartsImage,
     gradient: 'from-pink-500 via-rose-500 to-burgundy',
     action: 'flirtfuel'
   },
