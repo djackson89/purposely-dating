@@ -152,7 +152,9 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
     <div className="space-y-4 animate-fade-in-up">
       {/* Section Heading */}
       <div className="flex items-center justify-center space-x-2">
-        <h2 className="text-xl font-semibold text-primary">Conversation Starters</h2>
+        <h2 className="text-xl font-semibold text-primary">
+          {showCategorySelection ? 'Conversation Starters' : selectedCategory}
+        </h2>
         <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center cursor-pointer hover:bg-primary/20 transition-colors">
           <InfoDialog
             title="Conversation Starters"
