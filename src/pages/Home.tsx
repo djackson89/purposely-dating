@@ -28,8 +28,16 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
   const [purposelyResponse, setPurposelyResponse] = useState('');
   const [isLoadingResponse, setIsLoadingResponse] = useState(false);
   const [currentScenarioIndex, setCurrentScenarioIndex] = useState(0);
+  
+  // Touch/swipe handling state
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  
   const { toast } = useToast();
   const { getAIResponse } = useRelationshipAI();
+
+  // Minimum swipe distance (in pixels)
+  const minSwipeDistance = 50;
 
   // Relationship Talk conversation starters
   const relationshipTalkQuestions = [
@@ -174,8 +182,40 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
     }
   }, []);
 
+  // Touch event handlers for swipe detection
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null); // Reset touchEnd
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    // Right to left swipe navigates to Conversation Starters
+    if (isLeftSwipe) {
+      onNavigateToFlirtFuel();
+      toast({
+        title: "Swiped to Conversation Starters! 💬",
+        description: "Enjoy exploring new conversation topics!",
+      });
+    }
+  };
+
   return (
-    <div className="pb-20 pt-6 px-4 space-y-6 bg-gradient-soft min-h-screen safe-area-pt">
+    <div 
+      className="pb-20 pt-6 px-4 space-y-6 bg-gradient-soft min-h-screen safe-area-pt"
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
+    >
       {/* Header */}
       <div className="text-center space-y-2">
         <h1 className="text-2xl font-bold bg-gradient-romance bg-clip-text text-transparent">
