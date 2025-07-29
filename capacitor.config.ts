@@ -11,8 +11,10 @@ const config: CapacitorConfig = {
   },
   ios: {
     infoPlist: {
-      NSPhotoLibraryUsageDescription: 'This app uses photos to enhance your dating profile and experience.',
-      NSCameraUsageDescription: 'This app uses the camera to take photos for your dating profile.'
+      NSPhotoLibraryUsageDescription: 'Purposely accesses your photo library to allow you to select and upload photos for your dating profile, enhance your profile pictures, and share meaningful moments through the app.',
+      NSCameraUsageDescription: 'Purposely uses your camera to take photos for your dating profile and to capture moments you want to share through the app.',
+      NSPhotoLibraryAddUsageDescription: 'Purposely needs access to save photos to your photo library when you download or save images from the app.',
+      NSFaceIDUsageDescription: 'Purposely uses Face ID for secure and convenient authentication to protect your privacy and personal information.'
     }
   }
 };
