@@ -55,6 +55,7 @@ interface UploadedImage {
 const TextGenie: React.FC<TextGenieProps> = ({ userProfile }) => {
   const [description, setDescription] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isRetrying, setIsRetrying] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
   const [replySuggestions, setReplySuggestions] = useState<ReplySuggestion[]>([]);
@@ -278,7 +279,7 @@ const TextGenie: React.FC<TextGenieProps> = ({ userProfile }) => {
     });
   };
 
-  const generateReplySuggestions = async () => {
+  const generateReplySuggestions = async (isRetryAction = false) => {
     if (!description.trim() && uploadedImages.length === 0) {
       toast({
         title: "Input required",
@@ -288,186 +289,60 @@ const TextGenie: React.FC<TextGenieProps> = ({ userProfile }) => {
       return;
     }
 
-    setIsProcessing(true);
+    if (isRetryAction) {
+      setIsRetrying(true);
+    } else {
+      setIsProcessing(true);
+    }
     
     try {
       let contextText = description;
-      let screenshotAnalysis = '';
       
-      // Analyze screenshots if any
-      if (uploadedImages.length > 0) {
-        screenshotAnalysis = await analyzeScreenshots(uploadedImages);
+      // Analyze screenshots if any and not already analyzed
+      if (uploadedImages.length > 0 && !imageAnalysis) {
+        const screenshotAnalysis = await analyzeScreenshots(uploadedImages);
         setImageAnalysis(screenshotAnalysis);
         contextText += (contextText ? '\n\n' : '') + `Screenshot Analysis:\n${screenshotAnalysis}`;
+      } else if (imageAnalysis) {
+        contextText += (contextText ? '\n\n' : '') + `Screenshot Analysis:\n${imageAnalysis}`;
       }
 
-      // First, assess the user's tone and emotional state
-      const userToneAssessment = `Analyze the user's tone and emotional state from their description: ${contextText}
+      // Single optimized AI call that combines all analysis and response generation
+      const combinedPrompt = `As a no-nonsense relationship coach specializing in boundaries and manipulation detection, analyze this message/situation and provide comprehensive guidance: ${contextText}
 
-Determine if the user sounds:
-1. OFFENDED/BOTHERED - They express feeling hurt, insulted, upset, angry, disrespected, or bothered by the message
-2. NEUTRAL/CURIOUS - They seem calm, confused, or simply seeking advice without strong negative emotions
-3. POSITIVE/ENGAGED - They seem happy, excited, or positively engaged
+STEP 1: Analyze the user's emotional state (OFFENDED/BOTHERED, NEUTRAL/CURIOUS, or POSITIVE/ENGAGED) and the incoming message tone (DEROGATORY, KIND_NEUTRAL, or UNCLEAR).
 
-Respond with just the category (OFFENDED/BOTHERED, NEUTRAL/CURIOUS, or POSITIVE/ENGAGED) followed by a brief explanation.`;
+STEP 2: Provide a "Purposely Perspective" (1-2 sentences) that validates their intuition and identifies potential red flags, focusing on emotional safety and boundary-setting unless the message is clearly positive.
 
-      const userToneResponse = await getFlirtSuggestion(userToneAssessment, userProfile);
-      const userEmotionalState = userToneResponse.split('\n')[0].trim().toUpperCase();
+STEP 3: Generate 3 contextual response suggestions:
+- If user is OFFENDED/BOTHERED or message is DEROGATORY: Focus on boundary-setting and emotional needs
+- If message is KIND_NEUTRAL and user is positive: Focus on connection and flirtation  
+- If UNCLEAR: Focus on clarity and protection from manipulation
 
-      // Generate perspective based on user's emotional state
-      let perspectivePrompt = '';
-      if (userEmotionalState.includes('OFFENDED') || userEmotionalState.includes('BOTHERED')) {
-        perspectivePrompt = `The user appears to be offended, hurt, or bothered by this message/situation: ${contextText}
+Format your response as:
 
-You are a no-nonsense relationship coach specializing in boundaries and identifying manipulation. Assume the person messaging them is potentially toxic. Provide a "Purposely Perspective" that:
+ANALYSIS: [Brief assessment of user state and message tone]
 
-- VALIDATES their intuition - their anxiety/discomfort is their nervous system's alarm system going off
-- IDENTIFIES subtle manipulation tactics or red flags in the received message 
-- EMPOWERS them to trust their instincts over trying to "make it work"
-- Uses direct, protective language like "Your peace is the compass - if this consistently disrupts it, you're going the wrong direction"
-- Reminds them that pain is often protection trying to guide them toward their exit
-- Be 1-2 sentences maximum with tough-love energy
+PURPOSELY PERSPECTIVE: [1-2 protective, empowering sentences]
 
-Channel the energy: "When something isn't for you, it'll hurt you until you let it go. Stop taking Advil for universe-induced headaches."`;
-      } else {
-        perspectivePrompt = `Analyze this message/situation as a no-nonsense relationship coach specializing in boundaries: ${contextText}
+Sweet: [reply text]
+Perspective: [how this serves her needs - max 2 sentences]
 
-You assume this person is dealing with someone potentially toxic unless the message is OBVIOUSLY positive and flirty. Provide a "Purposely Perspective" that:
+Mild: [reply text]
+Perspective: [how this serves her needs - max 2 sentences]
 
-- LOOKS FOR subtle manipulation, guilt-tripping, or boundary-testing behaviors
-- VALIDATES the user's need for clarity and healthy boundaries  
-- IDENTIFIES when someone is making them feel "crazy" or confused (common manipulation tactic)
-- Encourages self-advocacy and clear communication over people-pleasing
-- Uses protective, empowering language about their worth and peace
-- Be 1-2 sentences maximum
+Spicy: [reply text] 
+Perspective: [how this serves her needs - max 2 sentences]
 
-Only suggest flirtation if the incoming message is clearly positive, kind, and respectful. Otherwise, focus on clarity and boundary-setting.`;
-      }
+Keep replies concise (max 2 sentences each). The "Spicy" response should be memorably direct and boundary-setting unless the situation clearly calls for flirtation.`;
 
-      const perspectiveResponse = await getFlirtSuggestion(perspectivePrompt, userProfile);
-      setPurposelyPerspective(perspectiveResponse.trim());
-
-      // Then, analyze the incoming message tone to determine appropriate response strategy
-      const analysisPrompt = `Analyze the tone and intent of this incoming message/situation: ${contextText}
-
-Classify this as one of these categories:
-1. DEROGATORY - The message is rude, disrespectful, mean, insulting, dismissive, condescending, or hurtful
-2. KIND_NEUTRAL - The message is friendly, sweet, neutral, caring, supportive, or shows genuine interest
-3. UNCLEAR - The message is ambiguous, confusing, or needs clarification
-
-Respond with just the category (DEROGATORY, KIND_NEUTRAL, or UNCLEAR) followed by a brief explanation of why.`;
-
-      const toneAnalysis = await getFlirtSuggestion(analysisPrompt, userProfile);
-      const messageCategory = toneAnalysis.split('\n')[0].trim().toUpperCase();
-
-      // Prioritize boundary-setting responses if user is offended/bothered
-      const shouldPrioritizeBoundaries = userEmotionalState.includes('OFFENDED') || userEmotionalState.includes('BOTHERED');
-
-      // Generate contextually appropriate responses based on user's emotional state and message tone
-      let responsePrompt = '';
+      const response = await getFlirtSuggestion(combinedPrompt, userProfile);
       
-      if (shouldPrioritizeBoundaries) {
-        // When user is offended/bothered, prioritize boundary-setting regardless of message classification
-        responsePrompt = `The user feels offended, hurt, or bothered by this message/situation: ${contextText}
-
-You are a relationship coach specializing in teaching women to advocate for their emotional needs. Generate 3 response suggestions that help her assert her need for CLARITY, HONESTY, ALIGNMENT, and SAFETY:
-
-1. Sweet: A warm but direct response that seeks understanding while clearly stating her emotional need (for transparency, consistency, respect, etc.)
-2. Mild: An emotionally intelligent response that directly names what she needs (clarity about intentions, honesty about feelings, alignment of actions with words) 
-3. Spicy: A sharp, quotable response that cuts deep with wit and truth - the kind of direct communication that could go viral for its raw honesty about what women actually need
-
-Each response should help her articulate WHY she needs what she's asking for (emotional safety, relationship clarity, respect for her time/energy).
-
-For each reply, provide a "Purposely Perspective" explaining how this response serves her best interests and emotional needs (max 2 sentences).
-
-Format as:
-Sweet: [reply text]
-Perspective: [explanation]
-
-Mild: [reply text]  
-Perspective: [explanation]
-
-Spicy: [reply text]
-Perspective: [explanation]
-
-Keep replies concise (max 2 sentences each). The "Spicy" response should be memorably direct - the type of boundary-setting that makes people think "damn, I wish I could say that."`;
-
-      } else if (messageCategory.includes('DEROGATORY')) {
-        responsePrompt = `The incoming message appears to be derogatory or disrespectful: ${contextText}
-
-You are a relationship coach helping women articulate their emotional needs when facing disrespect. Generate 3 response suggestions that serve her best interests:
-
-1. Sweet: A caring but clear response that names her need for respect and asks for clarification about their intentions
-2. Mild: An emotionally intelligent response that directly states her need for honesty, transparency, or respectful communication  
-3. Spicy: A cutting, quotable response that calls out the behavior with surgical precision - witty enough to be a viral quote about self-respect
-
-Each response should help her articulate WHY respectful communication matters to her (emotional safety, relationship clarity, protecting her peace).
-
-For each reply, provide a "Purposely Perspective" explaining how this response serves her emotional needs and best interests (max 2 sentences).
-
-Format as:
-Sweet: [reply text]
-Perspective: [explanation]
-
-Mild: [reply text]  
-Perspective: [explanation]
-
-Spicy: [reply text]
-Perspective: [explanation]
-
-Keep replies concise (max 2 sentences each). The "Spicy" response should be memorably sharp - the kind of comeback that makes people screenshot it.`;
-
-      } else if (messageCategory.includes('KIND_NEUTRAL')) {
-        responsePrompt = `The incoming message appears to be kind-hearted or neutral: ${contextText}
-
-Generate 3 response suggestions focused on CONNECTION and FLIRTATION:
-
-1. Sweet: A warm, affectionate response that builds emotional connection
-2. Mild: A playfully engaging response that shows interest and invites more conversation
-3. Spicy: A confident, flirtatious response that creates attraction and romantic tension
-
-For each reply, provide a "Purposely Perspective" explaining how this response builds connection and intrigue (max 2 sentences).
-
-Format as:
-Sweet: [reply text]
-Perspective: [explanation]
-
-Mild: [reply text]  
-Perspective: [explanation]
-
-Spicy: [reply text]
-Perspective: [explanation]
-
-Keep replies concise (max 2 sentences each). Focus on responses that build chemistry, show interest, and create romantic momentum.`;
-
-      } else {
-        // UNCLEAR or fallback - assume potential manipulation unless clearly positive
-        responsePrompt = `The incoming message is unclear or ambiguous: ${contextText}
-
-You are a relationship coach specializing in manipulation detection and boundary-setting. When someone is vague or confusing, assume it could be a manipulation tactic rather than flirtation (unless the flirtation is obvious and certain). Generate 3 response suggestions that help the user gain CLARITY and establish BOUNDARIES:
-
-1. Sweet: A warm but direct response that asks for specific clarification about their intentions or meaning
-2. Mild: An assertive response with 1-2 specific questions that would give the user clarity on potentially negative situations or relationship directions (avoid vague questions like "Can we discuss our expectations?" - instead ask specific questions like "How do you define that exactly? Is it a feeling you're looking to have or something tangible you're looking to establish?")
-3. Spicy: A confident, direct response that calls out the ambiguity and demands clear communication or sets boundaries
-
-Each response should help her get specific answers that protect her from confusion, manipulation, or unclear intentions.
-
-For each reply, provide a "Purposely Perspective" explaining how this response serves her need for clarity and emotional safety (max 2 sentences).
-
-Format as:
-Sweet: [reply text]
-Perspective: [explanation]
-
-Mild: [reply text]  
-Perspective: [explanation]
-
-Spicy: [reply text]
-Perspective: [explanation]
-
-Keep replies concise (max 2 sentences each). Focus on responses that demand specificity and protect against potential manipulation through vagueness.`;
+      // Parse the combined response
+      const perspectiveMatch = response.match(/PURPOSELY PERSPECTIVE:\s*(.+?)(?=\n\nSweet:|Sweet:|$)/s);
+      if (perspectiveMatch) {
+        setPurposelyPerspective(perspectiveMatch[1].trim());
       }
-
-      const response = await getFlirtSuggestion(responsePrompt, userProfile);
       
       // Parse the response into structured suggestions
       const suggestions = parseAIResponse(response);
@@ -481,7 +356,11 @@ Keep replies concise (max 2 sentences each). Focus on responses that demand spec
         variant: "destructive",
       });
     } finally {
-      setIsProcessing(false);
+      if (isRetryAction) {
+        setIsRetrying(false);
+      } else {
+        setIsProcessing(false);
+      }
     }
   };
 
@@ -532,7 +411,7 @@ Keep replies concise (max 2 sentences each). Focus on responses that demand spec
   };
 
   const retryGeneration = () => {
-    generateReplySuggestions();
+    generateReplySuggestions(true);
   };
 
   const generateNewPerspective = async () => {
@@ -737,7 +616,7 @@ Give the user a fresh but equally protective way to view the situation.`;
 
       {/* Generate Button */}
       <Button
-        onClick={generateReplySuggestions}
+        onClick={() => generateReplySuggestions()}
         disabled={isProcessing || isLoading || isAnalyzingImages}
         variant="romance"
         size="lg"
@@ -907,10 +786,10 @@ Give the user a fresh but equally protective way to view the situation.`;
             onClick={retryGeneration}
             variant="outline"
             className="w-full"
-            disabled={isProcessing || isLoading || isAnalyzingImages}
+            disabled={isProcessing || isLoading || isAnalyzingImages || isRetrying}
           >
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Retry
+            <RefreshCw className={`w-4 h-4 mr-2 ${isRetrying ? 'animate-spin' : ''}`} />
+            {isRetrying ? 'Generating...' : 'Retry'}
           </Button>
         </div>
       )}
