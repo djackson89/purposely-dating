@@ -23,7 +23,7 @@ interface QuickStartProps {
 const quickStartItems = [
   {
     id: 'conversation-starters',
-    category: 'Communication',
+    category: '', // Remove category for this item
     title: 'Ditch the Small Talk',
     subtitle: 'Deep conversations',
     icon: 'custom', // Custom image instead of icon
@@ -122,9 +122,11 @@ const QuickStartModule: React.FC<QuickStartProps> = ({ onNavigateToModule }) => 
                     
                     {/* Header with category */}
                     <div className="relative">
-                      <div className="bg-white/25 backdrop-blur-sm rounded-full px-2 sm:px-3 py-1 sm:py-1.5 w-fit mb-2 sm:mb-4 shadow-lg">
-                        <span className="text-xs font-semibold text-white">{item.category}</span>
-                      </div>
+                      {item.category && (
+                        <div className="bg-white/25 backdrop-blur-sm rounded-full px-2 sm:px-3 py-1 sm:py-1.5 w-fit mb-2 sm:mb-4 shadow-lg">
+                          <span className="text-xs font-semibold text-white">{item.category}</span>
+                        </div>
+                      )}
                     </div>
                     
                     {/* Icon container */}
