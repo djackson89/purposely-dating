@@ -52,8 +52,8 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
   // Hypothetical Ask Purposely scenarios
   const askPurposelyScenarios = [
     {
-      question: "Why does my husband feel the need to attend his ex-wife's funeral when he supposedly has been 'over' her for the past 5 years we've been together? Am I being insensitive for feeling uncomfortable with this?",
-      answer: "Not only are you not being insensitive, you have every right to wonder why he needs 'closure' on a door that was supposedly closed before you came along. While it doesn't mean he's 'still in love', it definitely signals some loose ends that threaten to unwravel you if you're not careful. You have every right to desire the same emotional clean slate you gave him."
+      question: "I just found out my man has been texting his ex wife about how I'm no good in bed. Although he's asking her how to 'train' me to be better, I feel completely humiliated and betrayed. Should I leave him?",
+      answer: "The disrespect is so loud it's deafening, and yet you're asking if you should leave? Baby, he didn't just cross a line—he bulldozed through your dignity and made his ex-wife a consultant on your intimacy. This isn't about 'training' you; it's about him training you to accept disrespect as normal. A man who truly loves you doesn't outsource conversations about your most vulnerable moments to another woman, especially not his ex. He's not trying to help you get better; he's trying to make you feel smaller so you won't realize you deserve a man who would never speak about you like a project that needs fixing. You're not broken—your picker just needs recalibrating."
     },
     {
       question: "My boyfriend of 2 years still has photos with his ex all over his social media. When I bring it up, he says I'm being 'insecure.' Am I wrong for wanting them gone?",
