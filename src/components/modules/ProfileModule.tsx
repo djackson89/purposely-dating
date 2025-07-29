@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { User, Camera, Edit, Heart, Calendar, MessageCircle, LogOut, Settings, CreditCard } from 'lucide-react';
 import { HeartIcon } from '@/components/ui/heart-icon';
 import { InfoDialog } from '@/components/ui/info-dialog';
+import { AboutDialog } from '@/components/ui/about-dialog';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useCamera } from '@/hooks/useCamera';
@@ -339,9 +340,7 @@ const ProfileModule: React.FC<ProfileModuleProps> = ({ userProfile, onProfileUpd
           <Button variant="soft" className="w-full justify-start">
             Privacy Settings
           </Button>
-          <Button variant="soft" className="w-full justify-start">
-            About & Support
-          </Button>
+          <AboutDialog />
           <Button 
             variant="destructive" 
             className="w-full justify-start"
