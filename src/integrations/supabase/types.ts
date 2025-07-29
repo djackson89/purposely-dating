@@ -14,6 +14,35 @@ export type Database = {
   }
   public: {
     Tables: {
+      comment_likes: {
+        Row: {
+          comment_id: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          comment_id: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          comment_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comment_likes_comment_id_fkey"
+            columns: ["comment_id"]
+            isOneToOne: false
+            referencedRelation: "scenario_comments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       conversation_usage: {
         Row: {
           category: string
@@ -194,6 +223,68 @@ export type Database = {
           personality_type?: string | null
           relationship_status?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      scenario_comments: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          parent_comment_id: string | null
+          scenario_index: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          parent_comment_id?: string | null
+          scenario_index: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          parent_comment_id?: string | null
+          scenario_index?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scenario_comments_parent_comment_id_fkey"
+            columns: ["parent_comment_id"]
+            isOneToOne: false
+            referencedRelation: "scenario_comments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      scenario_interactions: {
+        Row: {
+          created_at: string
+          id: string
+          interaction_type: string
+          scenario_index: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          interaction_type: string
+          scenario_index: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          interaction_type?: string
+          scenario_index?: number
+          user_id?: string
         }
         Relationships: []
       }

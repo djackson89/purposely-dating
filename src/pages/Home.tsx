@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Heart, Share2, ThumbsUp, ThumbsDown, MessageCircle, Send } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useRelationshipAI } from '@/hooks/useRelationshipAI';
+import SocialInteractions from '@/components/SocialInteractions';
 
 interface OnboardingData {
   loveLanguage: string;
@@ -239,6 +240,9 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
                   </p>
                 </div>
               </div>
+              
+              {/* Social Interactions */}
+              <SocialInteractions scenarioIndex={currentScenarioIndex} />
               
               <div className="flex space-x-2">
                 <Button
