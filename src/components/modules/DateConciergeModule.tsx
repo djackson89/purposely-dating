@@ -16,6 +16,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import DatingPreferencesOnboarding, { DatingPreferences } from '@/components/DatingPreferencesOnboarding';
+import CustomChecklistEditor from '@/components/CustomChecklistEditor';
 
 interface OnboardingData {
   loveLanguage: string;
@@ -39,16 +40,15 @@ interface UpcomingDate {
   prospect_id: string | null;
   location: string;
   date_time: string;
-  checklist: {
-    babySitter: boolean;
-    outfit: boolean;
-    hairStyling: boolean;
-    backgroundCheck: boolean;
-    emergencyCash: boolean;
-    weatherCheck: boolean;
-  };
+  checklist: { [key: string]: boolean };
   notes?: string;
   prospectNickname?: string;
+}
+
+interface CustomChecklistItem {
+  id: string;
+  item_name: string;
+  is_default: boolean;
 }
 
 const flagMetrics = [
@@ -129,6 +129,10 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
     notes: ''
   });
 
+  // Custom Checklist state
+  const [customChecklistItems, setCustomChecklistItems] = useState<CustomChecklistItem[]>([]);
+  const [showChecklistEditor, setShowChecklistEditor] = useState(false);
+
   // Load dating preferences, favorites, and data from localStorage/database on mount
   useEffect(() => {
     const savedPreferences = localStorage.getItem('datingPreferences');
@@ -145,6 +149,7 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
     if (user) {
       loadProspects();
       loadUpcomingDates();
+      loadCustomChecklistItems();
     }
   }, [user]);
 
@@ -387,6 +392,139 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
     }
   };
 
+  // Load custom checklist items from database
+  const loadCustomChecklistItems = async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('custom_checklist_items')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('is_default', { ascending: false })
+        .order('item_name');
+
+      if (error) throw error;
+
+      if (!data || data.length === 0) {
+        // Initialize default items if none exist
+        await initializeDefaultChecklistItems();
+      } else {
+        setCustomChecklistItems(data);
+      }
+    } catch (error) {
+      console.error('Error loading custom checklist items:', error);
+    }
+  };
+
+  // Initialize default checklist items for new users
+  const initializeDefaultChecklistItems = async () => {
+    if (!user) return;
+
+    const defaultItems = [
+      'babySitter',
+      'outfit', 
+      'hairStyling',
+      'backgroundCheck',
+      'emergencyCash',
+      'weatherCheck'
+    ];
+
+    try {
+      const { data, error } = await supabase
+        .from('custom_checklist_items')
+        .insert(
+          defaultItems.map(item => ({
+            user_id: user.id,
+            item_name: item,
+            is_default: true
+          }))
+        )
+        .select();
+
+      if (error) throw error;
+
+      setCustomChecklistItems(data || []);
+    } catch (error) {
+      console.error('Error initializing default checklist items:', error);
+    }
+  };
+
+  // Create default checklist for new dates
+  const createDefaultChecklist = () => {
+    const defaultChecklist: { [key: string]: boolean } = {};
+    customChecklistItems.forEach(item => {
+      defaultChecklist[item.item_name] = false;
+    });
+    return defaultChecklist;
+  };
+
+  // Format checklist item name for display
+  const formatChecklistItemName = (itemName: string) => {
+    const defaultLabels: { [key: string]: string } = {
+      babySitter: 'Baby Sitter',
+      outfit: 'Outfit',
+      hairStyling: 'Hair Styling',
+      backgroundCheck: 'Background Check',
+      emergencyCash: 'Emergency Cash',
+      weatherCheck: 'Weather Check'
+    };
+    
+    return defaultLabels[itemName] || itemName.charAt(0).toUpperCase() + itemName.slice(1);
+  };
+
+  // Sync new checklist items to existing dates
+  const syncChecklistItemsToExistingDates = async () => {
+    if (!user || upcomingDates.length === 0) return;
+
+    try {
+      // Reload the latest custom checklist items
+      const { data: latestItems, error: itemsError } = await supabase
+        .from('custom_checklist_items')
+        .select('*')
+        .eq('user_id', user.id);
+
+      if (itemsError) throw itemsError;
+
+      // Update each date's checklist to include new items
+      for (const date of upcomingDates) {
+        const updatedChecklist = { ...date.checklist };
+        
+        // Add any new items that don't exist in this date's checklist
+        latestItems?.forEach(item => {
+          if (!(item.item_name in updatedChecklist)) {
+            updatedChecklist[item.item_name] = false;
+          }
+        });
+
+        // Remove items that no longer exist in custom checklist
+        const validItemNames = latestItems?.map(item => item.item_name) || [];
+        Object.keys(updatedChecklist).forEach(key => {
+          if (!validItemNames.includes(key)) {
+            delete updatedChecklist[key];
+          }
+        });
+
+        // Update the date in the database if checklist changed
+        if (JSON.stringify(updatedChecklist) !== JSON.stringify(date.checklist)) {
+          const { error: updateError } = await supabase
+            .from('upcoming_dates')
+            .update({ checklist: updatedChecklist })
+            .eq('id', date.id)
+            .eq('user_id', user.id);
+
+          if (updateError) throw updateError;
+        }
+      }
+
+      // Reload dates to reflect changes
+      loadUpcomingDates();
+    } catch (error) {
+      console.error('Error syncing checklist items:', error);
+      toast.error('Failed to sync checklist items');
+    }
+  };
+
   // Add new upcoming date
   const addUpcomingDate = async () => {
     if (!user || !newDate.location || !newDate.date_time) {
@@ -402,7 +540,8 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
           prospect_id: newDate.prospect_id || null,
           location: newDate.location,
           date_time: newDate.date_time,
-          notes: newDate.notes
+          notes: newDate.notes,
+          checklist: createDefaultChecklist()
         })
         .select()
         .single();
@@ -1696,17 +1835,23 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
                   
                   {/* Checklist */}
                   <div>
-                    <h4 className="text-sm font-medium mb-3">Preparation Checklist</h4>
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="text-sm font-medium">Preparation Checklist</h4>
+                      <Button
+                        onClick={() => setShowChecklistEditor(true)}
+                        variant="ghost"
+                        size="sm"
+                        className="text-primary hover:text-primary/80 text-xs p-1"
+                      >
+                        <Edit className="w-3 h-3 mr-1" />
+                        Edit Checklist
+                      </Button>
+                    </div>
                     <div className="grid grid-cols-2 gap-3">
                       {Object.entries(date.checklist).map(([key, checked]) => {
-                        const labels = {
-                          babySitter: 'Baby Sitter',
-                          outfit: 'Outfit',
-                          hairStyling: 'Hair Styling',
-                          backgroundCheck: 'Background Check',
-                          emergencyCash: 'Emergency Cash',
-                          weatherCheck: 'Weather Check'
-                        };
+                        // Find the custom item for proper display name
+                        const customItem = customChecklistItems.find(item => item.item_name === key);
+                        const displayName = customItem ? formatChecklistItemName(customItem.item_name) : key;
                         
                         return (
                           <div key={key} className="flex items-center space-x-2">
@@ -1721,7 +1866,7 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
                               htmlFor={`${date.id}-${key}`}
                               className="text-sm cursor-pointer"
                             >
-                              {labels[key as keyof typeof labels]}
+                              {displayName}
                             </Label>
                           </div>
                         );
@@ -1734,6 +1879,16 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
           )}
         </div>
       )}
+
+      {/* Custom Checklist Editor */}
+      <CustomChecklistEditor
+        isOpen={showChecklistEditor}
+        onClose={() => setShowChecklistEditor(false)}
+        onUpdate={() => {
+          loadCustomChecklistItems();
+          syncChecklistItemsToExistingDates();
+        }}
+      />
     </div>
   );
 };

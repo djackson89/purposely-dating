@@ -44,6 +44,33 @@ export type Database = {
         }
         Relationships: []
       }
+      custom_checklist_items: {
+        Row: {
+          created_at: string
+          id: string
+          is_default: boolean
+          item_name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          item_name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          item_name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       dating_prospects: {
         Row: {
           attractiveness_rating: number | null
