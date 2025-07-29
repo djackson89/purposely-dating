@@ -6,7 +6,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAdminBots } from '@/hooks/useAdminBots';
-import { Bot, Plus, Send, Settings, Trash2 } from 'lucide-react';
+import { usePopulateEngagement } from '@/hooks/usePopulateEngagement';
+import { Bot, Plus, Send, Settings, Trash2, Zap } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface AdminBotPanelProps {
@@ -23,6 +24,8 @@ const AdminBotPanel: React.FC<AdminBotPanelProps> = ({ scenarioIndex }) => {
     deleteBotUser,
     postBotComment
   } = useAdminBots();
+
+  const { populateEngagement, isPopulating } = usePopulateEngagement();
 
   const [showCreateBot, setShowCreateBot] = useState(false);
   const [selectedBot, setSelectedBot] = useState<string>('');
@@ -89,6 +92,19 @@ const AdminBotPanel: React.FC<AdminBotPanelProps> = ({ scenarioIndex }) => {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* Quick Populate Section */}
+        <div className="space-y-3 bg-yellow-100 p-3 rounded-lg border border-yellow-300">
+          <h4 className="font-medium text-yellow-800">Quick Populate Engagement</h4>
+          <Button
+            onClick={() => populateEngagement(scenarioIndex)}
+            disabled={isPopulating}
+            className="w-full bg-yellow-600 hover:bg-yellow-700"
+          >
+            <Zap className="w-4 h-4 mr-2" />
+            {isPopulating ? 'Adding Comments...' : 'Add 10 Bot Comments + Likes'}
+          </Button>
+        </div>
+
         {/* Post as Bot Section */}
         <div className="space-y-3">
           <h4 className="font-medium text-yellow-800">Post Comment as Bot</h4>
