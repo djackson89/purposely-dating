@@ -56,10 +56,8 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
   const [depthLevel, setDepthLevel] = useState([1]); // 0=Light, 1=Casual, 2=Deep
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   
-  // Buffered questions cache for smooth loading
-  type BufferedQuestions = {[key: string]: {[depth: number]: (string | { statement: string; options: { key: string; text: string; }[] })[]}}
-  const [questionBuffer, setQuestionBuffer] = useState<BufferedQuestions>({});
-  const [isBuffering, setIsBuffering] = useState(false);
+  // State for tracking question transformations
+  const [isTransforming, setIsTransforming] = useState(false);
   
   const { getFlirtSuggestion, getAIResponse, isLoading } = useRelationshipAI();
 
@@ -410,139 +408,87 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
     }
   };
 
-  // Buffer questions at all depth levels for smooth experience
-  const bufferQuestionsForCategory = async (category: string, questions: (string | { statement: string; options: { key: string; text: string; }[] })[]) => {
-    if (isBuffering || questionBuffer[category]) return; // Skip if already buffering or cached
-    
-    setIsBuffering(true);
-    try {
-      const buffer: {[depth: number]: (string | { statement: string; options: { key: string; text: string; }[] })[]} = {};
-      
-      // Depth 1 (Casual) - use original questions
-      buffer[1] = questions;
-      
-      // Depth 0 (Light/Sarcastic) and Depth 2 (Deep) - adjust questions in background
-      const depthPromises = [0, 2].map(async (depth) => {
+
+  // Initialize current starters with default category and apply depth transformation
+  React.useEffect(() => {
+    const initializeQuestions = async () => {
+      const defaultCategory = conversationStarters.find(cat => cat.category === selectedCategory);
+      if (defaultCategory && !isCustom) {
         try {
-          const adjustedQuestions = await Promise.all(
-            questions.slice(0, Math.min(10, questions.length)).map(async (question) => {
+          // Transform questions to current depth level
+          const transformedQuestions = await Promise.all(
+            defaultCategory.prompts.map(async (question) => {
               if (typeof question === 'string') {
-                return await adjustQuestionDepth(question, depth);
+                return await adjustQuestionDepth(question, depthLevel[0]);
               }
-              return question; // Keep multiple choice as-is
+              return question; // Keep multiple choice objects as-is
             })
           );
-          buffer[depth] = adjustedQuestions;
+          setCurrentStarters(transformedQuestions);
         } catch (error) {
-          console.error(`Error buffering depth ${depth}:`, error);
-          buffer[depth] = questions; // Fallback to original
+          console.error('Error transforming initial questions:', error);
+          // Fallback to original questions
+          setCurrentStarters(defaultCategory.prompts);
         }
-      });
-      
-      await Promise.all(depthPromises);
-      
-      setQuestionBuffer(prev => ({
-        ...prev,
-        [category]: buffer
-      }));
-    } catch (error) {
-      console.error('Error buffering questions:', error);
-    } finally {
-      setIsBuffering(false);
-    }
-  };
-
-  // Get questions from buffer or fallback to current
-  const getBufferedQuestions = (category: string, depth: number): (string | { statement: string; options: { key: string; text: string; }[] })[] => {
-    const categoryBuffer = questionBuffer[category];
-    if (categoryBuffer && categoryBuffer[depth]) {
-      return categoryBuffer[depth];
-    }
-    
-    // Fallback to current starters or original questions
-    const defaultCategory = conversationStarters.find(cat => cat.category === category);
-    return defaultCategory ? defaultCategory.prompts : currentStarters;
-  };
-
-  // Initialize current starters with default category and daily shuffling
-  React.useEffect(() => {
-    const defaultCategory = conversationStarters.find(cat => cat.category === selectedCategory);
-    if (defaultCategory && !isCustom) {
-      // Set questions immediately from buffer or original
-      const bufferedQuestions = getBufferedQuestions(selectedCategory, depthLevel[0]);
-      setCurrentStarters(bufferedQuestions);
-      
-      // Start buffering for this category in background
-      bufferQuestionsForCategory(selectedCategory, defaultCategory.prompts);
-      
-      // Get or set daily question index
-      const today = new Date().toDateString();
-      const savedQuestionIndex = localStorage.getItem(`dailyQuestionIndex_${selectedCategory}_${today}`);
-      
-      if (savedQuestionIndex) {
-        setCurrentQuestionIndex(parseInt(savedQuestionIndex, 10));
-      } else {
-        // Generate new daily question index
-        const randomIndex = Math.floor(Math.random() * defaultCategory.prompts.length);
-        setCurrentQuestionIndex(randomIndex);
-        localStorage.setItem(`dailyQuestionIndex_${selectedCategory}_${today}`, randomIndex.toString());
-      }
-    }
-  }, [selectedCategory, isCustom]);
-
-  // Instantly switch to buffered questions when depth changes
-  React.useEffect(() => {
-    if (!isCustom) {
-      const bufferedQuestions = getBufferedQuestions(selectedCategory, depthLevel[0]);
-      setCurrentStarters(bufferedQuestions);
-    } else {
-      // For custom categories, apply depth adjustment when depth changes
-      const applyDepthToCustomCategory = async () => {
-        if (customCategories[selectedCategory]) {
-          try {
-            const adjustedQuestions = await Promise.all(
-              customCategories[selectedCategory].map(async (question) => {
-                if (typeof question === 'string') {
-                  return await adjustQuestionDepth(question, depthLevel[0]);
-                }
-                return question; // Keep complex objects as-is
-              })
-            );
-            setCurrentStarters(adjustedQuestions);
-          } catch (error) {
-            console.error('Error adjusting custom category depth:', error);
-            setCurrentStarters(customCategories[selectedCategory]); // Fallback to original
-          }
-        }
-      };
-      applyDepthToCustomCategory();
-    }
-  }, [depthLevel, selectedCategory, isCustom, customCategories]);
-
-  // Preload other popular categories in background for instant switching
-  React.useEffect(() => {
-    const preloadCategories = async () => {
-      if (!isBuffering) {
-        const popularCategories = ['First Date Deep Dive', 'Date Night Debates', 'Relationship Clarity'];
-        for (const category of popularCategories) {
-          if (category !== selectedCategory) {
-            const categoryData = conversationStarters.find(cat => cat.category === category);
-            if (categoryData && !questionBuffer[category]) {
-              // Small delay to not overwhelm the system
-              setTimeout(() => {
-                bufferQuestionsForCategory(category, categoryData.prompts);
-              }, 1000);
-              break; // Only preload one category at a time
-            }
-          }
+        
+        // Get or set daily question index
+        const today = new Date().toDateString();
+        const savedQuestionIndex = localStorage.getItem(`dailyQuestionIndex_${selectedCategory}_${today}`);
+        
+        if (savedQuestionIndex) {
+          setCurrentQuestionIndex(parseInt(savedQuestionIndex, 10));
+        } else {
+          // Generate new daily question index
+          const randomIndex = Math.floor(Math.random() * defaultCategory.prompts.length);
+          setCurrentQuestionIndex(randomIndex);
+          localStorage.setItem(`dailyQuestionIndex_${selectedCategory}_${today}`, randomIndex.toString());
         }
       }
     };
     
-    // Start preloading after a short delay when component is idle
-    const timer = setTimeout(preloadCategories, 2000);
-    return () => clearTimeout(timer);
-  }, [selectedCategory, questionBuffer, isBuffering]);
+    initializeQuestions();
+  }, [selectedCategory, isCustom]);
+
+  // Transform questions immediately when depth changes
+  React.useEffect(() => {
+    const transformCurrentQuestions = async () => {
+      if (currentStarters.length === 0) return;
+      
+      try {
+        // Get the base questions (original, unmodified versions)
+        let baseQuestions: (string | { statement: string; options: { key: string; text: string; }[] })[];
+        
+        if (isCustom) {
+          baseQuestions = customCategories[selectedCategory] || [];
+        } else {
+          const defaultCategory = conversationStarters.find(cat => cat.category === selectedCategory);
+          baseQuestions = defaultCategory ? defaultCategory.prompts : [];
+        }
+        
+        // If we have base questions, transform them to the new depth level
+        if (baseQuestions.length > 0) {
+          const transformedQuestions = await Promise.all(
+            baseQuestions.map(async (question) => {
+              if (typeof question === 'string') {
+                return await adjustQuestionDepth(question, depthLevel[0]);
+              }
+              return question; // Keep multiple choice objects as-is
+            })
+          );
+          setCurrentStarters(transformedQuestions);
+        }
+      } catch (error) {
+        console.error('Error transforming questions for depth:', error);
+        // Keep current questions as fallback
+      }
+    };
+    
+    // Only transform if we have questions and depth actually changed
+    if (currentStarters.length > 0) {
+      transformCurrentQuestions();
+    }
+  }, [depthLevel]);
+
 
   // Check for stored practice scenario from Home page navigation
   React.useEffect(() => {
@@ -773,16 +719,43 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
           }
           
           if (questions.length > 0) {
-            setCurrentStarters(questions);
+            // Apply depth transformation to new questions
+            try {
+              const transformedQuestions = await Promise.all(
+                questions.map(async (question) => {
+                  if (typeof question === 'string') {
+                    return await adjustQuestionDepth(question, depthLevel[0]);
+                  }
+                  return question; // Keep multiple choice objects as-is
+                })
+              );
+              setCurrentStarters(transformedQuestions);
+            } catch (depthError) {
+              console.error('Error applying depth transformation:', depthError);
+              setCurrentStarters(questions); // Fallback to untransformed questions
+            }
             setCurrentQuestionIndex(0);
           } else {
             throw new Error('No valid questions generated');
           }
         } catch (error) {
           console.error('Error loading more starters:', error);
-          // Fallback: shuffle the original questions as backup
+          // Fallback: shuffle the original questions and apply depth transformation
           const shuffled = [...category.prompts].sort(() => Math.random() - 0.5);
-          setCurrentStarters(shuffled);
+          try {
+            const transformedQuestions = await Promise.all(
+              shuffled.map(async (question) => {
+                if (typeof question === 'string') {
+                  return await adjustQuestionDepth(question, depthLevel[0]);
+                }
+                return question; // Keep multiple choice objects as-is
+              })
+            );
+            setCurrentStarters(transformedQuestions);
+          } catch (depthError) {
+            console.error('Error applying depth transformation to fallback:', depthError);
+            setCurrentStarters(shuffled); // Ultimate fallback
+          }
           setCurrentQuestionIndex(0);
         }
       }
@@ -829,7 +802,24 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
       setIsCustom(false);
       const category = conversationStarters.find(cat => cat.category === categoryName);
       if (category) {
-        setCurrentStarters(category.prompts);
+        // Apply depth transformation to regular category questions
+        const applyDepthToCategory = async () => {
+          try {
+            const transformedQuestions = await Promise.all(
+              category.prompts.map(async (question) => {
+                if (typeof question === 'string') {
+                  return await adjustQuestionDepth(question, depthLevel[0]);
+                }
+                return question; // Keep multiple choice objects as-is
+              })
+            );
+            setCurrentStarters(transformedQuestions);
+          } catch (error) {
+            console.error('Error adjusting category depth:', error);
+            setCurrentStarters(category.prompts); // Fallback to original
+          }
+        };
+        applyDepthToCategory();
         setCurrentQuestionIndex(0);
         setShowCategorySelection(false); // Move to question display
       }
@@ -839,16 +829,6 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
   const nextQuestion = async () => {
     if (currentQuestionIndex < currentStarters.length - 1) {
       setCurrentQuestionIndex(prev => prev + 1);
-      
-      // Preload more questions when approaching the end (at 80% through)
-      const threshold = Math.floor(currentStarters.length * 0.8);
-      if (currentQuestionIndex >= threshold && !isCustom) {
-        // Buffer more questions for the current category and depth in background
-        const defaultCategory = conversationStarters.find(cat => cat.category === selectedCategory);
-        if (defaultCategory) {
-          bufferQuestionsForCategory(selectedCategory, defaultCategory.prompts);
-        }
-      }
     } else {
       // When reaching the end, always load more questions for smooth experience
       await loadMoreStarters();
