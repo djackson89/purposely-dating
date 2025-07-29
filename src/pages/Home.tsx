@@ -27,6 +27,7 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
   const [userQuestion, setUserQuestion] = useState('');
   const [purposelyResponse, setPurposelyResponse] = useState('');
   const [isLoadingResponse, setIsLoadingResponse] = useState(false);
+  const [currentScenarioIndex, setCurrentScenarioIndex] = useState(0);
   const { toast } = useToast();
   const { getAIResponse } = useRelationshipAI();
 
@@ -57,11 +58,23 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
     },
     {
       question: "My boyfriend of 2 years still has photos with his ex all over his social media. When I bring it up, he says I'm being 'insecure.' Am I wrong for wanting them gone?",
-      answer: "You're not insecure—you're intuitive. A man who's truly moved on doesn't need a digital shrine to his past. His refusal to remove them isn't about memory keeping; it's about keeping doors open. You deserve someone who closes chapters, not someone who keeps you competing with ghosts."
+      answer: "You're not insecure—you're intuitive. A man who's truly moved on doesn't need a digital shrine to his past. His refusal to remove them isn't about memory keeping; it's about keeping doors open. When he calls you insecure for having standards, he's using manipulation to avoid accountability. You deserve someone who closes chapters, not someone who keeps you competing with ghosts. Your discomfort isn't jealousy—it's your self-respect trying to save you."
     },
     {
       question: "He says he needs 'space to figure things out' after a year of dating. Should I wait for him or is this just a soft breakup?",
-      answer: "When a man needs space to figure out if he wants you, he's already figured it out—he just doesn't want to be the bad guy who says it. Real love doesn't come with confusion periods. You're not a maybe, you're not a backup plan, and you're definitely not something that needs to be 'figured out.'"
+      answer: "When a man needs space to figure out if he wants you, he's already figured it out—he just doesn't want to be the bad guy who says it. Real love doesn't come with confusion periods. You're not a maybe, you're not a backup plan, and you're definitely not something that needs to be 'figured out.' Stop giving your energy to someone who's treating your heart like a trial subscription. His 'space' is just him keeping you on the hook while he explores other options."
+    },
+    {
+      question: "My husband's female coworker keeps texting him late at night about 'work stuff' and when I ask to see the messages, he gets defensive and says I don't trust him. Am I being paranoid?",
+      answer: "Trust your gut—it's not paranoid, it's protective. A transparent man with nothing to hide doesn't get defensive about showing messages, especially when his wife's comfort is at stake. Work conversations at 11 PM? Please. The only thing working overtime here is his audacity. His anger at your reasonable request is a deflection tactic. A faithful husband would either show you the messages or establish boundaries with this coworker himself. You're not asking too much—you're asking the bare minimum."
+    },
+    {
+      question: "Found out my boyfriend has been on dating apps while we've been together for 6 months. He says he was just 'looking' and never met anyone. Should I give him another chance?",
+      answer: "He wasn't 'just looking'—he was shopping. Being on dating apps while in a relationship isn't window shopping, it's actively hunting for your replacement. His defense is insulting your intelligence and minimizing his betrayal. The audacity to ask for another chance after showing you exactly how little he values what you already have together? No ma'am. A man who's happy with his woman doesn't need to see what else is out there. You deserve someone whose eyes never wander to other options."
+    },
+    {
+      question: "My partner keeps bringing up my past relationships and using them against me in arguments. He says I have 'too much baggage' but won't stop bringing it up. How do I handle this?",
+      answer: "He's weaponizing your past to control your present, and that's emotional terrorism. A man who truly loves you doesn't use your vulnerability as ammunition in fights. He's creating the very insecurity he claims you have by constantly reopening old wounds. This isn't about your baggage—it's about his inability to handle that you existed before him. Stop defending your past to someone who refuses to honor your present. You can't heal in the same environment that broke you."
     }
   ];
 
@@ -139,22 +152,27 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
     }
   };
 
-  const getDailyScenario = () => {
+  const getCurrentScenario = () => {
+    return askPurposelyScenarios[currentScenarioIndex];
+  };
+
+  const handleSeeMoreScenarios = () => {
+    setCurrentScenarioIndex((prev) => (prev + 1) % askPurposelyScenarios.length);
+  };
+
+  // Initialize current scenario index on first load
+  useEffect(() => {
     const today = new Date().toDateString();
     const savedScenarioIndex = localStorage.getItem(`dailyScenarioIndex_${today}`);
     
-    let scenarioIndex;
     if (savedScenarioIndex) {
-      // Cycle to next scenario for demonstration
-      scenarioIndex = (parseInt(savedScenarioIndex) + 1) % askPurposelyScenarios.length;
-      localStorage.setItem(`dailyScenarioIndex_${today}`, scenarioIndex.toString());
+      setCurrentScenarioIndex(parseInt(savedScenarioIndex));
     } else {
-      scenarioIndex = Math.floor(Math.random() * askPurposelyScenarios.length);
-      localStorage.setItem(`dailyScenarioIndex_${today}`, scenarioIndex.toString());
+      const randomIndex = Math.floor(Math.random() * askPurposelyScenarios.length);
+      setCurrentScenarioIndex(randomIndex);
+      localStorage.setItem(`dailyScenarioIndex_${today}`, randomIndex.toString());
     }
-    
-    return askPurposelyScenarios[scenarioIndex];
-  };
+  }, []);
 
   return (
     <div className="pb-20 pt-6 px-4 space-y-6 bg-gradient-soft min-h-screen safe-area-pt">
@@ -209,7 +227,7 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
               <div className="space-y-4">
                 <div className="p-4 bg-gradient-soft rounded-lg border border-primary/10">
                   <p className="text-foreground leading-relaxed font-medium">
-                    "{getDailyScenario().question}"
+                    "{getCurrentScenario().question}"
                   </p>
                   <p className="text-xs text-muted-foreground mt-2">- Anonymous</p>
                 </div>
@@ -217,19 +235,28 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
                 <div className="p-4 bg-gradient-romance rounded-lg border border-primary/20">
                   <p className="text-sm font-semibold text-white mb-2">Purposely Says:</p>
                   <p className="text-white leading-relaxed">
-                    {getDailyScenario().answer}
+                    {getCurrentScenario().answer}
                   </p>
                 </div>
               </div>
               
-              <Button
-                onClick={handleAskYourQuestion}
-                variant="romance"
-                className="w-full"
-              >
-                <Send className="w-4 h-4 mr-2" />
-                Ask Your Question
-              </Button>
+              <div className="flex space-x-2">
+                <Button
+                  onClick={handleSeeMoreScenarios}
+                  variant="soft"
+                  className="flex-1"
+                >
+                  See More
+                </Button>
+                <Button
+                  onClick={handleAskYourQuestion}
+                  variant="romance"
+                  className="flex-1"
+                >
+                  <Send className="w-4 h-4 mr-2" />
+                  Ask Your Question
+                </Button>
+              </div>
             </>
           ) : (
             <>
