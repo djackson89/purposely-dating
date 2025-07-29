@@ -131,19 +131,23 @@ const QuickStartModule: React.FC<QuickStartProps> = ({ onNavigateToModule }) => 
                       )}
                     </div>
                     
-                    {/* Icon container - now takes up more space */}
-                    <div className="relative flex-1 flex items-center justify-center py-4">
-                      <div className="bg-white/25 backdrop-blur-sm rounded-full p-2 sm:p-3 shadow-xl">
-                        {item.icon === 'custom' && item.customImage ? (
+                    {/* Icon container - large image extending from top to middle */}
+                    <div className="relative flex-1 flex flex-col">
+                      {item.icon === 'custom' && item.customImage ? (
+                        <div className="flex-1 flex items-start justify-center pt-2">
                           <img 
                             src={item.customImage} 
                             alt={item.title}
-                            className="w-16 h-16 sm:w-20 sm:h-20 object-contain drop-shadow-lg" 
+                            className="w-24 h-24 sm:w-28 sm:h-28 object-contain drop-shadow-lg" 
                           />
-                        ) : (
-                          <item.icon className="w-16 h-16 sm:w-20 sm:h-20 text-white drop-shadow-lg" />
-                        )}
-                      </div>
+                        </div>
+                      ) : (
+                        <div className="flex-1 flex items-center justify-center">
+                          <div className="bg-white/25 backdrop-blur-sm rounded-full p-2 sm:p-3 shadow-xl">
+                            <item.icon className="w-16 h-16 sm:w-20 sm:h-20 text-white drop-shadow-lg" />
+                          </div>
+                        </div>
+                      )}
                     </div>
                     
                     {/* Content */}
