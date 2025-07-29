@@ -753,18 +753,7 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
       {activeSection === 'suggestions' && !showDatingOnboarding && !showFavorites && (
         <div className="space-y-4 animate-fade-in-up">
           {/* Section Heading */}
-          <div className="relative text-center">
-            <div className="absolute top-0 right-0">
-              <Button 
-                onClick={() => setShowFavorites(true)}
-                variant="ghost"
-                size="sm"
-                className="text-primary hover:text-primary/80"
-              >
-                Favorites ({favoriteDates.length})
-              </Button>
-            </div>
-            
+          <div className="text-center">
             <div className="space-y-3">
               <div className="flex items-center justify-center space-x-2">
                 <h2 className="text-xl font-semibold text-primary">Personalized Date Suggestions</h2>
@@ -785,10 +774,6 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
               </Button>
               
               <div className="text-center">
-                <p className="text-sm text-muted-foreground mb-4">
-                  Based on your preferences and {userProfile.loveLanguage} love language
-                </p>
-                
                 {/* Show user's liked preferences as bubbles */}
                 {datingPreferences && (
                   <div className="space-y-3">
@@ -807,28 +792,22 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
                         ))}
                       </div>
                     </div>
-                    
-                    {(datingPreferences.dislikedActivities.length > 0 || datingPreferences.customDislikes.length > 0) && (
-                      <div>
-                        <p className="text-xs font-medium text-muted-foreground mb-2">Activities to avoid:</p>
-                        <div className="flex flex-wrap gap-2 justify-center">
-                          {datingPreferences.dislikedActivities.map((activity) => (
-                            <Badge key={activity} variant="destructive" className="text-xs">
-                              {activity}
-                            </Badge>
-                          ))}
-                          {datingPreferences.customDislikes.map((activity) => (
-                            <Badge key={activity} variant="destructive" className="text-xs">
-                              {activity}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    )}
                   </div>
                 )}
               </div>
             </div>
+          </div>
+          
+          {/* Favorites Button - moved to be above date suggestions */}
+          <div className="text-center">
+            <Button 
+              onClick={() => setShowFavorites(true)}
+              variant="ghost"
+              size="sm"
+              className="text-primary hover:text-primary/80"
+            >
+              Favorites ({favoriteDates.length})
+            </Button>
           </div>
           
           {personalizedDates.map((date, index) => {
