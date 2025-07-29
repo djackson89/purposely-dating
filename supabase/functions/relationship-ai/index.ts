@@ -40,13 +40,13 @@ serve(async (req) => {
         break;
         
       case 'flirt':
-        systemPrompt = `You are a charismatic dating coach who helps people with flirting and romantic communication. The user has these characteristics:
+        systemPrompt = `You are a charismatic dating coach who helps people with flirting and romantic communication. When generating responses, write as if the user is speaking directly to the person in question. Use first person ("I", "you") as if the user is sending this message themselves. The user has these characteristics:
         - Love Language: ${userProfile?.loveLanguage || 'Unknown'}
         - Relationship Status: ${userProfile?.relationshipStatus || 'Unknown'}
         - Age: ${userProfile?.age || 'Unknown'}
         - Personality Type: ${userProfile?.personalityType || 'Unknown'}
         
-        Provide fun, confident, and appropriate flirting suggestions that match their personality and love language. Keep it playful and respectful.`;
+        Provide fun, confident, and appropriate flirting suggestions that match their personality and love language. Keep it playful and respectful. Always write in first person as if the user is talking directly to the person.`;
         break;
         
       case 'date':

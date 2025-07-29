@@ -316,7 +316,7 @@ const TextGenie: React.FC<TextGenieProps> = ({ userProfile }) => {
       const suggestions: ReplySuggestion[] = [];
       
       // Sweet response - Use flirt mode for warm, tactful responses
-      const sweetPrompt = `Generate a Sweet response to this situation. Be warm, presuming innocence, extremely tactful, and agreeable. Keep it under 2 sentences: ${contextText}`;
+      const sweetPrompt = `Generate a Sweet response to this situation as if I am speaking directly to the person. Write in first person as if I am sending this message myself. Be warm, presuming innocence, extremely tactful, and agreeable. Keep it under 2 sentences. Write as if I am talking directly to them: ${contextText}`;
       const sweetResponse = await getAIResponse(sweetPrompt, userProfile, 'flirt');
       suggestions.push({
         text: sweetResponse.trim().replace(/^["']|["']$/g, '').replace(/\*/g, ''),
@@ -334,7 +334,7 @@ const TextGenie: React.FC<TextGenieProps> = ({ userProfile }) => {
       });
 
       // Spicy response - Use therapy mode for boundary-setting
-      const spicyPrompt = `Generate a Spicy response to this situation. Set hard boundaries or expectations with a gut punch feel. Unless the text is clearly positive/flirtatious, be direct about boundaries. Keep it under 2 sentences: ${contextText}`;
+      const spicyPrompt = `Generate a Spicy response to this situation as if I am speaking directly to the person. Write in first person as if I am sending this message myself. Set hard boundaries or expectations with a gut punch feel. Unless the text is clearly positive/flirtatious, be direct about boundaries. Keep it under 2 sentences. Write as if I am talking directly to them: ${contextText}`;
       const spicyResponse = await getAIResponse(spicyPrompt, userProfile, 'therapy');
       suggestions.push({
         text: spicyResponse.trim().replace(/^["']|["']$/g, '').replace(/\*/g, ''),
