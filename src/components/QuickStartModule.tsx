@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
+  CarouselApi,
 } from "@/components/ui/carousel";
 import { Card, CardContent } from "@/components/ui/card";
 import { 
@@ -68,6 +69,23 @@ const quickStartItems = [
 ];
 
 const QuickStartModule: React.FC<QuickStartProps> = ({ onNavigateToModule }) => {
+  const [api, setApi] = useState<CarouselApi>();
+  const [current, setCurrent] = useState(0);
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    if (!api) {
+      return;
+    }
+
+    setCount(api.scrollSnapList().length);
+    setCurrent(api.selectedScrollSnap() + 1);
+
+    api.on("select", () => {
+      setCurrent(api.selectedScrollSnap() + 1);
+    });
+  }, [api]);
+
   const handleCardClick = (item: typeof quickStartItems[0]) => {
     // Store the specific sub-section for modules that have multiple features
     if (item.action === 'flirtfuel') {
@@ -88,13 +106,30 @@ const QuickStartModule: React.FC<QuickStartProps> = ({ onNavigateToModule }) => 
   };
 
   return (
-    <div className="w-full px-4 mb-12">
-      <div className="mb-6 flex items-baseline gap-3">
+    <div className="w-full px-4 mb-20">
+      <div className="mb-4 flex items-baseline gap-3">
         <h2 className="text-2xl font-bold text-foreground">Quick Start</h2>
         <p className="text-muted-foreground">Choose your journey</p>
       </div>
       
+      {/* Progress indicator */}
+      <div className="mb-6 flex justify-center">
+        <div className="flex gap-1">
+          {Array.from({ length: Math.ceil(quickStartItems.length / 2) }).map((_, index) => (
+            <div
+              key={index}
+              className={`h-0.5 w-8 rounded-full transition-all duration-300 ${
+                index === Math.floor((current - 1) / 2) 
+                  ? 'bg-primary' 
+                  : 'bg-muted-foreground/30'
+              }`}
+            />
+          ))}
+        </div>
+      </div>
+      
       <Carousel
+        setApi={setApi}
         opts={{
           align: "start",
           loop: false,
