@@ -1248,7 +1248,7 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
   const sections = [
     { id: 'prospects', label: 'Dating Prospects', icon: Users },
     { id: 'suggestions', label: 'Dating Planner', icon: Sparkles },
-    { id: 'local', label: 'Local Events', icon: MapPin },
+    { id: 'local', label: 'Local Experiences', icon: MapPin },
     { id: 'planning', label: 'Planning Board', icon: HeartIcon }
   ];
 
@@ -1738,10 +1738,10 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
         <div className="space-y-4 animate-fade-in-up">
           {/* Section Heading */}
           <div className="flex items-center justify-center space-x-2">
-            <h2 className="text-xl font-semibold text-primary">Local Events</h2>
+            <h2 className="text-xl font-semibold text-primary">Local Experiences</h2>
             <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center cursor-pointer hover:bg-primary/20 transition-colors">
               <InfoDialog
-                title="Local Events"
+                title="Local Experiences"
                 description="Discover exciting activities and hidden gems in your area to create unforgettable experiences together. Search by city or zip code to explore events anywhere."
               />
             </div>
@@ -1771,23 +1771,6 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
                   }
                 </p>
               </div>
-            </CardContent>
-          </Card>
-
-          <Card className="shadow-romance border-primary/20">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <MapPin className="w-5 h-5 text-primary animate-heart-pulse" />
-                <span>Local Experiences</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                {searchLocation.trim() 
-                  ? `Discover exciting activities in ${searchLocation}` 
-                  : "Discover exciting activities near you"
-                }
-              </p>
             </CardContent>
           </Card>
 
