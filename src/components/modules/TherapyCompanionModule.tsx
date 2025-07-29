@@ -24,6 +24,14 @@ interface TherapyCompanionModuleProps {
 
 const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userProfile }) => {
   const [activeSection, setActiveSection] = useState<'reflection' | 'journal' | 'insights'>('reflection');
+  
+  // Initial setup state
+  const [showInitialSetup, setShowInitialSetup] = useState(false);
+  const [setupStep, setSetupStep] = useState<'therapy-status' | 'topics'>('therapy-status');
+  const [isInTherapy, setIsInTherapy] = useState<boolean | null>(null);
+  const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
+  const [otherTopic, setOtherTopic] = useState('');
+  
   const [journalEntry, setJournalEntry] = useState('');
   const [postTherapyInputs, setPostTherapyInputs] = useState<{[key: number]: string}>({});
   const [preTherapyInputs, setPreTherapyInputs] = useState<{[key: number]: string}>({});
@@ -56,32 +64,146 @@ const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userPro
   
   const { getTherapyInsight, isLoading } = useRelationshipAI();
   const { toast } = useToast();
+
+  // Therapy topics for initial setup
+  const therapyTopics = [
+    "Heartbreak", "Co-Parenting", "Narcissistic Abuse", "Childhood Trauma",
+    "Relationship Drama", "Sexual Satisfaction", "Divorce", "People Pleasing"
+  ];
+
+  // Handle initial setup logic
+  const handleTherapyStatusAnswer = (inTherapy: boolean) => {
+    setIsInTherapy(inTherapy);
+    setSetupStep('topics');
+  };
+
+  const handleTopicToggle = (topic: string) => {
+    setSelectedTopics(prev => 
+      prev.includes(topic) 
+        ? prev.filter(t => t !== topic)
+        : [...prev, topic]
+    );
+  };
+
+  const handleSetupComplete = () => {
+    const allTopics = [...selectedTopics];
+    if (otherTopic.trim()) {
+      allTopics.push(otherTopic.trim());
+    }
+    
+    // Save setup data to localStorage
+    const setupData = {
+      isInTherapy,
+      topics: allTopics,
+      completedAt: new Date().toISOString()
+    };
+    localStorage.setItem('therapyCompanionSetup', JSON.stringify(setupData));
+    
+    // Hide setup and show main content
+    setShowInitialSetup(false);
+    
+    toast({
+      title: "Setup Complete",
+      description: "Your therapy companion has been personalized based on your preferences.",
+    });
+  };
+
+  // Check if setup was already completed
+  React.useEffect(() => {
+    const savedSetup = localStorage.getItem('therapyCompanionSetup');
+    if (!savedSetup) {
+      setShowInitialSetup(true);
+    } else {
+      const setupData = JSON.parse(savedSetup);
+      setIsInTherapy(setupData.isInTherapy);
+      setSelectedTopics(setupData.topics || []);
+    }
+  }, []);
   
-  // Personalized therapy prompts based on user profile
+  // Personalized therapy prompts based on user profile and selected topics
   const getPersonalizedPrompts = () => {
-    const basePrompts = {
-      pre: [
-        "Can you help me identify unhealthy relationship patterns based on my past relationships?",
-        "How can I improve my communication style to better connect with my partner?",
-        "What tools can you teach me to better process difficult emotions in my relationship?",
-        "Can we work through some specific conflicts I've been having with my partner?",
-        "How is my attachment style affecting my current relationship, and what can I do about it?",
-        "How can I better understand and meet my partner's emotional needs?",
-        "What boundaries do I need to work on establishing in my relationship?",
-        "Can you help me process feelings of jealousy or insecurity?",
-        "How do I handle disagreements without escalating into arguments?",
-        "What role does my family background play in my current relationship?",
-        "How can I rebuild trust after it's been damaged in my relationship?",
-        "What strategies can help me be more emotionally available to my partner?",
-        "How do I balance independence and togetherness in my relationship?",
-        "Can we explore how stress affects my relationship dynamics?",
-        "What does healthy intimacy look like for me and my partner?",
-        "How can I work on being more vulnerable in my relationship?",
-        "What are some healthy ways to express anger in my relationship?",
-        "How can I better support my partner during difficult times?",
-        "What role does physical affection play in our relationship?",
-        "How can we create more meaningful rituals and traditions together?"
+    // Topic-specific questions based on user's initial setup
+    const topicQuestions: {[key: string]: string[]} = {
+      "Heartbreak": [
+        "How can I process the pain of heartbreak in a healthy way?",
+        "What patterns led to this relationship ending, and how can I break them?",
+        "How do I rebuild my self-worth after a difficult breakup?",
+        "What boundaries should I set while healing from heartbreak?"
       ],
+      "Co-Parenting": [
+        "How can I communicate more effectively with my co-parent?",
+        "What strategies help maintain healthy boundaries in co-parenting?",
+        "How do I manage conflict with my co-parent for our children's sake?",
+        "How can I prioritize my children's emotional needs during transitions?"
+      ],
+      "Narcissistic Abuse": [
+        "How do I recognize and heal from narcissistic abuse patterns?",
+        "What boundaries do I need to protect myself from manipulation?",
+        "How can I rebuild my sense of self after narcissistic abuse?",
+        "What red flags should I watch for in future relationships?"
+      ],
+      "Childhood Trauma": [
+        "How is my childhood trauma affecting my current relationships?",
+        "What healing practices can help me process childhood wounds?",
+        "How do I break generational patterns of dysfunction?",
+        "How can I create secure attachment in my relationships despite my past?"
+      ],
+      "Relationship Drama": [
+        "How can I reduce drama and conflict in my relationships?",
+        "What communication skills will help me navigate relationship challenges?",
+        "How do I set boundaries to minimize toxic dynamics?",
+        "What role do I play in creating or perpetuating relationship drama?"
+      ],
+      "Sexual Satisfaction": [
+        "How can I communicate my sexual needs more openly?",
+        "What barriers prevent me from experiencing sexual satisfaction?",
+        "How do I rebuild intimacy after sexual trauma or disappointment?",
+        "How can my partner and I enhance our sexual connection?"
+      ],
+      "Divorce": [
+        "How do I process the grief and loss associated with divorce?",
+        "What steps can I take to heal and move forward after divorce?",
+        "How do I co-parent effectively with my ex-spouse?",
+        "How can I rebuild my identity and life after divorce?"
+      ],
+      "People Pleasing": [
+        "How do I stop people pleasing and start prioritizing my own needs?",
+        "What boundaries do I need to set to break people pleasing patterns?",
+        "How can I build confidence to say no without guilt?",
+        "What's the difference between being kind and being a people pleaser?"
+      ]
+    };
+
+    // Base questions for general therapy
+    const basePreQuestions = [
+      "Can you help me identify unhealthy relationship patterns based on my past relationships?",
+      "How can I improve my communication style to better connect with my partner?",
+      "What tools can you teach me to better process difficult emotions in my relationship?",
+      "How is my attachment style affecting my current relationship, and what can I do about it?",
+      "What boundaries do I need to work on establishing in my relationship?",
+      "How do I handle disagreements without escalating into arguments?",
+      "What does healthy intimacy look like for me and my partner?",
+      "How can I work on being more vulnerable in my relationship?"
+    ];
+
+    // Build personalized pre-therapy questions based on selected topics
+    let personalizedPreQuestions: string[] = [];
+    
+    // Add topic-specific questions first
+    selectedTopics.forEach(topic => {
+      if (topicQuestions[topic]) {
+        personalizedPreQuestions = [...personalizedPreQuestions, ...topicQuestions[topic]];
+      }
+    });
+
+    // Add base questions
+    personalizedPreQuestions = [...personalizedPreQuestions, ...basePreQuestions];
+
+    // Remove duplicates
+    personalizedPreQuestions = [...new Set(personalizedPreQuestions)];
+
+    const basePrompts = {
+      pre: personalizedPreQuestions,
       post: [
         "Share a key takeaway from your therapy session today",
         "What insight resonated most with you?",
@@ -301,6 +423,104 @@ const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userPro
 
   return (
     <div className="pb-20 pt-6 px-4 space-y-6 bg-gradient-soft min-h-screen">
+      {/* Initial Setup Screen */}
+      {showInitialSetup && (
+        <div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-sm">
+          <div className="container flex h-full w-full items-center justify-center p-4">
+            <Card className="w-full max-w-lg shadow-romance border-primary/20">
+              <CardHeader className="text-center">
+                <CardTitle className="text-2xl bg-gradient-romance bg-clip-text text-transparent">
+                  Therapy Companion Setup
+                </CardTitle>
+                <p className="text-muted-foreground">
+                  Let's personalize your therapy companion experience
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {setupStep === 'therapy-status' && (
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-center text-primary">
+                      Are you currently in therapy?
+                    </h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      <Button
+                        onClick={() => handleTherapyStatusAnswer(true)}
+                        variant="outline"
+                        className="h-20 text-lg font-medium border-primary/20 hover:bg-primary/5 hover:border-primary"
+                      >
+                        Yes
+                      </Button>
+                      <Button
+                        onClick={() => handleTherapyStatusAnswer(false)}
+                        variant="outline"
+                        className="h-20 text-lg font-medium border-primary/20 hover:bg-primary/5 hover:border-primary"
+                      >
+                        No
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {setupStep === 'topics' && (
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-center text-primary">
+                      {isInTherapy 
+                        ? "What are things your therapist is currently assisting with?"
+                        : "If you were to talk to a therapist, what kinds of topics would you want to discuss?"
+                      }
+                    </h3>
+                    
+                    {/* Topic Grid */}
+                    <div className="grid grid-cols-2 gap-3">
+                      {therapyTopics.map((topic) => (
+                        <Button
+                          key={topic}
+                          onClick={() => handleTopicToggle(topic)}
+                          variant={selectedTopics.includes(topic) ? "romance" : "outline"}
+                          className="h-auto py-3 px-3 text-sm font-medium border-primary/20 hover:bg-primary/5 hover:border-primary whitespace-normal"
+                        >
+                          {topic}
+                        </Button>
+                      ))}
+                    </div>
+
+                    {/* Other Option */}
+                    <div className="space-y-2">
+                      <Button
+                        onClick={() => handleTopicToggle("Other")}
+                        variant={selectedTopics.includes("Other") ? "romance" : "outline"}
+                        className="w-full h-auto py-3 text-sm font-medium border-primary/20 hover:bg-primary/5 hover:border-primary"
+                      >
+                        Other
+                      </Button>
+                      
+                      {selectedTopics.includes("Other") && (
+                        <Textarea
+                          placeholder="Describe what you'd like to work on..."
+                          value={otherTopic}
+                          onChange={(e) => setOtherTopic(e.target.value)}
+                          className="min-h-[80px] border-primary/20 focus:border-primary"
+                        />
+                      )}
+                    </div>
+
+                    {/* Next Button */}
+                    <Button
+                      onClick={handleSetupComplete}
+                      disabled={selectedTopics.length === 0}
+                      variant="romance"
+                      className="w-full"
+                    >
+                      Complete Setup
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="text-center space-y-2">
         <h1 className="text-2xl font-bold bg-gradient-romance bg-clip-text text-transparent">
@@ -336,7 +556,7 @@ const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userPro
             <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center cursor-pointer hover:bg-primary/20 transition-colors">
               <InfoDialog
                 title="Therapy Companion"
-                description="Prepare thoughtful questions for therapy and reflect on your insights to maximize your relationship growth."
+                description="Prepare thoughtful questions for therapy and reflect on your insights to maximize your relationship growth. DISCLAIMER: Purposely is not a mental health professional and does not provide mental health advice. For professional guidance, please consult a licensed mental health professional. If you're having thoughts of suicide, call 911 or contact the National Suicide Prevention Lifeline at 988."
               />
             </div>
           </div>
