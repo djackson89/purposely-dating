@@ -275,7 +275,7 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
 
   // AI-powered date suggestions based on user profile
   const getPersonalizedDates = () => {
-    const baseIdeas = [
+    const allDateIdeas = [
       {
         name: "Cozy Coffee & Deep Conversation",
         description: "Find a quiet café with comfortable seating for meaningful talks",
@@ -323,18 +323,126 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
         mood: ["Outdoor", "Active"],
         loveLanguageMatch: ["Quality Time", "Physical Touch"],
         icon: Sparkles
+      },
+      {
+        name: "Wine Tasting Experience",
+        description: "Sample different wines and learn about wine pairing",
+        budget: "High",
+        mood: ["Sophisticated", "Relaxed"],
+        loveLanguageMatch: ["Quality Time", "Words of Affirmation"],
+        icon: Coffee
+      },
+      {
+        name: "Farmers Market & Brunch",
+        description: "Browse local vendors then cook a meal together",
+        budget: "Medium",
+        mood: ["Casual", "Interactive"],
+        loveLanguageMatch: ["Acts of Service", "Quality Time"],
+        icon: Heart
+      },
+      {
+        name: "Bookstore & Poetry Reading",
+        description: "Browse books together and attend a literary event",
+        budget: "Low",
+        mood: ["Intellectual", "Intimate"],
+        loveLanguageMatch: ["Words of Affirmation", "Quality Time"],
+        icon: Sparkles
+      },
+      {
+        name: "Mini Golf & Ice Cream",
+        description: "Play a fun round of mini golf followed by sweet treats",
+        budget: "Low",
+        mood: ["Playful", "Fun"],
+        loveLanguageMatch: ["Quality Time", "Physical Touch"],
+        icon: Coffee
+      },
+      {
+        name: "Beach Day Escape",
+        description: "Relax by the water with games, music, and good conversation",
+        budget: "Low",
+        mood: ["Relaxed", "Outdoor"],
+        loveLanguageMatch: ["Quality Time", "Physical Touch"],
+        icon: Heart
+      },
+      {
+        name: "Pottery Class Date",
+        description: "Get your hands dirty creating something beautiful together",
+        budget: "Medium",
+        mood: ["Creative", "Interactive"],
+        loveLanguageMatch: ["Quality Time", "Acts of Service"],
+        icon: Sparkles
+      },
+      {
+        name: "Food Truck Adventure",
+        description: "Try different cuisines from various food trucks around town",
+        budget: "Medium",
+        mood: ["Adventurous", "Casual"],
+        loveLanguageMatch: ["Quality Time", "Acts of Service"],
+        icon: Coffee
+      },
+      {
+        name: "Dancing Lesson",
+        description: "Learn a new dance style together in a fun, supportive environment",
+        budget: "Medium",
+        mood: ["Active", "Romantic"],
+        loveLanguageMatch: ["Physical Touch", "Quality Time"],
+        icon: Heart
+      },
+      {
+        name: "Museum & Lunch Date",
+        description: "Explore history or science exhibits then discuss over lunch",
+        budget: "Medium",
+        mood: ["Educational", "Thoughtful"],
+        loveLanguageMatch: ["Words of Affirmation", "Quality Time"],
+        icon: Sparkles
       }
     ];
 
-    // Filter based on personality and love language
-    const filteredIdeas = baseIdeas.filter(idea => {
+    // Filter based on user preferences
+    let filteredIdeas = allDateIdeas;
+    
+    if (datingPreferences) {
+      // Filter based on liked activities
+      const userLikes = [...datingPreferences.likedActivities, ...datingPreferences.customLikes];
+      const userDislikes = [...datingPreferences.dislikedActivities, ...datingPreferences.customDislikes];
+      
+      filteredIdeas = allDateIdeas.filter(idea => {
+        // Check if idea matches user's liked activities
+        const matchesLikes = userLikes.some(like => 
+          idea.name.toLowerCase().includes(like.toLowerCase()) ||
+          idea.description.toLowerCase().includes(like.toLowerCase()) ||
+          idea.mood.some(mood => mood.toLowerCase().includes(like.toLowerCase()))
+        );
+        
+        // Check if idea conflicts with dislikes
+        const conflictsWithDislikes = userDislikes.some(dislike =>
+          idea.name.toLowerCase().includes(dislike.toLowerCase()) ||
+          idea.description.toLowerCase().includes(dislike.toLowerCase())
+        );
+        
+        // Prefer ideas that match likes and don't conflict with dislikes
+        return matchesLikes || (!conflictsWithDislikes && Math.random() > 0.3);
+      });
+    }
+
+    // Further filter based on personality and love language
+    const personalityFiltered = filteredIdeas.filter(idea => {
       if (userProfile.personalityType.includes("Introspective") && idea.mood.includes("Intimate")) return true;
       if (userProfile.personalityType.includes("Adventurous") && idea.mood.includes("Outdoor")) return true;
       if (idea.loveLanguageMatch.includes(userProfile.loveLanguage)) return true;
-      return false;
+      return Math.random() > 0.4; // Include some random variety
     });
 
-    return showMoreSuggestions ? filteredIdeas : filteredIdeas.slice(0, 3);
+    // Return appropriate number based on showMoreSuggestions
+    return showMoreSuggestions ? personalityFiltered : personalityFiltered.slice(0, 3);
+  };
+
+  // Reset preferences functionality
+  const resetPreferences = () => {
+    setDatingPreferences(null);
+    setShowDatingOnboarding(true);
+    setShowFavorites(false);
+    localStorage.removeItem('datingPreferences');
   };
 
   const personalizedDates = getPersonalizedDates();
@@ -649,14 +757,24 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
                 />
               </div>
             </div>
-            <Button 
-              onClick={() => setShowFavorites(true)}
-              variant="ghost"
-              size="sm"
-              className="text-primary hover:text-primary/80"
-            >
-              Favorites ({favoriteDates.length})
-            </Button>
+            <div className="flex items-center space-x-3">
+              <Button 
+                onClick={resetPreferences}
+                variant="ghost"
+                size="sm"
+                className="text-muted-foreground hover:text-primary"
+              >
+                Reset Preferences
+              </Button>
+              <Button 
+                onClick={() => setShowFavorites(true)}
+                variant="ghost"
+                size="sm"
+                className="text-primary hover:text-primary/80"
+              >
+                Favorites ({favoriteDates.length})
+              </Button>
+            </div>
           </div>
           
           <Card className="shadow-romance border-primary/20">
