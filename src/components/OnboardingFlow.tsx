@@ -246,7 +246,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
                   variant={isSelected ? "romance" : "outline"}
                   className={`w-full justify-start transition-all duration-300 ${
                     isSelected 
-                      ? "shadow-romance text-amber-900 font-semibold" 
+                      ? "shadow-romance text-burgundy font-semibold" 
                       : "hover:bg-primary/5 hover:border-primary hover:shadow-soft"
                   }`}
                 >

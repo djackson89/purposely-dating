@@ -36,6 +36,9 @@ All colors MUST be HSL. Romance palette with warm pinks, corals, and creams.
     --accent: 14 78% 70%; /* Warm coral */
     --accent-foreground: 0 0% 100%;
 
+    /* Burgundy Color */
+    --burgundy: 345 75% 30%; /* Deep burgundy */
+
     /* Status Colors */
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
