@@ -133,6 +133,10 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
   const [customChecklistItems, setCustomChecklistItems] = useState<CustomChecklistItem[]>([]);
   const [showChecklistEditor, setShowChecklistEditor] = useState(false);
 
+  // Local Events state
+  const [searchLocation, setSearchLocation] = useState('');
+  const [visibleLocalEvents, setVisibleLocalEvents] = useState(6);
+
   // Load dating preferences, favorites, and data from localStorage/database on mount
   useEffect(() => {
     const savedPreferences = localStorage.getItem('datingPreferences');
@@ -940,205 +944,306 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
   };
 
   // AI-powered local events based on user preferences
-  const getPersonalizedLocalEvents = () => {
+  const getPersonalizedLocalEvents = (count: number = 6) => {
+    const locationPrefix = searchLocation.trim() 
+      ? `${searchLocation} - ` 
+      : (searchLocation === '' ? 'Local - ' : 'America - ');
+    
     const allLocalEvents = [
       // Nightlife & Party Events
       {
-        name: "Club Remix - EDM Night",
+        name: `${locationPrefix}Club Remix - EDM Night`,
         type: "Nightlife",
-        distance: "0.7 miles",
+        distance: searchLocation ? "Various locations" : "0.7 miles",
         categories: ["nightclub", "night club", "dancing", "clubbing", "party", "drinks", "nightlife", "edm", "music"],
         mood: ["Energetic", "Social", "Party"]
       },
       {
-        name: "Rooftop Bar Happy Hour",
-        type: "Social Drinks",
-        distance: "1.1 miles", 
-        categories: ["bar", "drinks", "nightlife", "cocktails", "social", "rooftop", "happy hour"],
-        mood: ["Sophisticated", "Social", "Nightlife"]
+        name: `${locationPrefix}Rooftop Cocktail Lounge`,
+        type: "Nightlife",
+        distance: searchLocation ? "Various locations" : "1.2 miles",
+        categories: ["bar", "cocktails", "rooftop", "drinks", "nightlife", "upscale", "romantic"],
+        mood: ["Romantic", "Upscale", "Social"]
       },
       {
-        name: "Karaoke Night at The Lounge",
-        type: "Entertainment",
-        distance: "0.9 miles",
-        categories: ["karaoke", "singing", "nightlife", "party", "fun", "social", "entertainment"],
-        mood: ["Fun", "Social", "Party"]
-      },
-      
-      // Home & Cozy Events
-      {
-        name: "Netflix Watch Party Meetup",
-        type: "Social Gathering",
-        distance: "1.5 miles",
-        categories: ["netflix", "movies", "home", "cozy", "social", "indoor", "tv"],
-        mood: ["Relaxed", "Social", "Home"]
-      },
-      {
-        name: "Board Game Café Night",
-        type: "Gaming",
-        distance: "0.8 miles",
-        categories: ["gaming", "games", "indoor", "café", "social", "board games", "fun"],
-        mood: ["Fun", "Interactive", "Social"]
-      },
-      {
-        name: "Video Game Tournament",
-        type: "Gaming",
-        distance: "2.0 miles",
-        categories: ["gaming", "video games", "tournament", "competitive", "indoor", "social"],
-        mood: ["Competitive", "Social", "Fun"]
+        name: `${locationPrefix}Jazz & Wine Night`,
+        type: "Nightlife",
+        distance: searchLocation ? "Various locations" : "0.5 miles",
+        categories: ["jazz", "wine", "music", "intimate", "nightlife", "sophisticated"],
+        mood: ["Intimate", "Sophisticated", "Musical"]
       },
       
-      // Music & Live Events  
+      // Cultural & Arts Events
       {
-        name: "Jazz Night at The Blue Note",
-        type: "Music",
-        distance: "0.8 miles",
-        categories: ["jazz", "music", "live", "performance", "sophisticated", "nightlife"],
-        mood: ["Sophisticated", "Cultural", "Musical"]
-      },
-      {
-        name: "Live Rock Concert",
-        type: "Music",
-        distance: "1.8 miles",
-        categories: ["concert", "music", "live", "performance", "rock", "nightlife", "energetic"],
-        mood: ["Energetic", "Musical", "Social"]
-      },
-      {
-        name: "Open Mic Night",
-        type: "Performance",
-        distance: "1.2 miles",
-        categories: ["music", "performance", "singing", "acoustic", "intimate", "local"],
-        mood: ["Intimate", "Musical", "Social"]
-      },
-      
-      // Food & Dining
-      {
-        name: "Weekend Farmer's Market",
-        type: "Food & Culture", 
-        distance: "1.2 miles",
-        categories: ["farmers market", "food", "local", "outdoor", "fresh", "community"],
-        mood: ["Casual", "Outdoor", "Cultural"]
-      },
-      {
-        name: "Food Truck Festival",
-        type: "Food Event",
-        distance: "1.7 miles",
-        categories: ["food trucks", "food", "festival", "variety", "outdoor", "casual"],
-        mood: ["Casual", "Outdoor", "Fun"]
-      },
-      {
-        name: "Wine Tasting Class",
-        type: "Learning",
-        distance: "2.1 miles",
-        categories: ["wine", "tasting", "sophisticated", "drinks", "class", "learning"],
-        mood: ["Sophisticated", "Learning", "Social"]
-      },
-      
-      // Active & Outdoor
-      {
-        name: "Group Hiking Meetup",
-        type: "Outdoor Activity",
-        distance: "3.2 miles",
-        categories: ["hiking", "outdoor", "nature", "exercise", "group", "adventure"],
-        mood: ["Active", "Outdoor", "Social"]
-      },
-      {
-        name: "Beach Volleyball League",
-        type: "Sports",
-        distance: "2.8 miles",
-        categories: ["beach", "volleyball", "sports", "outdoor", "competitive", "team"],
-        mood: ["Active", "Outdoor", "Social"]
-      },
-      {
-        name: "Outdoor Movie Screening",
-        type: "Entertainment",
-        distance: "1.9 miles",
-        categories: ["movies", "outdoor", "cinema", "community", "relaxed", "film"],
-        mood: ["Relaxed", "Outdoor", "Social"]
-      },
-      
-      // Arts & Culture
-      {
-        name: "Local Art Gallery Opening",
+        name: `${locationPrefix}Art Gallery Opening`,
         type: "Cultural",
-        distance: "1.4 miles",
-        categories: ["art", "gallery", "culture", "sophisticated", "creative", "local"],
-        mood: ["Cultural", "Sophisticated", "Social"]
+        distance: searchLocation ? "Various locations" : "1.8 miles",
+        categories: ["art", "gallery", "culture", "sophisticated", "creative", "artistic"],
+        mood: ["Creative", "Sophisticated", "Cultural"]
       },
       {
-        name: "Comedy Show Tonight",
+        name: `${locationPrefix}Local Theater Performance`,
+        type: "Cultural",
+        distance: searchLocation ? "Various locations" : "2.1 miles",
+        categories: ["theater", "drama", "performance", "culture", "artistic", "entertainment"],
+        mood: ["Cultural", "Artistic", "Entertainment"]
+      },
+      {
+        name: `${locationPrefix}Poetry Reading & Coffee`,
+        type: "Cultural",
+        distance: searchLocation ? "Various locations" : "0.9 miles",
+        categories: ["poetry", "literary", "coffee", "intimate", "intellectual", "creative"],
+        mood: ["Intimate", "Intellectual", "Creative"]
+      },
+      
+      // Outdoor & Adventure Events
+      {
+        name: `${locationPrefix}Sunset Hiking Trail`,
+        type: "Outdoor",
+        distance: searchLocation ? "Various locations" : "3.2 miles",
+        categories: ["hiking", "outdoor", "nature", "sunset", "adventure", "active"],
+        mood: ["Active", "Natural", "Romantic"]
+      },
+      {
+        name: `${locationPrefix}Farmers Market Tour`,
+        type: "Outdoor",
+        distance: searchLocation ? "Various locations" : "1.4 miles",
+        categories: ["farmers market", "food", "local", "outdoor", "fresh", "community"],
+        mood: ["Community", "Fresh", "Local"]
+      },
+      {
+        name: `${locationPrefix}Kayaking Adventure`,
+        type: "Outdoor",
+        distance: searchLocation ? "Various locations" : "4.7 miles",
+        categories: ["kayaking", "water", "adventure", "outdoor", "active", "nature"],
+        mood: ["Active", "Adventure", "Nature"]
+      },
+      
+      // Food & Dining Events
+      {
+        name: `${locationPrefix}Wine Tasting Experience`,
+        type: "Food & Drink",
+        distance: searchLocation ? "Various locations" : "1.6 miles",
+        categories: ["wine", "tasting", "sophisticated", "romantic", "upscale", "culinary"],
+        mood: ["Sophisticated", "Romantic", "Culinary"]
+      },
+      {
+        name: `${locationPrefix}Cooking Class for Couples`,
+        type: "Food & Drink",
+        distance: searchLocation ? "Various locations" : "2.3 miles",
+        categories: ["cooking", "class", "food", "interactive", "fun", "skill-building"],
+        mood: ["Interactive", "Fun", "Skill-building"]
+      },
+      {
+        name: `${locationPrefix}Food Truck Festival`,
+        type: "Food & Drink",
+        distance: searchLocation ? "Various locations" : "1.9 miles",
+        categories: ["food truck", "festival", "casual", "variety", "outdoor", "social"],
+        mood: ["Casual", "Social", "Variety"]
+      },
+      
+      // Entertainment & Gaming
+      {
+        name: `${locationPrefix}Arcade & Retro Gaming`,
         type: "Entertainment",
-        distance: "1.0 miles",
-        categories: ["comedy", "show", "entertainment", "laughs", "performance", "fun"],
-        mood: ["Fun", "Entertainment", "Social"]
+        distance: searchLocation ? "Various locations" : "1.1 miles",
+        categories: ["arcade", "gaming", "fun", "nostalgic", "interactive", "playful"],
+        mood: ["Playful", "Nostalgic", "Fun"]
       },
       {
-        name: "Poetry Reading Night",
-        type: "Literary",
-        distance: "1.6 miles",
-        categories: ["poetry", "reading", "literature", "intimate", "intellectual", "culture"],
-        mood: ["Intimate", "Intellectual", "Cultural"]
+        name: `${locationPrefix}Trivia Night Competition`,
+        type: "Entertainment",
+        distance: searchLocation ? "Various locations" : "0.8 miles",
+        categories: ["trivia", "competition", "intellectual", "social", "fun", "bar"],
+        mood: ["Intellectual", "Social", "Competitive"]
+      },
+      {
+        name: `${locationPrefix}Comedy Show Night`,
+        type: "Entertainment",
+        distance: searchLocation ? "Various locations" : "1.7 miles",
+        categories: ["comedy", "laughs", "entertainment", "fun", "social", "humor"],
+        mood: ["Funny", "Entertainment", "Social"]
+      },
+      
+      // Fitness & Wellness
+      {
+        name: `${locationPrefix}Couples Yoga Session`,
+        type: "Wellness",
+        distance: searchLocation ? "Various locations" : "1.3 miles",
+        categories: ["yoga", "wellness", "couples", "relaxing", "mindful", "health"],
+        mood: ["Relaxing", "Mindful", "Healthy"]
+      },
+      {
+        name: `${locationPrefix}Dance Class Workshop`,
+        type: "Wellness",
+        distance: searchLocation ? "Various locations" : "2.0 miles",
+        categories: ["dance", "class", "active", "fun", "social", "skill-building"],
+        mood: ["Active", "Fun", "Social"]
+      },
+      {
+        name: `${locationPrefix}Spa & Wellness Day`,
+        type: "Wellness",
+        distance: searchLocation ? "Various locations" : "2.8 miles",
+        categories: ["spa", "wellness", "relaxing", "pampering", "romantic", "luxury"],
+        mood: ["Relaxing", "Luxury", "Romantic"]
+      },
+      
+      // Unique & Seasonal Events
+      {
+        name: `${locationPrefix}Night Market Adventure`,
+        type: "Unique",
+        distance: searchLocation ? "Various locations" : "1.5 miles",
+        categories: ["night market", "food", "shopping", "cultural", "unique", "social"],
+        mood: ["Cultural", "Unique", "Social"]
+      },
+      {
+        name: `${locationPrefix}Rooftop Stargazing`,
+        type: "Unique",
+        distance: searchLocation ? "Various locations" : "2.4 miles",
+        categories: ["stargazing", "romantic", "peaceful", "unique", "night", "astronomy"],
+        mood: ["Romantic", "Peaceful", "Unique"]
+      },
+      {
+        name: `${locationPrefix}Vintage Market Browsing`,
+        type: "Unique",
+        distance: searchLocation ? "Various locations" : "1.8 miles",
+        categories: ["vintage", "shopping", "unique", "retro", "browsing", "creative"],
+        mood: ["Unique", "Creative", "Browsing"]
+      },
+      
+      // Music & Live Events
+      {
+        name: `${locationPrefix}Live Music at Local Venue`,
+        type: "Music",
+        distance: searchLocation ? "Various locations" : "1.0 miles",
+        categories: ["live music", "concert", "local", "entertainment", "social", "acoustic"],
+        mood: ["Musical", "Entertainment", "Local"]
+      },
+      {
+        name: `${locationPrefix}Karaoke Night Challenge`,
+        type: "Music",
+        distance: searchLocation ? "Various locations" : "0.6 miles",
+        categories: ["karaoke", "singing", "fun", "social", "entertainment", "interactive"],
+        mood: ["Fun", "Social", "Interactive"]
+      },
+      {
+        name: `${locationPrefix}Open Mic Coffee House`,
+        type: "Music",
+        distance: searchLocation ? "Various locations" : "1.2 miles",
+        categories: ["open mic", "coffee", "intimate", "creative", "local", "acoustic"],
+        mood: ["Intimate", "Creative", "Local"]
+      },
+      
+      // Sports & Recreation
+      {
+        name: `${locationPrefix}Mini Golf Tournament`,
+        type: "Recreation",
+        distance: searchLocation ? "Various locations" : "2.5 miles",
+        categories: ["mini golf", "fun", "competitive", "casual", "games", "interactive"],
+        mood: ["Fun", "Competitive", "Casual"]
+      },
+      {
+        name: `${locationPrefix}Bowling League Night`,
+        type: "Recreation",
+        distance: searchLocation ? "Various locations" : "1.9 miles",
+        categories: ["bowling", "sports", "casual", "social", "competitive", "fun"],
+        mood: ["Casual", "Social", "Competitive"]
+      },
+      {
+        name: `${locationPrefix}Rock Climbing Experience`,
+        type: "Recreation",
+        distance: searchLocation ? "Various locations" : "3.8 miles",
+        categories: ["rock climbing", "adventure", "active", "challenging", "outdoor", "fitness"],
+        mood: ["Active", "Adventure", "Challenging"]
+      },
+      
+      // Educational & Learning
+      {
+        name: `${locationPrefix}Museum Exhibition Tour`,
+        type: "Educational",
+        distance: searchLocation ? "Various locations" : "2.2 miles",
+        categories: ["museum", "educational", "cultural", "learning", "sophisticated", "art"],
+        mood: ["Educational", "Cultural", "Sophisticated"]
+      },
+      {
+        name: `${locationPrefix}Language Exchange Meetup`,
+        type: "Educational",
+        distance: searchLocation ? "Various locations" : "1.4 miles",
+        categories: ["language", "learning", "cultural", "social", "educational", "international"],
+        mood: ["Educational", "Cultural", "Social"]
+      },
+      {
+        name: `${locationPrefix}History Walking Tour`,
+        type: "Educational",
+        distance: searchLocation ? "Various locations" : "1.7 miles",
+        categories: ["history", "walking", "educational", "local", "cultural", "guided"],
+        mood: ["Educational", "Cultural", "Local"]
       }
     ];
 
-    // Use similar scoring system as date suggestions
+    // Score events based on user preferences if available
     if (!datingPreferences) {
-      return allLocalEvents.slice(0, 6); // Show 6 events by default
+      return allLocalEvents.slice(0, count);
     }
 
-    const userLikes = [...datingPreferences.likedActivities, ...datingPreferences.customLikes];
-    const userDislikes = [...datingPreferences.dislikedActivities, ...datingPreferences.customDislikes];
-    
-    // Score each local event based on user preferences
     const scoredEvents = allLocalEvents.map(event => {
       let score = 0;
       
-      // High priority: Direct matches with user's liked activities
-      userLikes.forEach(like => {
-        const likeWords = like.toLowerCase().split(' ');
-        likeWords.forEach(word => {
-          // Check if any category contains the word
-          if (event.categories.some(cat => cat.includes(word) || word.includes(cat))) {
-            score += 10; // High score for category matches
-          }
-          // Check name and type
-          if (event.name.toLowerCase().includes(word) || event.type.toLowerCase().includes(word)) {
-            score += 8;
-          }
-          // Check moods
-          if (event.mood.some(mood => mood.toLowerCase().includes(word) || word.includes(mood.toLowerCase()))) {
-            score += 6;
+      // Check against liked activities
+      if (datingPreferences.likedActivities) {
+        datingPreferences.likedActivities.forEach(activity => {
+          if (event.categories.some(cat => cat.toLowerCase().includes(activity.toLowerCase()))) {
+            score += 3;
           }
         });
-      });
+      }
       
-      // Penalty for conflicting with dislikes
-      userDislikes.forEach(dislike => {
-        const dislikeWords = dislike.toLowerCase().split(' ');
-        dislikeWords.forEach(word => {
-          if (event.categories.some(cat => cat.includes(word) || word.includes(cat))) {
-            score -= 15; // Heavy penalty for disliked activities
-          }
-          if (event.name.toLowerCase().includes(word) || event.type.toLowerCase().includes(word)) {
-            score -= 10;
+      // Check against custom likes
+      if (datingPreferences.customLikes) {
+        datingPreferences.customLikes.forEach(activity => {
+          if (event.categories.some(cat => cat.toLowerCase().includes(activity.toLowerCase()))) {
+            score += 3;
           }
         });
-      });
+      }
+      
+      // Check against disliked activities (negative score)
+      if (datingPreferences.dislikedActivities) {
+        datingPreferences.dislikedActivities.forEach(activity => {
+          if (event.categories.some(cat => cat.toLowerCase().includes(activity.toLowerCase()))) {
+            score -= 2;
+          }
+        });
+      }
+      
+      // Check against custom dislikes (negative score)
+      if (datingPreferences.customDislikes) {
+        datingPreferences.customDislikes.forEach(activity => {
+          if (event.categories.some(cat => cat.toLowerCase().includes(activity.toLowerCase()))) {
+            score -= 2;
+          }
+        });
+      }
       
       return { ...event, score };
     });
-    
+
     // Sort by score and filter out negative scores
     const sortedEvents = scoredEvents
       .filter(event => event.score >= 0)
       .sort((a, b) => b.score - a.score);
     
-    // Return top 6 events
-    return sortedEvents.slice(0, 6);
+    // Return requested number of events
+    return sortedEvents.slice(0, count);
   };
 
-  const localExperiences = getPersonalizedLocalEvents();
+  const localExperiences = getPersonalizedLocalEvents(visibleLocalEvents);
   const personalizedDates = getPersonalizedDates();
+
+  // Show more local events functionality
+  const showMoreLocalEvents = () => {
+    setVisibleLocalEvents(prev => prev + 6);
+  };
 
   const sections = [
     { id: 'prospects', label: 'Dating Prospects', icon: Users },
@@ -1637,10 +1742,38 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
             <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center cursor-pointer hover:bg-primary/20 transition-colors">
               <InfoDialog
                 title="Local Events"
-                description="Discover exciting activities and hidden gems in your area to create unforgettable experiences together."
+                description="Discover exciting activities and hidden gems in your area to create unforgettable experiences together. Search by city or zip code to explore events anywhere."
               />
             </div>
           </div>
+
+          {/* Location Search Input */}
+          <Card className="shadow-soft border-primary/10">
+            <CardContent className="pt-6">
+              <div className="space-y-2">
+                <Label htmlFor="location-search" className="text-sm font-medium">
+                  Search Location (City or Zip Code)
+                </Label>
+                <Input
+                  id="location-search"
+                  value={searchLocation}
+                  onChange={(e) => {
+                    setSearchLocation(e.target.value);
+                    setVisibleLocalEvents(6); // Reset visible events when location changes
+                  }}
+                  placeholder="Enter city name or zip code (e.g., New York, NY or 10001)"
+                  className="w-full"
+                />
+                <p className="text-xs text-muted-foreground">
+                  {searchLocation.trim() 
+                    ? `Showing events for: ${searchLocation}` 
+                    : "Showing local events (or nationwide if location access not granted)"
+                  }
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
           <Card className="shadow-romance border-primary/20">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
@@ -1650,7 +1783,10 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground">
-                Discover exciting activities near you
+                {searchLocation.trim() 
+                  ? `Discover exciting activities in ${searchLocation}` 
+                  : "Discover exciting activities near you"
+                }
               </p>
             </CardContent>
           </Card>
@@ -1666,6 +1802,15 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
                       <MapPin className="w-3 h-3 mr-1" />
                       {experience.distance}
                     </p>
+                    {experience.mood && (
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {experience.mood.slice(0, 2).map((mood, moodIndex) => (
+                          <Badge key={moodIndex} variant="outline" className="text-xs">
+                            {mood}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
                   </div>
                   <Button variant="outline" size="sm">
                     Details
@@ -1675,9 +1820,26 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
             </Card>
           ))}
 
+          {/* See More Button */}
+          {visibleLocalEvents < 30 && ( // Limit to reasonable number
+            <div className="text-center">
+              <Button 
+                onClick={showMoreLocalEvents}
+                variant="outline"
+                size="sm"
+                className="w-full"
+              >
+                See More Events
+              </Button>
+            </div>
+          )}
+
           <div className="text-center p-4">
             <p className="text-xs text-muted-foreground">
-              Local experience matching requires location services & API integration
+              {searchLocation.trim() 
+                ? "Events shown are representative examples for the selected location" 
+                : "Local experience matching requires location services & API integration"
+              }
             </p>
           </div>
         </div>
