@@ -7,10 +7,14 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar, MapPin, Sparkles, Heart, Users, Coffee, Plus, ChevronDown, ChevronUp, Eye, EyeOff, ThumbsUp, ThumbsDown, HelpCircle, Trash2, Share } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Calendar, MapPin, Sparkles, Heart, Users, Coffee, Plus, ChevronDown, ChevronUp, Eye, EyeOff, ThumbsUp, ThumbsDown, HelpCircle, Trash2, Share, Clock, User, CalendarPlus, Edit, Save, X } from 'lucide-react';
 import { HeartIcon } from '@/components/ui/heart-icon';
 import { InfoDialog } from '@/components/ui/info-dialog';
 import { useRelationshipAI } from '@/hooks/useRelationshipAI';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { toast } from 'sonner';
 import DatingPreferencesOnboarding, { DatingPreferences } from '@/components/DatingPreferencesOnboarding';
 
 interface OnboardingData {
@@ -28,6 +32,23 @@ interface DatingProspect {
   attractiveness: number[];
   flags: { [key: string]: 'green' | 'red' | 'unsure' };
   isExpanded: boolean;
+}
+
+interface UpcomingDate {
+  id: string;
+  prospect_id: string | null;
+  location: string;
+  date_time: string;
+  checklist: {
+    babySitter: boolean;
+    outfit: boolean;
+    hairStyling: boolean;
+    backgroundCheck: boolean;
+    emergencyCash: boolean;
+    weatherCheck: boolean;
+  };
+  notes?: string;
+  prospectNickname?: string;
 }
 
 const flagMetrics = [
@@ -78,6 +99,7 @@ interface DateConciergeModuleProps {
 }
 
 const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }) => {
+  const { user } = useAuth();
   const [activeSection, setActiveSection] = useState<'prospects' | 'suggestions' | 'local' | 'planning'>('prospects');
   
   // Dating Preferences state
@@ -96,7 +118,18 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
   const [aiContext, setAiContext] = useState<{ [key: string]: string }>({});
   const { getFlirtSuggestion, isLoading } = useRelationshipAI();
 
-  // Load dating preferences and favorites from localStorage on mount
+  // Upcoming Dates state
+  const [upcomingDates, setUpcomingDates] = useState<UpcomingDate[]>([]);
+  const [showAddDateForm, setShowAddDateForm] = useState(false);
+  const [editingDate, setEditingDate] = useState<string | null>(null);
+  const [newDate, setNewDate] = useState({
+    prospect_id: '',
+    location: '',
+    date_time: '',
+    notes: ''
+  });
+
+  // Load dating preferences, favorites, and data from localStorage/database on mount
   useEffect(() => {
     const savedPreferences = localStorage.getItem('datingPreferences');
     if (savedPreferences) {
@@ -107,7 +140,13 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
     if (savedFavorites) {
       setFavoriteDates(JSON.parse(savedFavorites));
     }
-  }, []);
+
+    // Load prospects and upcoming dates from database
+    if (user) {
+      loadProspects();
+      loadUpcomingDates();
+    }
+  }, [user]);
 
   // Check if user needs dating onboarding when switching to suggestions
   useEffect(() => {
@@ -224,6 +263,154 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
     const newAiContext = { ...aiContext };
     delete newAiContext[prospectId];
     setAiContext(newAiContext);
+  };
+
+  // Load prospects from database
+  const loadProspects = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('dating_prospects')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('overall_ranking');
+      
+      if (error) throw error;
+      
+      const formattedProspects = data.map(prospect => ({
+        id: prospect.id,
+        nickname: prospect.nickname,
+        ranking: prospect.overall_ranking,
+        attractiveness: [prospect.attractiveness_rating || 5],
+        flags: (prospect.flags || {}) as { [key: string]: 'green' | 'red' | 'unsure' },
+        isExpanded: false
+      }));
+      
+      setProspects(formattedProspects);
+    } catch (error) {
+      console.error('Error loading prospects:', error);
+    }
+  };
+
+  // Load upcoming dates from database
+  const loadUpcomingDates = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('upcoming_dates')
+        .select(`
+          *,
+          dating_prospects (
+            nickname
+          )
+        `)
+        .eq('user_id', user.id)
+        .order('date_time');
+      
+      if (error) throw error;
+      
+      const formattedDates = data.map(date => ({
+        id: date.id,
+        prospect_id: date.prospect_id,
+        location: date.location,
+        date_time: date.date_time,
+        checklist: date.checklist as UpcomingDate['checklist'],
+        notes: date.notes,
+        prospectNickname: date.dating_prospects?.nickname || 'Unknown'
+      }));
+      
+      setUpcomingDates(formattedDates);
+    } catch (error) {
+      console.error('Error loading upcoming dates:', error);
+    }
+  };
+
+  // Add new upcoming date
+  const addUpcomingDate = async () => {
+    if (!user || !newDate.location || !newDate.date_time) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+    
+    try {
+      const { data, error } = await supabase
+        .from('upcoming_dates')
+        .insert({
+          user_id: user.id,
+          prospect_id: newDate.prospect_id || null,
+          location: newDate.location,
+          date_time: newDate.date_time,
+          notes: newDate.notes
+        })
+        .select()
+        .single();
+      
+      if (error) throw error;
+      
+      toast.success('Date added successfully!');
+      setNewDate({ prospect_id: '', location: '', date_time: '', notes: '' });
+      setShowAddDateForm(false);
+      loadUpcomingDates();
+    } catch (error) {
+      console.error('Error adding date:', error);
+      toast.error('Failed to add date');
+    }
+  };
+
+  // Update checklist item
+  const updateChecklistItem = async (dateId: string, item: string, checked: boolean) => {
+    if (!user) return;
+    
+    const dateToUpdate = upcomingDates.find(d => d.id === dateId);
+    if (!dateToUpdate) return;
+    
+    const updatedChecklist = {
+      ...dateToUpdate.checklist,
+      [item]: checked
+    };
+    
+    try {
+      const { error } = await supabase
+        .from('upcoming_dates')
+        .update({ checklist: updatedChecklist })
+        .eq('id', dateId)
+        .eq('user_id', user.id);
+      
+      if (error) throw error;
+      
+      // Update local state
+      setUpcomingDates(upcomingDates.map(date =>
+        date.id === dateId
+          ? { ...date, checklist: updatedChecklist }
+          : date
+      ));
+    } catch (error) {
+      console.error('Error updating checklist:', error);
+      toast.error('Failed to update checklist');
+    }
+  };
+
+  // Delete upcoming date
+  const deleteUpcomingDate = async (dateId: string) => {
+    if (!user) return;
+    
+    try {
+      const { error } = await supabase
+        .from('upcoming_dates')
+        .delete()
+        .eq('id', dateId)
+        .eq('user_id', user.id);
+      
+      if (error) throw error;
+      
+      toast.success('Date deleted successfully');
+      loadUpcomingDates();
+    } catch (error) {
+      console.error('Error deleting date:', error);
+      toast.error('Failed to delete date');
+    }
   };
 
   // Dating Preferences handlers
@@ -753,12 +940,6 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
 
   const localExperiences = getPersonalizedLocalEvents();
   const personalizedDates = getPersonalizedDates();
-
-  const planningBoard = [
-    { task: "Choose restaurant", assigned: "Me", completed: false },
-    { task: "Make reservation", assigned: "Partner", completed: true },
-    { task: "Plan conversation topics", assigned: "Me", completed: false }
-  ];
 
   const sections = [
     { id: 'prospects', label: 'Dating Prospects', icon: Users },
@@ -1303,65 +1484,190 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
         </div>
       )}
 
-      {/* Shared Planning Board */}
+      {/* Upcoming Dates Planning */}
       {activeSection === 'planning' && (
         <div className="space-y-4 animate-fade-in-up">
           {/* Section Heading */}
           <div className="flex items-center justify-center space-x-2">
-            <h2 className="text-xl font-semibold text-primary">Planning Board</h2>
+            <h2 className="text-xl font-semibold text-primary">Upcoming Dates</h2>
             <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center cursor-pointer hover:bg-primary/20 transition-colors">
               <InfoDialog
-                title="Planning Board"
-                description="Collaborate with your partner to plan the perfect date night and keep track of who's doing what."
+                title="Upcoming Dates"
+                description="Plan and track your upcoming dates. Choose who you're going with, set the location and time, and use the checklist to make sure you're prepared."
               />
             </div>
           </div>
-          <Card className="shadow-romance border-primary/20">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Users className="w-5 h-5 text-primary animate-heart-pulse" />
-                <span>Shared Planning Board</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Collaborate with your partner to plan the perfect date
-              </p>
-            </CardContent>
-          </Card>
-
+          
+          {/* Add New Date Button */}
           <Card className="shadow-soft border-primary/10">
-            <CardHeader>
-              <CardTitle className="text-lg">Next Date Night</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {planningBoard.map((item, index) => (
-                <div key={index} className="flex items-center space-x-3 p-3 bg-gradient-soft rounded-lg">
-                  <input 
-                    type="checkbox" 
-                    checked={item.completed}
-                    className="rounded border-primary"
-                    readOnly
-                  />
-                  <div className="flex-1">
-                    <p className={`text-sm ${item.completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
-                      {item.task}
-                    </p>
-                    <p className="text-xs text-muted-foreground">Assigned to: {item.assigned}</p>
+            <CardContent className="pt-6">
+              <Button 
+                onClick={() => setShowAddDateForm(!showAddDateForm)}
+                variant="romance" 
+                className="w-full"
+              >
+                <CalendarPlus className="w-4 h-4 mr-2" />
+                Add New Date
+              </Button>
+              
+              {/* Add Date Form */}
+              {showAddDateForm && (
+                <div className="mt-4 space-y-4 p-4 bg-muted/50 rounded-lg">
+                  {/* Who is it with */}
+                  <div>
+                    <Label className="text-sm font-medium mb-1 block">Who is it with?</Label>
+                    <Select value={newDate.prospect_id} onValueChange={(value) => setNewDate({...newDate, prospect_id: value})}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a dating prospect" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {prospects.map((prospect) => (
+                          <SelectItem key={prospect.id} value={prospect.id}>
+                            {prospect.nickname}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  {/* Where */}
+                  <div>
+                    <Label className="text-sm font-medium mb-1 block">Where</Label>
+                    <Input
+                      value={newDate.location}
+                      onChange={(e) => setNewDate({...newDate, location: e.target.value})}
+                      placeholder="Enter location"
+                    />
+                  </div>
+                  
+                  {/* What Time */}
+                  <div>
+                    <Label className="text-sm font-medium mb-1 block">What Time</Label>
+                    <Input
+                      type="datetime-local"
+                      value={newDate.date_time}
+                      onChange={(e) => setNewDate({...newDate, date_time: e.target.value})}
+                    />
+                  </div>
+                  
+                  {/* Notes */}
+                  <div>
+                    <Label className="text-sm font-medium mb-1 block">Notes (Optional)</Label>
+                    <Textarea
+                      value={newDate.notes}
+                      onChange={(e) => setNewDate({...newDate, notes: e.target.value})}
+                      placeholder="Any additional notes..."
+                      rows={3}
+                    />
+                  </div>
+                  
+                  <div className="flex space-x-2">
+                    <Button onClick={addUpcomingDate} size="sm">
+                      <Save className="w-4 h-4 mr-1" />
+                      Add Date
+                    </Button>
+                    <Button onClick={() => setShowAddDateForm(false)} variant="outline" size="sm">
+                      <X className="w-4 h-4 mr-1" />
+                      Cancel
+                    </Button>
                   </div>
                 </div>
-              ))}
-              <Button variant="romance" className="w-full mt-4">
-                Add New Task ✨
-              </Button>
+              )}
             </CardContent>
           </Card>
 
-          <div className="text-center p-4">
-            <p className="text-xs text-muted-foreground">
-              Real-time collaboration requires backend integration
-            </p>
-          </div>
+          {/* Upcoming Dates List */}
+          {upcomingDates.length === 0 ? (
+            <Card className="shadow-soft border-primary/10">
+              <CardContent className="pt-6 text-center">
+                <Calendar className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-muted-foreground">No upcoming dates yet!</p>
+                <p className="text-sm text-muted-foreground mt-2">
+                  Add your first date to start planning.
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            upcomingDates.map((date) => (
+              <Card key={date.id} className="shadow-soft border-primary/10">
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <User className="w-5 h-5 text-primary" />
+                      <span className="text-lg">
+                        Date with {date.prospectNickname}
+                      </span>
+                    </div>
+                    <Button
+                      onClick={() => deleteUpcomingDate(date.id)}
+                      variant="ghost"
+                      size="sm"
+                      className="text-destructive hover:text-destructive/80"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Date Details */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="flex items-center space-x-2">
+                      <MapPin className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-sm">{date.location}</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Clock className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-sm">
+                        {new Date(date.date_time).toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {/* Notes */}
+                  {date.notes && (
+                    <div className="p-3 bg-muted/50 rounded-lg">
+                      <p className="text-sm text-muted-foreground">{date.notes}</p>
+                    </div>
+                  )}
+                  
+                  {/* Checklist */}
+                  <div>
+                    <h4 className="text-sm font-medium mb-3">Preparation Checklist</h4>
+                    <div className="grid grid-cols-2 gap-3">
+                      {Object.entries(date.checklist).map(([key, checked]) => {
+                        const labels = {
+                          babySitter: 'Baby Sitter',
+                          outfit: 'Outfit',
+                          hairStyling: 'Hair Styling',
+                          backgroundCheck: 'Background Check',
+                          emergencyCash: 'Emergency Cash',
+                          weatherCheck: 'Weather Check'
+                        };
+                        
+                        return (
+                          <div key={key} className="flex items-center space-x-2">
+                            <Checkbox
+                              id={`${date.id}-${key}`}
+                              checked={checked}
+                              onCheckedChange={(checkedState) => 
+                                updateChecklistItem(date.id, key, !!checkedState)
+                              }
+                            />
+                            <Label 
+                              htmlFor={`${date.id}-${key}`}
+                              className="text-sm cursor-pointer"
+                            >
+                              {labels[key as keyof typeof labels]}
+                            </Label>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
         </div>
       )}
     </div>
