@@ -393,9 +393,9 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
   const adjustQuestionDepth = async (originalQuestion: string, depth: number) => {
     try {
       const depthInstructions = {
-        0: "Create witty, sarcastic conversation starters (225 chars total max). Mix question types: scenario-based with multiple choice, general multiple choice, open-ended, and true/false. For multiple choice, format as: 'Question here?\nA. First option\nB. Second option\nC. Third option\nD. Fourth option'. Keep tone playful and slightly edgy.",
-        1: "Create balanced conversation starters (225 chars total max). Mix casual and thoughtful elements. For multiple choice, format as: 'Question here?\nA. First option\nB. Second option\nC. Third option\nD. Fourth option'. Keep tone engaging but not too intense.",
-        2: "Create psychologically sophisticated questions (225 chars total max) focusing on self-awareness, emotional patterns, and attachment styles. For multiple choice, format as: 'Question here?\nA. First option\nB. Second option\nC. Third option\nD. Fourth option'. Promote deep self-reflection."
+        0: "Transform this into a witty, sarcastic conversation starter (225 chars max). Mix between: 1) Multiple choice with format 'Question?\nA. Option\nB. Option\nC. Option\nD. Option', 2) Open-ended questions, 3) True/False statements. Keep tone playful and edgy. Vary the question type randomly.",
+        1: "Transform this into a balanced conversation starter (225 chars max). Mix between: 1) Multiple choice with format 'Question?\nA. Option\nB. Option\nC. Option\nD. Option', 2) Open-ended questions, 3) True/False statements. Keep tone engaging but moderate. Vary the question type randomly.",
+        2: "Transform this into a deep, psychological conversation starter (225 chars max). Mix between: 1) Multiple choice with format 'Question?\nA. Option\nB. Option\nC. Option\nD. Option', 2) Open-ended questions, 3) True/False statements. Focus on self-awareness and emotional intelligence. Vary the question type randomly."
       };
 
       const prompt = `Take this conversation starter: "${originalQuestion}" and ${depthInstructions[depth as keyof typeof depthInstructions]} Keep the core intent but adjust the tone and complexity. Return only the adjusted question.`;

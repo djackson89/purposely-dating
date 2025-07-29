@@ -445,8 +445,17 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
               size="lg"
               className="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-4"
             >
-              <span>{isLoading ? '...' : 'Next'}</span>
-              <span>→</span>
+              {isLoading ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                  <span className="hidden sm:inline">Loading</span>
+                </>
+              ) : (
+                <>
+                  <span>Next</span>
+                  <span>→</span>
+                </>
+              )}
             </Button>
           </div>
 
