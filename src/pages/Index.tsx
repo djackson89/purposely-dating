@@ -84,7 +84,7 @@ const Index = () => {
     setShowPaywallModal(true);
   };
 
-  // Show onboarding if not completed (unless user is premium)
+  // Show onboarding if not completed and not premium
   if (!subscriptionLoading && !subscription.subscribed && (!hasCompletedOnboarding || !userProfile)) {
     return <OnboardingFlow onComplete={handleOnboardingComplete} />;
   }
