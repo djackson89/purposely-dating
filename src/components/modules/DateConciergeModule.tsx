@@ -156,38 +156,90 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
   }, [activeSection, datingPreferences]);
   
   // Dating Prospects functions
-  const addNewProspect = () => {
-    if (!newProspectNickname.trim()) return;
+  const addNewProspect = async () => {
+    if (!newProspectNickname.trim() || !user) {
+      toast.error('Please enter a prospect name');
+      return;
+    }
     
-    const newProspect: DatingProspect = {
-      id: Date.now().toString(),
-      nickname: newProspectNickname,
-      ranking: newProspectRanking,
-      attractiveness: [5],
-      flags: {},
-      isExpanded: false
-    };
-    
-    setProspects([...prospects, newProspect]);
-    setNewProspectNickname('');
-    setNewProspectRanking(prospects.length + 1);
-    setShowAddForm(false);
+    try {
+      const { data, error } = await supabase
+        .from('dating_prospects')
+        .insert({
+          user_id: user.id,
+          nickname: newProspectNickname,
+          overall_ranking: newProspectRanking,
+          attractiveness_rating: 5,
+          flags: {},
+          notes: ''
+        })
+        .select()
+        .single();
+      
+      if (error) throw error;
+      
+      toast.success('Prospect added successfully!');
+      setNewProspectNickname('');
+      setNewProspectRanking(prospects.length + 1);
+      setShowAddForm(false);
+      loadProspects(); // Reload prospects from database
+    } catch (error) {
+      console.error('Error adding prospect:', error);
+      toast.error('Failed to add prospect');
+    }
   };
 
-  const updateProspectFlag = (prospectId: string, metric: string, value: 'green' | 'red' | 'unsure') => {
-    setProspects(prospects.map(prospect => 
-      prospect.id === prospectId 
-        ? { ...prospect, flags: { ...prospect.flags, [metric]: value } }
-        : prospect
-    ));
+  const updateProspectFlag = async (prospectId: string, metric: string, value: 'green' | 'red' | 'unsure') => {
+    if (!user) return;
+    
+    const prospect = prospects.find(p => p.id === prospectId);
+    if (!prospect) return;
+    
+    const updatedFlags = { ...prospect.flags, [metric]: value };
+    
+    try {
+      const { error } = await supabase
+        .from('dating_prospects')
+        .update({ flags: updatedFlags })
+        .eq('id', prospectId)
+        .eq('user_id', user.id);
+      
+      if (error) throw error;
+      
+      // Update local state
+      setProspects(prospects.map(p => 
+        p.id === prospectId 
+          ? { ...p, flags: updatedFlags }
+          : p
+      ));
+    } catch (error) {
+      console.error('Error updating prospect flag:', error);
+      toast.error('Failed to update flag');
+    }
   };
 
-  const updateProspectAttractiveness = (prospectId: string, value: number[]) => {
-    setProspects(prospects.map(prospect => 
-      prospect.id === prospectId 
-        ? { ...prospect, attractiveness: value }
-        : prospect
-    ));
+  const updateProspectAttractiveness = async (prospectId: string, value: number[]) => {
+    if (!user) return;
+    
+    try {
+      const { error } = await supabase
+        .from('dating_prospects')
+        .update({ attractiveness_rating: value[0] })
+        .eq('id', prospectId)
+        .eq('user_id', user.id);
+      
+      if (error) throw error;
+      
+      // Update local state
+      setProspects(prospects.map(prospect => 
+        prospect.id === prospectId 
+          ? { ...prospect, attractiveness: value }
+          : prospect
+      ));
+    } catch (error) {
+      console.error('Error updating attractiveness:', error);
+      toast.error('Failed to update attractiveness');
+    }
   };
 
   const toggleProspectExpansion = (prospectId: string) => {
@@ -253,16 +305,24 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
     }
   };
 
-  const deleteProspect = (prospectId: string) => {
-    setProspects(prospects.filter(p => p.id !== prospectId));
-    // Clean up related state
-    const newShowMoreMetrics = { ...showMoreMetrics };
-    delete newShowMoreMetrics[prospectId];
-    setShowMoreMetrics(newShowMoreMetrics);
+  const deleteProspect = async (prospectId: string) => {
+    if (!user) return;
     
-    const newAiContext = { ...aiContext };
-    delete newAiContext[prospectId];
-    setAiContext(newAiContext);
+    try {
+      const { error } = await supabase
+        .from('dating_prospects')
+        .delete()
+        .eq('id', prospectId)
+        .eq('user_id', user.id);
+      
+      if (error) throw error;
+      
+      toast.success('Prospect deleted successfully');
+      loadProspects(); // Reload prospects from database
+    } catch (error) {
+      console.error('Error deleting prospect:', error);
+      toast.error('Failed to delete prospect');
+    }
   };
 
   // Load prospects from database
@@ -1518,14 +1578,18 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
                     <Label className="text-sm font-medium mb-1 block">Who is it with?</Label>
                     <Select value={newDate.prospect_id} onValueChange={(value) => setNewDate({...newDate, prospect_id: value})}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select a dating prospect" />
+                        <SelectValue placeholder={prospects.length === 0 ? "Add dating prospects first" : "Select a dating prospect"} />
                       </SelectTrigger>
                       <SelectContent>
-                        {prospects.map((prospect) => (
-                          <SelectItem key={prospect.id} value={prospect.id}>
-                            {prospect.nickname}
-                          </SelectItem>
-                        ))}
+                        {prospects.length === 0 ? (
+                          <SelectItem value="" disabled>No dating prospects available</SelectItem>
+                        ) : (
+                          prospects.map((prospect) => (
+                            <SelectItem key={prospect.id} value={prospect.id}>
+                              {prospect.nickname}
+                            </SelectItem>
+                          ))
+                        )}
                       </SelectContent>
                     </Select>
                   </div>
