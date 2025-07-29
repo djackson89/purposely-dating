@@ -8,6 +8,7 @@ import { User, Camera, Edit, Heart, Calendar, MessageCircle, LogOut, Settings, C
 import { HeartIcon } from '@/components/ui/heart-icon';
 import { InfoDialog } from '@/components/ui/info-dialog';
 import { AboutDialog } from '@/components/ui/about-dialog';
+import { PrivacyPolicyDialog } from '@/components/ui/privacy-policy-dialog';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useCamera } from '@/hooks/useCamera';
@@ -337,9 +338,7 @@ const ProfileModule: React.FC<ProfileModuleProps> = ({ userProfile, onProfileUpd
             <Settings className="w-4 h-4 mr-2" />
             Device & App Settings
           </Button>
-          <Button variant="soft" className="w-full justify-start">
-            Privacy Settings
-          </Button>
+          <PrivacyPolicyDialog />
           <AboutDialog />
           <Button 
             variant="destructive" 
