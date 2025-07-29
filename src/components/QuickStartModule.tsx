@@ -88,9 +88,9 @@ const QuickStartModule: React.FC<QuickStartProps> = ({ onNavigateToModule }) => 
   };
 
   return (
-    <div className="w-full px-4 mb-6">
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-foreground mb-2">Quick Start</h2>
+    <div className="w-full px-4 mb-12">
+      <div className="mb-6 flex items-baseline gap-3">
+        <h2 className="text-2xl font-bold text-foreground">Quick Start</h2>
         <p className="text-muted-foreground">Choose your journey</p>
       </div>
       
