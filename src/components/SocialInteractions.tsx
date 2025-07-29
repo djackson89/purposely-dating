@@ -45,87 +45,101 @@ const SocialInteractions: React.FC<SocialInteractionsProps> = ({ scenarioIndex }
     setReplyingTo(null);
   };
 
-  const CommentItem: React.FC<{ comment: any; isReply?: boolean }> = ({ comment, isReply = false }) => (
-    <div className={`space-y-2 ${isReply ? 'ml-8 pl-4 border-l-2 border-primary/20' : ''}`}>
-      <Card className="bg-gradient-soft border-primary/10">
-        <CardContent className="p-3">
-          <div className="flex justify-between items-start mb-2">
-            <div className="flex-1">
-              <p className="text-sm text-foreground leading-relaxed">{comment.content}</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
-              </p>
+  const CommentItem: React.FC<{ comment: any; isReply?: boolean }> = ({ comment, isReply = false }) => {
+    // Determine display name and avatar
+    const displayName = comment.bot_user_id ? comment.bot_users?.name || 'Bot User' : 'Anonymous User';
+    const isBot = !!comment.bot_user_id;
+    
+    return (
+      <div className={`space-y-2 ${isReply ? 'ml-8 pl-4 border-l-2 border-primary/20' : ''}`}>
+        <Card className="bg-gradient-soft border-primary/10">
+          <CardContent className="p-3">
+            <div className="flex justify-between items-start mb-2">
+              <div className="flex-1">
+                <div className="flex items-center space-x-2 mb-1">
+                  <span className="text-sm font-medium text-foreground">{displayName}</span>
+                  {isBot && (
+                    <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                      Bot
+                    </span>
+                  )}
+                </div>
+                <p className="text-sm text-foreground leading-relaxed">{comment.content}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
+                </p>
+              </div>
             </div>
-          </div>
-          
-          <div className="flex items-center space-x-4 mt-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => toggleCommentLike(comment.id)}
-              className={`h-auto p-1 ${comment.is_liked_by_user ? 'text-primary' : 'text-muted-foreground'}`}
-            >
-              <ThumbsUp className={`w-3 h-3 mr-1 ${comment.is_liked_by_user ? 'fill-current' : ''}`} />
-              <span className="text-xs">{comment.likes_count || 0}</span>
-            </Button>
             
-            {!isReply && (
+            <div className="flex items-center space-x-4 mt-2">
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
-                className="h-auto p-1 text-muted-foreground"
+                onClick={() => toggleCommentLike(comment.id)}
+                className={`h-auto p-1 ${comment.is_liked_by_user ? 'text-primary' : 'text-muted-foreground'}`}
               >
-                <MessageCircle className="w-3 h-3 mr-1" />
-                <span className="text-xs">Reply</span>
+                <ThumbsUp className={`w-3 h-3 mr-1 ${comment.is_liked_by_user ? 'fill-current' : ''}`} />
+                <span className="text-xs">{comment.likes_count || 0}</span>
               </Button>
-            )}
-          </div>
-          
-          {replyingTo === comment.id && (
-            <div className="mt-3 space-y-2">
-              <Textarea
-                placeholder="Write a reply..."
-                value={replyContent}
-                onChange={(e) => setReplyContent(e.target.value)}
-                className="min-h-[60px] text-sm"
-              />
-              <div className="flex space-x-2">
+              
+              {!isReply && (
                 <Button
-                  size="sm"
-                  onClick={() => handleSubmitReply(comment.id)}
-                  disabled={!replyContent.trim()}
-                  variant="romance"
-                >
-                  <Send className="w-3 h-3 mr-1" />
-                  Reply
-                </Button>
-                <Button
-                  size="sm"
                   variant="ghost"
-                  onClick={() => {
-                    setReplyingTo(null);
-                    setReplyContent('');
-                  }}
+                  size="sm"
+                  onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
+                  className="h-auto p-1 text-muted-foreground"
                 >
-                  Cancel
+                  <MessageCircle className="w-3 h-3 mr-1" />
+                  <span className="text-xs">Reply</span>
                 </Button>
-              </div>
+              )}
             </div>
-          )}
-        </CardContent>
-      </Card>
-      
-      {/* Render replies */}
-      {comment.replies && comment.replies.length > 0 && (
-        <div className="space-y-2">
-          {comment.replies.map((reply: any) => (
-            <CommentItem key={reply.id} comment={reply} isReply={true} />
-          ))}
-        </div>
-      )}
-    </div>
-  );
+            
+            {replyingTo === comment.id && (
+              <div className="mt-3 space-y-2">
+                <Textarea
+                  placeholder="Write a reply..."
+                  value={replyContent}
+                  onChange={(e) => setReplyContent(e.target.value)}
+                  className="min-h-[60px] text-sm"
+                />
+                <div className="flex space-x-2">
+                  <Button
+                    size="sm"
+                    onClick={() => handleSubmitReply(comment.id)}
+                    disabled={!replyContent.trim()}
+                    variant="romance"
+                  >
+                    <Send className="w-3 h-3 mr-1" />
+                    Reply
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => {
+                      setReplyingTo(null);
+                      setReplyContent('');
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+        
+        {/* Render replies */}
+        {comment.replies && comment.replies.length > 0 && (
+          <div className="space-y-2">
+            {comment.replies.map((reply: any) => (
+              <CommentItem key={reply.id} comment={reply} isReply={true} />
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className="space-y-4">

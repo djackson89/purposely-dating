@@ -4,7 +4,8 @@ import { useToast } from '@/hooks/use-toast';
 
 interface Comment {
   id: string;
-  user_id: string;
+  user_id: string | null;
+  bot_user_id: string | null;
   scenario_index: number;
   content: string;
   parent_comment_id: string | null;
@@ -13,6 +14,11 @@ interface Comment {
   replies?: Comment[];
   likes_count: number;
   is_liked_by_user: boolean;
+  bot_user?: {
+    name: string;
+    avatar_url?: string;
+    bio?: string;
+  };
 }
 
 interface SocialStats {
@@ -49,12 +55,13 @@ export const useSocialInteractions = (scenarioIndex: number) => {
         .select('interaction_type')
         .eq('scenario_index', scenarioIndex);
 
-      // Load comments with likes count
+      // Load comments with likes count and bot user data
       const { data: commentsData } = await supabase
         .from('scenario_comments')
         .select(`
           *,
-          comment_likes(count)
+          comment_likes(count),
+          bot_users(name, avatar_url, bio)
         `)
         .eq('scenario_index', scenarioIndex)
         .order('created_at', { ascending: true });
