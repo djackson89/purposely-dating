@@ -52,6 +52,7 @@ All colors MUST be HSL. Romance palette with warm pinks, corals, and creams.
     --gradient-romance: linear-gradient(135deg, hsl(345, 83%, 50%), hsl(14, 78%, 55%)); /* Deeper, richer colors */
     --gradient-sunset: linear-gradient(135deg, hsl(345, 83%, 61%), hsl(25, 78%, 70%), hsl(45, 93%, 80%));
     --gradient-soft: linear-gradient(180deg, hsl(var(--background)), hsl(var(--muted)));
+    --gradient-burgundy: linear-gradient(135deg, hsl(345, 85%, 35%), hsl(345, 75%, 25%));
 
     /* Romantic Shadows */
     --shadow-romance: 0 10px 30px -10px hsl(var(--primary) / 0.3);

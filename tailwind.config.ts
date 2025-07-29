@@ -76,7 +76,8 @@ export default {
 			backgroundImage: {
 				'gradient-romance': 'var(--gradient-romance)',
 				'gradient-sunset': 'var(--gradient-sunset)',
-				'gradient-soft': 'var(--gradient-soft)'
+				'gradient-soft': 'var(--gradient-soft)',
+				'gradient-burgundy': 'var(--gradient-burgundy)'
 			},
 			boxShadow: {
 				'romance': 'var(--shadow-romance)',
