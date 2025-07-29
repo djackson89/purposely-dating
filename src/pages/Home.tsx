@@ -20,6 +20,7 @@ interface HomeProps {
   userProfile: OnboardingData;
   onNavigateToFlirtFuel: () => void;
   onNavigateToAIPractice: (scenario?: string) => void;
+  onNavigateToModule?: (module: string) => void;
 }
 
 // Module navigation mapping
@@ -29,7 +30,7 @@ const moduleNavigationMap = {
   'concierge': 'concierge'
 };
 
-const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavigateToAIPractice }) => {
+const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavigateToAIPractice, onNavigateToModule }) => {
   const [dailyQuestion, setDailyQuestion] = useState('');
   const [showQuestionInput, setShowQuestionInput] = useState(false);
   const [userQuestion, setUserQuestion] = useState('');
@@ -46,26 +47,41 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
 
   // Handle QuickStart module navigation
   const handleQuickStartNavigation = (module: string) => {
-    switch (module) {
-      case 'flirtfuel':
-        onNavigateToFlirtFuel();
-        break;
-      case 'therapy':
-        // For now, show a toast - proper navigation would need to be passed from Index
-        toast({
-          title: "Therapy Companion! 💝",
-          description: "Navigate via the bottom menu to access this feature!",
-        });
-        break;
-      case 'concierge':
-        // For now, show a toast - proper navigation would need to be passed from Index
-        toast({
-          title: "Date Planner! 📅",
-          description: "Navigate via the bottom menu to access this feature!",
-        });
-        break;
-      default:
-        onNavigateToFlirtFuel();
+    if (onNavigateToModule) {
+      switch (module) {
+        case 'flirtfuel':
+          onNavigateToModule('flirtfuel');
+          break;
+        case 'therapy':
+          onNavigateToModule('therapy');
+          break;
+        case 'concierge':
+          onNavigateToModule('concierge');
+          break;
+        default:
+          onNavigateToModule('flirtfuel');
+      }
+    } else {
+      // Fallback to existing behavior
+      switch (module) {
+        case 'flirtfuel':
+          onNavigateToFlirtFuel();
+          break;
+        case 'therapy':
+          toast({
+            title: "Therapy Companion! 💝",
+            description: "Navigate via the bottom menu to access this feature!",
+          });
+          break;
+        case 'concierge':
+          toast({
+            title: "Date Planner! 📅",
+            description: "Navigate via the bottom menu to access this feature!",
+          });
+          break;
+        default:
+          onNavigateToFlirtFuel();
+      }
     }
   };
 

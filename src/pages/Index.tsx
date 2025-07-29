@@ -112,10 +112,19 @@ const Index = () => {
     }
   };
 
+  const handleNavigateToModule = (module: string) => {
+    const validModules = ['home', 'flirtfuel', 'concierge', 'therapy', 'profile'] as const;
+    type ValidModule = typeof validModules[number];
+    
+    if (validModules.includes(module as ValidModule)) {
+      setActiveModule(module as ValidModule);
+    }
+  };
+
   const renderActiveModule = () => {
     switch (activeModule) {
       case 'home':
-        return <Home userProfile={userProfile} onNavigateToFlirtFuel={handleNavigateToFlirtFuel} onNavigateToAIPractice={handleNavigateToAIPractice} />;
+        return <Home userProfile={userProfile} onNavigateToFlirtFuel={handleNavigateToFlirtFuel} onNavigateToAIPractice={handleNavigateToAIPractice} onNavigateToModule={handleNavigateToModule} />;
       case 'flirtfuel':
         return <FlirtFuelModule userProfile={userProfile} />;
       case 'concierge':

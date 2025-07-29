@@ -115,11 +115,11 @@ const QuickStartModule: React.FC<QuickStartProps> = ({ onNavigateToModule }) => 
       {/* Progress indicator */}
       <div className="mb-6 flex justify-center">
         <div className="flex gap-1">
-          {Array.from({ length: Math.ceil(quickStartItems.length / 2) }).map((_, index) => (
+          {Array.from({ length: count }).map((_, index) => (
             <div
               key={index}
               className={`h-0.5 w-8 rounded-full transition-all duration-300 ${
-                index === Math.floor((current - 1) / 2) 
+                index === current - 1
                   ? 'bg-primary' 
                   : 'bg-muted-foreground/30'
               }`}
