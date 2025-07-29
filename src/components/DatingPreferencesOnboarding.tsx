@@ -20,7 +20,7 @@ interface DatingPreferencesOnboardingProps {
 }
 
 const predefinedActivities = [
-  "Going out to restaurants",
+  "Restaurants",
   "Movies", 
   "Hiking",
   "Netflix & Chill",

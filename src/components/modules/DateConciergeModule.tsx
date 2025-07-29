@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar, MapPin, Sparkles, Heart, Users, Coffee, Plus, ChevronDown, ChevronUp, Eye, EyeOff, ThumbsUp, ThumbsDown, HelpCircle, Trash2 } from 'lucide-react';
+import { Calendar, MapPin, Sparkles, Heart, Users, Coffee, Plus, ChevronDown, ChevronUp, Eye, EyeOff, ThumbsUp, ThumbsDown, HelpCircle, Trash2, Share } from 'lucide-react';
 import { HeartIcon } from '@/components/ui/heart-icon';
 import { InfoDialog } from '@/components/ui/info-dialog';
 import { useRelationshipAI } from '@/hooks/useRelationshipAI';
@@ -83,6 +83,9 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
   // Dating Preferences state
   const [datingPreferences, setDatingPreferences] = useState<DatingPreferences | null>(null);
   const [showDatingOnboarding, setShowDatingOnboarding] = useState(false);
+  const [favoriteDates, setFavoriteDates] = useState<any[]>([]);
+  const [showFavorites, setShowFavorites] = useState(false);
+  const [showMoreSuggestions, setShowMoreSuggestions] = useState(false);
   
   // Dating Prospects state
   const [prospects, setProspects] = useState<DatingProspect[]>([]);
@@ -93,11 +96,16 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
   const [aiContext, setAiContext] = useState<{ [key: string]: string }>({});
   const { getFlirtSuggestion, isLoading } = useRelationshipAI();
 
-  // Load dating preferences from localStorage on mount
+  // Load dating preferences and favorites from localStorage on mount
   useEffect(() => {
     const savedPreferences = localStorage.getItem('datingPreferences');
     if (savedPreferences) {
       setDatingPreferences(JSON.parse(savedPreferences));
+    }
+    
+    const savedFavorites = localStorage.getItem('favoriteDates');
+    if (savedFavorites) {
+      setFavoriteDates(JSON.parse(savedFavorites));
     }
   }, []);
 
@@ -229,6 +237,42 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
     setShowDatingOnboarding(false);
   };
 
+  // Favorites functionality
+  const addToFavorites = (date: any) => {
+    const newFavorites = [...favoriteDates, { ...date, id: Date.now() }];
+    setFavoriteDates(newFavorites);
+    localStorage.setItem('favoriteDates', JSON.stringify(newFavorites));
+  };
+
+  const removeFromFavorites = (dateId: number) => {
+    const newFavorites = favoriteDates.filter(date => date.id !== dateId);
+    setFavoriteDates(newFavorites);
+    localStorage.setItem('favoriteDates', JSON.stringify(newFavorites));
+  };
+
+  const isDateFavorited = (dateName: string) => {
+    return favoriteDates.some(favorite => favorite.name === dateName);
+  };
+
+  // Share functionality
+  const shareDateIdea = async (date: any) => {
+    const shareText = `${date.name} - ${date.description}\n\n-Let's try this soon, together. via Purposely App`;
+    
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: date.name,
+          text: shareText,
+        });
+      } else {
+        await navigator.clipboard.writeText(shareText);
+        alert('Date idea copied to clipboard!');
+      }
+    } catch (error) {
+      console.error('Error sharing:', error);
+    }
+  };
+
   // AI-powered date suggestions based on user profile
   const getPersonalizedDates = () => {
     const baseIdeas = [
@@ -255,16 +299,42 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
         mood: ["Cultural", "Thoughtful"],
         loveLanguageMatch: ["Quality Time", "Words of Affirmation"],
         icon: Sparkles
+      },
+      {
+        name: "Cooking Class Together",
+        description: "Learn to make a new cuisine side by side",
+        budget: "Medium",
+        mood: ["Interactive", "Fun"],
+        loveLanguageMatch: ["Quality Time", "Acts of Service"],
+        icon: Coffee
+      },
+      {
+        name: "Stargazing Night",
+        description: "Find a quiet spot away from city lights to watch the stars",
+        budget: "Low",
+        mood: ["Romantic", "Peaceful"],
+        loveLanguageMatch: ["Quality Time", "Physical Touch"],
+        icon: Heart
+      },
+      {
+        name: "Adventure Hike",
+        description: "Explore a scenic trail and enjoy nature together",
+        budget: "Low",
+        mood: ["Outdoor", "Active"],
+        loveLanguageMatch: ["Quality Time", "Physical Touch"],
+        icon: Sparkles
       }
     ];
 
     // Filter based on personality and love language
-    return baseIdeas.filter(idea => {
+    const filteredIdeas = baseIdeas.filter(idea => {
       if (userProfile.personalityType.includes("Introspective") && idea.mood.includes("Intimate")) return true;
       if (userProfile.personalityType.includes("Adventurous") && idea.mood.includes("Outdoor")) return true;
       if (idea.loveLanguageMatch.includes(userProfile.loveLanguage)) return true;
       return false;
-    }).slice(0, 3);
+    });
+
+    return showMoreSuggestions ? filteredIdeas : filteredIdeas.slice(0, 3);
   };
 
   const personalizedDates = getPersonalizedDates();
@@ -565,18 +635,28 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
         />
       )}
 
-      {/* AI Date Suggestions */}
-      {activeSection === 'suggestions' && !showDatingOnboarding && (
+          {/* AI Date Suggestions */}
+      {activeSection === 'suggestions' && !showDatingOnboarding && !showFavorites && (
         <div className="space-y-4 animate-fade-in-up">
           {/* Section Heading */}
-          <div className="flex items-center justify-center space-x-2">
-            <h2 className="text-xl font-semibold text-primary">Dating Planner</h2>
-            <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center cursor-pointer hover:bg-primary/20 transition-colors">
-              <InfoDialog
-                title="Dating Planner"
-                description="Get personalized date ideas perfectly tailored to your preferences, love language, and personality."
-              />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <h2 className="text-xl font-semibold text-primary">Dating Planner</h2>
+              <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center cursor-pointer hover:bg-primary/20 transition-colors">
+                <InfoDialog
+                  title="Dating Planner"
+                  description="Get personalized date ideas perfectly tailored to your preferences, love language, and personality."
+                />
+              </div>
             </div>
+            <Button 
+              onClick={() => setShowFavorites(true)}
+              variant="ghost"
+              size="sm"
+              className="text-primary hover:text-primary/80"
+            >
+              Favorites ({favoriteDates.length})
+            </Button>
           </div>
           
           <Card className="shadow-romance border-primary/20">
@@ -653,17 +733,120 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
                     ))}
                   </div>
                   <div className="flex space-x-2">
-                    <Button variant="romance" size="sm" className="flex-1">
-                      Plan This Date 💕
+                    <Button 
+                      variant="romance" 
+                      size="sm" 
+                      className="flex-1"
+                      onClick={() => shareDateIdea(date)}
+                    >
+                      <Share className="w-4 h-4 mr-1" />
+                      Send to A Friend
                     </Button>
-                    <Button variant="soft" size="sm">
-                      Save for Later
+                    <Button 
+                      variant={isDateFavorited(date.name) ? "default" : "soft"}
+                      size="sm"
+                      onClick={() => {
+                        if (isDateFavorited(date.name)) {
+                          const favoriteDate = favoriteDates.find(fav => fav.name === date.name);
+                          if (favoriteDate) removeFromFavorites(favoriteDate.id);
+                        } else {
+                          addToFavorites(date);
+                        }
+                      }}
+                    >
+                      <Heart className={`w-4 h-4 ${isDateFavorited(date.name) ? 'fill-current' : ''}`} />
                     </Button>
                   </div>
                 </CardContent>
               </Card>
             );
           })}
+
+          {/* See More Button */}
+          <div className="text-center">
+            <Button 
+              onClick={() => setShowMoreSuggestions(!showMoreSuggestions)}
+              variant="outline"
+              size="sm"
+            >
+              {showMoreSuggestions ? "Show Less" : "See More"}
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Favorites View */}
+      {activeSection === 'suggestions' && showFavorites && (
+        <div className="space-y-4 animate-fade-in-up">
+          {/* Favorites Header */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <h2 className="text-xl font-semibold text-primary">Favorites</h2>
+              <Badge variant="secondary">{favoriteDates.length}</Badge>
+            </div>
+            <Button 
+              onClick={() => setShowFavorites(false)}
+              variant="ghost"
+              size="sm"
+            >
+              Back to Suggestions
+            </Button>
+          </div>
+
+          {favoriteDates.length === 0 ? (
+            <Card className="shadow-soft border-primary/10">
+              <CardContent className="pt-6 text-center">
+                <Heart className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-muted-foreground">No favorite dates yet!</p>
+                <p className="text-sm text-muted-foreground mt-2">
+                  Heart some date ideas to save them here for later.
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            favoriteDates.map((date) => {
+              const IconComponent = date.icon;
+              return (
+                <Card key={date.id} className="shadow-soft border-primary/10 hover:shadow-romance transition-all duration-300">
+                  <CardHeader>
+                    <CardTitle className="flex items-center space-x-2">
+                      <IconComponent className="w-5 h-5 text-primary" />
+                      <span className="text-lg">{date.name}</span>
+                      <Badge variant="secondary">{date.budget}</Badge>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <p className="text-muted-foreground">{date.description}</p>
+                    <div className="flex flex-wrap gap-2">
+                      {date.mood.map((mood: string) => (
+                        <Badge key={mood} variant="outline" className="text-xs">
+                          {mood}
+                        </Badge>
+                      ))}
+                    </div>
+                    <div className="flex space-x-2">
+                      <Button 
+                        variant="romance" 
+                        size="sm" 
+                        className="flex-1"
+                        onClick={() => shareDateIdea(date)}
+                      >
+                        <Share className="w-4 h-4 mr-1" />
+                        Send to A Friend
+                      </Button>
+                      <Button 
+                        variant="outline"
+                        size="sm"
+                        onClick={() => removeFromFavorites(date.id)}
+                      >
+                        <Heart className="w-4 h-4 fill-current" />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })
+          )}
         </div>
       )}
 
