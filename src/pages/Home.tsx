@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useRelationshipAI } from '@/hooks/useRelationshipAI';
 import SocialInteractions from '@/components/SocialInteractions';
 import AdminBotPanel from '@/components/AdminBotPanel';
+import { usePopulateEngagement } from '@/hooks/usePopulateEngagement';
 
 interface OnboardingData {
   loveLanguage: string;
@@ -32,6 +33,7 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
   const [currentScenarioIndex, setCurrentScenarioIndex] = useState(0);
   const { toast } = useToast();
   const { getAIResponse } = useRelationshipAI();
+  const { populateEngagement, isPopulating } = usePopulateEngagement();
 
   // Relationship Talk conversation starters
   const relationshipTalkQuestions = [
@@ -244,6 +246,17 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
               
               {/* Social Interactions */}
               <SocialInteractions scenarioIndex={currentScenarioIndex} />
+              
+              {/* Quick Populate Button */}
+              <div className="border border-blue-200 bg-blue-50 p-3 rounded-lg">
+                <Button
+                  onClick={() => populateEngagement(currentScenarioIndex)}
+                  disabled={isPopulating}
+                  className="w-full bg-blue-600 hover:bg-blue-700"
+                >
+                  {isPopulating ? 'Adding Bot Comments...' : '🤖 Add 10 Bot Comments + 1400+ Likes'}
+                </Button>
+              </div>
               
               {/* Admin Bot Panel */}
               <AdminBotPanel scenarioIndex={currentScenarioIndex} />

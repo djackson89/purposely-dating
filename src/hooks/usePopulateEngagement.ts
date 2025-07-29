@@ -26,30 +26,39 @@ export const usePopulateEngagement = () => {
   const populateEngagement = async (scenarioIndex: number) => {
     setIsPopulating(true);
     try {
+      console.log('Starting engagement population for scenario:', scenarioIndex);
+      
       // First, create bot users if they don't exist
       const { data: existingBots } = await supabase
         .from('bot_users')
         .select('*')
         .limit(10);
 
+      console.log('Existing bots:', existingBots?.length || 0);
       let bots = existingBots || [];
 
       if (bots.length < 10) {
-        // Create missing bots
+        // Create missing bots with a system user ID
+        const systemUserId = '00000000-0000-0000-0000-000000000000';
         const botsToCreate = botNames.slice(bots.length).map(name => ({
           name: name,
           bio: `Empowering women to know their worth 💖`,
           personality_traits: { supportive: true, direct: true },
           is_active: true,
-          created_by: '00000000-0000-0000-0000-000000000000'
+          created_by: systemUserId
         }));
 
+        console.log('Creating bots:', botsToCreate.length);
+        
         const { data: newBots, error: botError } = await supabase
           .from('bot_users')
           .insert(botsToCreate)
           .select();
 
-        if (botError) throw botError;
+        if (botError) {
+          console.error('Bot creation error:', botError);
+          throw botError;
+        }
         bots = [...bots, ...(newBots || [])];
       }
 
