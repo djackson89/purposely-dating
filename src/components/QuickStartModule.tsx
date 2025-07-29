@@ -14,7 +14,6 @@ import {
   Heart, 
   Calendar
 } from 'lucide-react';
-import conversationHeartsImage from '@/assets/conversation-hearts.png';
 
 interface QuickStartProps {
   onNavigateToModule: (module: string) => void;
@@ -23,11 +22,10 @@ interface QuickStartProps {
 const quickStartItems = [
   {
     id: 'conversation-starters',
-    category: '', // Remove category for this item
+    category: 'Communication',
     title: 'Ditch the Small Talk',
     subtitle: 'Deep conversations',
-    icon: 'custom', // Custom image instead of icon
-    customImage: conversationHeartsImage,
+    icon: MessageCircle,
     gradient: 'from-pink-500 via-rose-500 to-burgundy',
     action: 'flirtfuel'
   },
@@ -90,12 +88,10 @@ const QuickStartModule: React.FC<QuickStartProps> = ({ onNavigateToModule }) => 
   };
 
   return (
-    <div className="w-full px-4 mb-20">
-      <div className="mb-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-foreground">Quick Start</h2>
-          <p className="text-muted-foreground">Choose your journey</p>
-        </div>
+    <div className="w-full px-4 mb-6">
+      <div className="mb-6">
+        <h2 className="text-2xl font-bold text-foreground mb-2">Quick Start</h2>
+        <p className="text-muted-foreground">Choose your journey</p>
       </div>
       
       <Carousel
@@ -109,11 +105,11 @@ const QuickStartModule: React.FC<QuickStartProps> = ({ onNavigateToModule }) => 
           {quickStartItems.map((item) => (
             <CarouselItem key={item.id} className="pl-2 basis-1/2 sm:basis-1/3 md:basis-1/4">
               <Card 
-                className="cursor-pointer transition-all duration-300 hover:scale-105 border-0 overflow-hidden h-48 sm:h-44 shadow-2xl hover:shadow-3xl"
+                className="cursor-pointer transition-all duration-300 hover:scale-105 border-0 overflow-hidden h-44 shadow-2xl hover:shadow-3xl"
                 onClick={() => handleCardClick(item)}
               >
                 <CardContent className="p-0 h-full relative">
-                  <div className={`h-full bg-gradient-to-br ${item.gradient} p-4 sm:p-6 flex flex-col justify-between text-white relative overflow-hidden shadow-inner`}>
+                  <div className={`h-full bg-gradient-to-br ${item.gradient} p-6 flex flex-col justify-between text-white relative overflow-hidden shadow-inner`}>
                     {/* Enhanced background decorative elements */}
                     <div className="absolute inset-0 opacity-20">
                       <div className="absolute top-0 right-0 w-20 h-20 rounded-full bg-white/40 -translate-y-8 translate-x-8 blur-sm"></div>
@@ -124,37 +120,22 @@ const QuickStartModule: React.FC<QuickStartProps> = ({ onNavigateToModule }) => 
                     
                     {/* Header with category */}
                     <div className="relative">
-                      {item.category && (
-                        <div className="bg-white/25 backdrop-blur-sm rounded-full px-2 sm:px-3 py-1 sm:py-1.5 w-fit mb-2 sm:mb-4 shadow-lg">
-                          <span className="text-xs font-semibold text-white">{item.category}</span>
-                        </div>
-                      )}
+                      <div className="bg-white/25 backdrop-blur-sm rounded-full px-3 py-1.5 w-fit mb-4 shadow-lg">
+                        <span className="text-xs font-semibold text-white">{item.category}</span>
+                      </div>
                     </div>
                     
-                    {/* Icon container - large image extending from top to middle */}
-                    <div className="relative flex-1 flex flex-col">
-                      {item.icon === 'custom' && item.customImage ? (
-                        <div className="flex-1 flex items-start justify-center pt-2">
-                          <img 
-                            src={item.customImage} 
-                            alt={item.title}
-                            className="w-24 h-24 sm:w-28 sm:h-28 object-contain drop-shadow-lg mix-blend-normal" 
-                            style={{ backgroundColor: 'transparent' }}
-                          />
-                        </div>
-                      ) : (
-                        <div className="flex-1 flex items-center justify-center">
-                          <div className="bg-white/25 backdrop-blur-sm rounded-full p-2 sm:p-3 shadow-xl">
-                            <item.icon className="w-16 h-16 sm:w-20 sm:h-20 text-white drop-shadow-lg" />
-                          </div>
-                        </div>
-                      )}
+                    {/* Icon container */}
+                    <div className="relative flex-1 flex items-center justify-center">
+                      <div className="bg-white/25 backdrop-blur-sm rounded-full p-5 shadow-xl">
+                        <item.icon className="w-10 h-10 text-white drop-shadow-lg" />
+                      </div>
                     </div>
                     
                     {/* Content */}
                     <div className="relative">
-                      <h3 className="font-bold text-sm sm:text-base leading-tight mb-1 sm:mb-2 drop-shadow-lg">{item.title}</h3>
-                      <p className="text-xs sm:text-sm text-white/90 leading-tight drop-shadow-md">{item.subtitle}</p>
+                      <h3 className="font-bold text-base leading-tight mb-2 drop-shadow-lg">{item.title}</h3>
+                      <p className="text-sm text-white/90 leading-tight drop-shadow-md">{item.subtitle}</p>
                     </div>
                   </div>
                 </CardContent>
