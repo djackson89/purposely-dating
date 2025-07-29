@@ -58,6 +58,7 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
   
   // State for tracking question transformations
   const [isTransforming, setIsTransforming] = useState(false);
+  const [isDepthChanging, setIsDepthChanging] = useState(false);
   
   const { getFlirtSuggestion, getAIResponse, isLoading } = useRelationshipAI();
 
@@ -393,38 +394,30 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
   const adjustQuestionDepth = async (originalQuestion: string, depth: number) => {
     try {
       const depthInstructions = {
-        0: "Transform this into a witty, sarcastic conversation starter. Make it playful and slightly edgy. Use exactly 150 characters or less. Return ONLY the transformed question, nothing else.",
-        1: "Transform this into a balanced conversation starter. Make it engaging but moderate. Use exactly 150 characters or less. Return ONLY the transformed question, nothing else.", 
-        2: "Transform this into a deep, psychological conversation starter focusing on self-awareness. Use exactly 150 characters or less. Return ONLY the transformed question, nothing else."
+        0: "Make this witty, sarcastic, and playfully humorous. Keep it under 120 characters. Return ONLY the transformed question.",
+        1: "Make this engaging and balanced. Keep it under 120 characters. Return ONLY the transformed question.", 
+        2: "Make this deep and psychological. Keep it under 120 characters. Return ONLY the transformed question."
       };
 
-      const prompt = `Transform this conversation starter: "${originalQuestion}"\n\n${depthInstructions[depth as keyof typeof depthInstructions]}\n\nIMPORTANT: Return ONLY the transformed question. Do not add explanations, multiple questions, or extra text.`;
+      const prompt = `Transform: "${originalQuestion}"\n\n${depthInstructions[depth as keyof typeof depthInstructions]}\n\nIMPORTANT: Return ONLY the question, no explanations.`;
       
       const response = await getAIResponse(prompt, userProfile, 'general');
       
-      // Aggressive cleaning to ensure we only get one question
-      let cleanedResponse = response.trim()
-        .replace(/^["']|["']$/g, '') // Remove quotes
-        .replace(/\n\n+/g, '\n') // Remove multiple line breaks
-        .split('\n')[0] // Take only the first line if multiple exist
-        .replace(/[.]{2,}/g, '.') // Remove multiple periods
+      // Fast, aggressive cleaning
+      let result = response.trim()
+        .replace(/^["']|["']$/g, '')
+        .split('\n')[0]
         .trim();
       
-      // If it's longer than 200 chars, truncate at the last complete sentence
-      if (cleanedResponse.length > 200) {
-        const lastSentence = cleanedResponse.substring(0, 200).lastIndexOf('?');
-        if (lastSentence > 0) {
-          cleanedResponse = cleanedResponse.substring(0, lastSentence + 1);
-        } else {
-          cleanedResponse = cleanedResponse.substring(0, 200) + '?';
-        }
+      if (result.length > 150) {
+        result = result.substring(0, 147) + '...';
       }
       
-      return cleanedResponse;
+      return result || originalQuestion;
       
     } catch (error) {
       console.error('Error adjusting question depth:', error);
-      return originalQuestion; // Fallback to original
+      return originalQuestion;
     }
   };
 
@@ -482,6 +475,8 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
     const transformCurrentQuestions = async () => {
       if (currentStarters.length === 0) return;
       
+      setIsDepthChanging(true);
+      
       try {
         // Get the base questions (original, unmodified versions)
         let baseQuestions: (string | { statement: string; options: { key: string; text: string; }[] })[];
@@ -495,25 +490,36 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
         
         // If we have base questions, transform them to the new depth level
         if (baseQuestions.length > 0) {
-          const transformedQuestions = await Promise.all(
-            baseQuestions.map(async (question) => {
-              if (typeof question === 'string') {
-                return await adjustQuestionDepth(question, depthLevel[0]);
-              } else {
-                // For complex multiple choice questions, transform only the statement
-                const transformedStatement = await adjustQuestionDepth(question.statement, depthLevel[0]);
-                return {
-                  statement: transformedStatement,
-                  options: question.options
-                };
-              }
-            })
-          );
+          // Process in smaller batches for faster response
+          const batchSize = 3;
+          const transformedQuestions = [];
+          
+          for (let i = 0; i < baseQuestions.length; i += batchSize) {
+            const batch = baseQuestions.slice(i, i + batchSize);
+            const batchResults = await Promise.all(
+              batch.map(async (question) => {
+                if (typeof question === 'string') {
+                  return await adjustQuestionDepth(question, depthLevel[0]);
+                } else {
+                  // For complex multiple choice questions, transform only the statement
+                  const transformedStatement = await adjustQuestionDepth(question.statement, depthLevel[0]);
+                  return {
+                    statement: transformedStatement,
+                    options: question.options
+                  };
+                }
+              })
+            );
+            transformedQuestions.push(...batchResults);
+          }
+          
           setCurrentStarters(transformedQuestions);
         }
       } catch (error) {
         console.error('Error transforming questions for depth:', error);
         // Keep current questions as fallback
+      } finally {
+        setIsDepthChanging(false);
       }
     };
     
@@ -1165,7 +1171,7 @@ Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid gen
           showManage={showManage}
           newCategoryName={newCategoryName}
           depthLevel={depthLevel}
-          isLoading={isLoading}
+          isLoading={isLoading || isDepthChanging}
           isFullScreen={isFullScreen}
           touchStart={touchStart}
           touchEnd={touchEnd}

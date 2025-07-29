@@ -385,9 +385,14 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
               <div className="space-y-3">
                 <div className="flex justify-between items-center text-sm">
                   <span className="font-medium text-primary">Question Depth</span>
-                  <span className="text-xs text-muted-foreground">
-                    {depthLevel[0] === 0 ? 'Light' : depthLevel[0] === 1 ? 'Casual' : 'Deep'}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    {isLoading && (
+                      <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                    )}
+                    <span className="text-xs text-muted-foreground">
+                      {depthLevel[0] === 0 ? 'Light' : depthLevel[0] === 1 ? 'Casual' : 'Deep'}
+                    </span>
+                  </div>
                 </div>
                 <div className="px-2">
                   <Slider
