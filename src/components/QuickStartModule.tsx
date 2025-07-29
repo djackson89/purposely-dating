@@ -14,6 +14,7 @@ import {
   Heart, 
   Calendar
 } from 'lucide-react';
+import conversationCardsImage from '@/assets/conversation-cards.png';
 
 interface QuickStartProps {
   onNavigateToModule: (module: string) => void;
@@ -25,7 +26,8 @@ const quickStartItems = [
     category: 'Communication',
     title: 'Ditch the Small Talk',
     subtitle: 'Deep conversations',
-    icon: MessageCircle,
+    icon: 'custom', // Custom image instead of icon
+    customImage: conversationCardsImage,
     gradient: 'from-pink-500 via-rose-500 to-burgundy',
     action: 'flirtfuel'
   },
@@ -128,7 +130,15 @@ const QuickStartModule: React.FC<QuickStartProps> = ({ onNavigateToModule }) => 
                     {/* Icon container */}
                     <div className="relative flex-1 flex items-center justify-center">
                       <div className="bg-white/25 backdrop-blur-sm rounded-full p-3 sm:p-5 shadow-xl">
-                        <item.icon className="w-8 h-8 sm:w-10 sm:h-10 text-white drop-shadow-lg" />
+                        {item.icon === 'custom' && item.customImage ? (
+                          <img 
+                            src={item.customImage} 
+                            alt={item.title}
+                            className="w-8 h-8 sm:w-10 sm:h-10 object-contain drop-shadow-lg" 
+                          />
+                        ) : (
+                          <item.icon className="w-8 h-8 sm:w-10 sm:h-10 text-white drop-shadow-lg" />
+                        )}
                       </div>
                     </div>
                     
