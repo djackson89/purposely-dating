@@ -31,18 +31,8 @@ interface FlirtFuelModuleProps {
 
 const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
   const [activeSection, setActiveSection] = useState<'starters' | 'practice' | 'textgenie'>('starters');
-  const [masterCategory, setMasterCategory] = useState('Date Night');
-  const [showCategorySelection, setShowCategorySelection] = useState(true);
-  const [selectedCategory, setSelectedCategory] = useState('Relationship Talk');
-  const [customKeywords, setCustomKeywords] = useState('');
-  const [currentStarters, setCurrentStarters] = useState<(string | { statement: string; options: { key: string; text: string; }[] })[]>([]);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [isCustom, setIsCustom] = useState(false);
-  const [customCategories, setCustomCategories] = useState<{[key: string]: (string | { statement: string; options: { key: string; text: string; }[] })[]}>({});
-  const [savedPacks, setSavedPacks] = useState<{[key: string]: boolean}>({});
-  const [showRename, setShowRename] = useState(false);
-  const [showManage, setShowManage] = useState(false);
-  const [newCategoryName, setNewCategoryName] = useState('');
+  
+  // Practice partner state
   const [practicePartnerActive, setPracticePartnerActive] = useState(false);
   const [practiceMessages, setPracticeMessages] = useState<Array<{ role: 'user' | 'ai'; message: string }>>([]);
   const [currentPracticeMessage, setCurrentPracticeMessage] = useState('');
@@ -51,18 +41,6 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
   const [currentScenarioText, setCurrentScenarioText] = useState('');
   const [sessionFeedback, setSessionFeedback] = useState('');
   const [showFeedback, setShowFeedback] = useState(false);
-  const [isFullScreen, setIsFullScreen] = useState(false);
-  const [touchStart, setTouchStart] = useState({ x: 0, y: 0 });
-  const [touchEnd, setTouchEnd] = useState({ x: 0, y: 0 });
-  const [depthLevel, setDepthLevel] = useState([1]); // 0=Light, 1=Casual, 2=Deep
-  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
-  
-  // State for tracking question transformations
-  const [isTransforming, setIsTransforming] = useState(false);
-  const [isDepthChanging, setIsDepthChanging] = useState(false);
-  
-  // Optimized cache for pre-loaded questions
-  const [questionCache, setQuestionCache] = useState<Map<string, any>>(new Map());
   
   
   const { getFlirtSuggestion, getAIResponse, isLoading } = useRelationshipAI();
@@ -1281,47 +1259,7 @@ Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid gen
         <ConversationStartersSection
           userProfile={userProfile}
           conversationStarters={conversationStarters}
-          masterCategory={masterCategory}
-          selectedCategory={selectedCategory}
-          customKeywords={customKeywords}
-          currentStarters={currentStarters}
-          currentQuestionIndex={currentQuestionIndex}
-          isCustom={isCustom}
-          customCategories={customCategories}
-          savedPacks={savedPacks}
-          showRename={showRename}
-          showManage={showManage}
-          newCategoryName={newCategoryName}
-          depthLevel={depthLevel}
-          isLoading={isLoading || isDepthChanging}
-          isFullScreen={isFullScreen}
-          touchStart={touchStart}
-          touchEnd={touchEnd}
-          showCategorySelection={showCategorySelection}
-          setMasterCategory={setMasterCategory}
-          setShowCategorySelection={setShowCategorySelection}
-          setSelectedCategory={setSelectedCategory}
-          setCustomKeywords={setCustomKeywords}
-          setCurrentQuestionIndex={setCurrentQuestionIndex}
-          setShowRename={setShowRename}
-          setShowManage={setShowManage}
-          setNewCategoryName={setNewCategoryName}
-          setDepthLevel={setDepthLevel}
-          setTouchStart={setTouchStart}
-          setTouchEnd={setTouchEnd}
-          selectCategory={selectCategory}
-          generateCustomStarters={generateCustomStarters}
-          saveCurrentCustom={saveCurrentCustom}
-          deleteCustomCategory={deleteCustomCategory}
-          renameCustomCategory={renameCustomCategory}
-          previousQuestion={previousQuestion}
-          nextQuestion={nextQuestion}
-          openFullScreen={openFullScreen}
-          handleTouchStart={handleTouchStart}
-          handleTouchEnd={handleTouchEnd}
           handleShare={handleShare}
-          isMultipleChoice={isMultipleChoice}
-          getQuestionText={getQuestionText}
         />
       )}
 
