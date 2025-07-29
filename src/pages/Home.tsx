@@ -6,9 +6,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Heart, Share2, ThumbsUp, ThumbsDown, MessageCircle, Send } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useRelationshipAI } from '@/hooks/useRelationshipAI';
-import SocialInteractions from '@/components/SocialInteractions';
-import AdminBotPanel from '@/components/AdminBotPanel';
-import { usePopulateEngagement } from '@/hooks/usePopulateEngagement';
 
 interface OnboardingData {
   loveLanguage: string;
@@ -33,7 +30,7 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
   const [currentScenarioIndex, setCurrentScenarioIndex] = useState(0);
   const { toast } = useToast();
   const { getAIResponse } = useRelationshipAI();
-  const { populateEngagement, isPopulating } = usePopulateEngagement();
+  
 
   // Relationship Talk conversation starters
   const relationshipTalkQuestions = [
@@ -244,22 +241,17 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
                 </div>
               </div>
               
-              {/* Social Interactions */}
-              <SocialInteractions scenarioIndex={currentScenarioIndex} />
-              
-              {/* Quick Populate Button */}
-              <div className="border border-blue-200 bg-blue-50 p-3 rounded-lg">
+              {/* Share Section */}
+              <div className="flex justify-center">
                 <Button
-                  onClick={() => populateEngagement(currentScenarioIndex)}
-                  disabled={isPopulating}
-                  className="w-full bg-blue-600 hover:bg-blue-700"
+                  onClick={handleShare}
+                  variant="soft"
+                  className="flex items-center space-x-2"
                 >
-                  {isPopulating ? 'Adding Bot Comments...' : '🤖 Add 10 Bot Comments + 1400+ Likes'}
+                  <Share2 className="w-4 h-4" />
+                  <span>Share This</span>
                 </Button>
               </div>
-              
-              {/* Admin Bot Panel */}
-              <AdminBotPanel scenarioIndex={currentScenarioIndex} />
               
               <div className="flex space-x-2">
                 <Button
