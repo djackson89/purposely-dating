@@ -90,10 +90,12 @@ const QuickStartModule: React.FC<QuickStartProps> = ({ onNavigateToModule }) => 
   };
 
   return (
-    <div className="w-full px-4 mb-6">
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-foreground mb-2">Quick Start</h2>
-        <p className="text-muted-foreground">Choose your journey</p>
+    <div className="w-full px-4 mb-20">
+      <div className="mb-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-bold text-foreground">Quick Start</h2>
+          <p className="text-muted-foreground">Choose your journey</p>
+        </div>
       </div>
       
       <Carousel
@@ -129,17 +131,17 @@ const QuickStartModule: React.FC<QuickStartProps> = ({ onNavigateToModule }) => 
                       )}
                     </div>
                     
-                    {/* Icon container */}
-                    <div className="relative flex-1 flex items-center justify-center">
-                      <div className="bg-white/25 backdrop-blur-sm rounded-full p-3 sm:p-5 shadow-xl">
+                    {/* Icon container - now takes up more space */}
+                    <div className="relative flex-1 flex items-center justify-center py-4">
+                      <div className="bg-white/25 backdrop-blur-sm rounded-full p-2 sm:p-3 shadow-xl">
                         {item.icon === 'custom' && item.customImage ? (
                           <img 
                             src={item.customImage} 
                             alt={item.title}
-                            className="w-8 h-8 sm:w-10 sm:h-10 object-contain drop-shadow-lg" 
+                            className="w-16 h-16 sm:w-20 sm:h-20 object-contain drop-shadow-lg" 
                           />
                         ) : (
-                          <item.icon className="w-8 h-8 sm:w-10 sm:h-10 text-white drop-shadow-lg" />
+                          <item.icon className="w-16 h-16 sm:w-20 sm:h-20 text-white drop-shadow-lg" />
                         )}
                       </div>
                     </div>
