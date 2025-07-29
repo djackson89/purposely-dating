@@ -553,13 +553,206 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
     setVisibleSuggestions(prev => prev + 3);
   };
 
-  const personalizedDates = getPersonalizedDates();
+  // AI-powered local events based on user preferences
+  const getPersonalizedLocalEvents = () => {
+    const allLocalEvents = [
+      // Nightlife & Party Events
+      {
+        name: "Club Remix - EDM Night",
+        type: "Nightlife",
+        distance: "0.7 miles",
+        categories: ["nightclub", "night club", "dancing", "clubbing", "party", "drinks", "nightlife", "edm", "music"],
+        mood: ["Energetic", "Social", "Party"]
+      },
+      {
+        name: "Rooftop Bar Happy Hour",
+        type: "Social Drinks",
+        distance: "1.1 miles", 
+        categories: ["bar", "drinks", "nightlife", "cocktails", "social", "rooftop", "happy hour"],
+        mood: ["Sophisticated", "Social", "Nightlife"]
+      },
+      {
+        name: "Karaoke Night at The Lounge",
+        type: "Entertainment",
+        distance: "0.9 miles",
+        categories: ["karaoke", "singing", "nightlife", "party", "fun", "social", "entertainment"],
+        mood: ["Fun", "Social", "Party"]
+      },
+      
+      // Home & Cozy Events
+      {
+        name: "Netflix Watch Party Meetup",
+        type: "Social Gathering",
+        distance: "1.5 miles",
+        categories: ["netflix", "movies", "home", "cozy", "social", "indoor", "tv"],
+        mood: ["Relaxed", "Social", "Home"]
+      },
+      {
+        name: "Board Game Café Night",
+        type: "Gaming",
+        distance: "0.8 miles",
+        categories: ["gaming", "games", "indoor", "café", "social", "board games", "fun"],
+        mood: ["Fun", "Interactive", "Social"]
+      },
+      {
+        name: "Video Game Tournament",
+        type: "Gaming",
+        distance: "2.0 miles",
+        categories: ["gaming", "video games", "tournament", "competitive", "indoor", "social"],
+        mood: ["Competitive", "Social", "Fun"]
+      },
+      
+      // Music & Live Events  
+      {
+        name: "Jazz Night at The Blue Note",
+        type: "Music",
+        distance: "0.8 miles",
+        categories: ["jazz", "music", "live", "performance", "sophisticated", "nightlife"],
+        mood: ["Sophisticated", "Cultural", "Musical"]
+      },
+      {
+        name: "Live Rock Concert",
+        type: "Music",
+        distance: "1.8 miles",
+        categories: ["concert", "music", "live", "performance", "rock", "nightlife", "energetic"],
+        mood: ["Energetic", "Musical", "Social"]
+      },
+      {
+        name: "Open Mic Night",
+        type: "Performance",
+        distance: "1.2 miles",
+        categories: ["music", "performance", "singing", "acoustic", "intimate", "local"],
+        mood: ["Intimate", "Musical", "Social"]
+      },
+      
+      // Food & Dining
+      {
+        name: "Weekend Farmer's Market",
+        type: "Food & Culture", 
+        distance: "1.2 miles",
+        categories: ["farmers market", "food", "local", "outdoor", "fresh", "community"],
+        mood: ["Casual", "Outdoor", "Cultural"]
+      },
+      {
+        name: "Food Truck Festival",
+        type: "Food Event",
+        distance: "1.7 miles",
+        categories: ["food trucks", "food", "festival", "variety", "outdoor", "casual"],
+        mood: ["Casual", "Outdoor", "Fun"]
+      },
+      {
+        name: "Wine Tasting Class",
+        type: "Learning",
+        distance: "2.1 miles",
+        categories: ["wine", "tasting", "sophisticated", "drinks", "class", "learning"],
+        mood: ["Sophisticated", "Learning", "Social"]
+      },
+      
+      // Active & Outdoor
+      {
+        name: "Group Hiking Meetup",
+        type: "Outdoor Activity",
+        distance: "3.2 miles",
+        categories: ["hiking", "outdoor", "nature", "exercise", "group", "adventure"],
+        mood: ["Active", "Outdoor", "Social"]
+      },
+      {
+        name: "Beach Volleyball League",
+        type: "Sports",
+        distance: "2.8 miles",
+        categories: ["beach", "volleyball", "sports", "outdoor", "competitive", "team"],
+        mood: ["Active", "Outdoor", "Social"]
+      },
+      {
+        name: "Outdoor Movie Screening",
+        type: "Entertainment",
+        distance: "1.9 miles",
+        categories: ["movies", "outdoor", "cinema", "community", "relaxed", "film"],
+        mood: ["Relaxed", "Outdoor", "Social"]
+      },
+      
+      // Arts & Culture
+      {
+        name: "Local Art Gallery Opening",
+        type: "Cultural",
+        distance: "1.4 miles",
+        categories: ["art", "gallery", "culture", "sophisticated", "creative", "local"],
+        mood: ["Cultural", "Sophisticated", "Social"]
+      },
+      {
+        name: "Comedy Show Tonight",
+        type: "Entertainment",
+        distance: "1.0 miles",
+        categories: ["comedy", "show", "entertainment", "laughs", "performance", "fun"],
+        mood: ["Fun", "Entertainment", "Social"]
+      },
+      {
+        name: "Poetry Reading Night",
+        type: "Literary",
+        distance: "1.6 miles",
+        categories: ["poetry", "reading", "literature", "intimate", "intellectual", "culture"],
+        mood: ["Intimate", "Intellectual", "Cultural"]
+      }
+    ];
 
-  const localExperiences = [
-    { name: "Jazz Night at The Blue Note", type: "Music", distance: "0.8 miles" },
-    { name: "Weekend Farmer's Market", type: "Food & Culture", distance: "1.2 miles" },
-    { name: "Wine Tasting Class", type: "Learning", distance: "2.1 miles" }
-  ];
+    // Use similar scoring system as date suggestions
+    if (!datingPreferences) {
+      return allLocalEvents.slice(0, 6); // Show 6 events by default
+    }
+
+    const userLikes = [...datingPreferences.likedActivities, ...datingPreferences.customLikes];
+    const userDislikes = [...datingPreferences.dislikedActivities, ...datingPreferences.customDislikes];
+    
+    // Score each local event based on user preferences
+    const scoredEvents = allLocalEvents.map(event => {
+      let score = 0;
+      
+      // High priority: Direct matches with user's liked activities
+      userLikes.forEach(like => {
+        const likeWords = like.toLowerCase().split(' ');
+        likeWords.forEach(word => {
+          // Check if any category contains the word
+          if (event.categories.some(cat => cat.includes(word) || word.includes(cat))) {
+            score += 10; // High score for category matches
+          }
+          // Check name and type
+          if (event.name.toLowerCase().includes(word) || event.type.toLowerCase().includes(word)) {
+            score += 8;
+          }
+          // Check moods
+          if (event.mood.some(mood => mood.toLowerCase().includes(word) || word.includes(mood.toLowerCase()))) {
+            score += 6;
+          }
+        });
+      });
+      
+      // Penalty for conflicting with dislikes
+      userDislikes.forEach(dislike => {
+        const dislikeWords = dislike.toLowerCase().split(' ');
+        dislikeWords.forEach(word => {
+          if (event.categories.some(cat => cat.includes(word) || word.includes(cat))) {
+            score -= 15; // Heavy penalty for disliked activities
+          }
+          if (event.name.toLowerCase().includes(word) || event.type.toLowerCase().includes(word)) {
+            score -= 10;
+          }
+        });
+      });
+      
+      return { ...event, score };
+    });
+    
+    // Sort by score and filter out negative scores
+    const sortedEvents = scoredEvents
+      .filter(event => event.score >= 0)
+      .sort((a, b) => b.score - a.score);
+    
+    // Return top 6 events
+    return sortedEvents.slice(0, 6);
+  };
+
+  const localExperiences = getPersonalizedLocalEvents();
+  const personalizedDates = getPersonalizedDates();
 
   const planningBoard = [
     { task: "Choose restaurant", assigned: "Me", completed: false },
