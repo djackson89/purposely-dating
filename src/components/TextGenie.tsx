@@ -68,7 +68,7 @@ const TextGenie: React.FC<TextGenieProps> = ({ userProfile }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const { selectPhoto } = useCamera();
-  const { getFlirtSuggestion, isLoading } = useRelationshipAI();
+  const { getFlirtSuggestion, getAIResponse, isLoading } = useRelationshipAI();
   const { toast } = useToast();
   const isMobile = useIsMobile();
   
@@ -307,45 +307,41 @@ const TextGenie: React.FC<TextGenieProps> = ({ userProfile }) => {
         contextText += (contextText ? '\n\n' : '') + `Screenshot Analysis:\n${imageAnalysis}`;
       }
 
-      // Single optimized AI call that combines all analysis and response generation
-      const combinedPrompt = `As a no-nonsense relationship coach specializing in boundaries and manipulation detection, analyze this message/situation and provide comprehensive guidance: ${contextText}
+      // First, get the Purposely Perspective using therapy mode
+      const perspectivePrompt = `Analyze this message/situation and provide a brief "Purposely Perspective" (1-2 sentences max) that validates their intuition and identifies potential red flags: ${contextText}`;
+      const perspective = await getAIResponse(perspectivePrompt, userProfile, 'therapy');
+      setPurposelyPerspective(perspective.trim());
 
-STEP 1: Analyze the user's emotional state (OFFENDED/BOTHERED, NEUTRAL/CURIOUS, or POSITIVE/ENGAGED) and the incoming message tone (DEROGATORY, KIND_NEUTRAL, or UNCLEAR).
-
-STEP 2: Provide a "Purposely Perspective" (1-2 sentences) that validates their intuition and identifies potential red flags, focusing on emotional safety and boundary-setting unless the message is clearly positive.
-
-STEP 3: Generate 3 contextual response suggestions:
-- If user is OFFENDED/BOTHERED or message is DEROGATORY: Focus on boundary-setting and emotional needs
-- If message is KIND_NEUTRAL and user is positive: Focus on connection and flirtation  
-- If UNCLEAR: Focus on clarity and protection from manipulation
-
-Format your response as:
-
-ANALYSIS: [Brief assessment of user state and message tone]
-
-PURPOSELY PERSPECTIVE: [1-2 protective, empowering sentences]
-
-Sweet: [reply text]
-Perspective: [how this serves her needs - max 2 sentences]
-
-Mild: [reply text]
-Perspective: [how this serves her needs - max 2 sentences]
-
-Spicy: [reply text] 
-Perspective: [how this serves her needs - max 2 sentences]
-
-Keep replies concise (max 2 sentences each). The "Spicy" response should be memorably direct and boundary-setting unless the situation clearly calls for flirtation.`;
-
-      const response = await getFlirtSuggestion(combinedPrompt, userProfile);
+      // Generate three different response types using appropriate AI modes
+      const suggestions: ReplySuggestion[] = [];
       
-      // Parse the combined response
-      const perspectiveMatch = response.match(/PURPOSELY PERSPECTIVE:\s*(.+?)(?=\n\nSweet:|Sweet:|$)/s);
-      if (perspectiveMatch) {
-        setPurposelyPerspective(perspectiveMatch[1].trim());
-      }
-      
-      // Parse the response into structured suggestions
-      const suggestions = parseAIResponse(response);
+      // Sweet response - Use flirt mode for warm, tactful responses
+      const sweetPrompt = `Generate a Sweet response to this situation. Be warm, presuming innocence, extremely tactful, and agreeable. Keep it under 2 sentences: ${contextText}`;
+      const sweetResponse = await getAIResponse(sweetPrompt, userProfile, 'flirt');
+      suggestions.push({
+        text: sweetResponse.trim().replace(/^["']|["']$/g, '').replace(/\*/g, ''),
+        tone: 'sweet',
+        perspective: "This response presumes positive intent and maintains warmth while addressing the situation."
+      });
+
+      // Mild response - Use therapy mode for direct, revealing questions
+      const mildPrompt = `Generate a Mild response to this situation. Be very direct without being disrespectful. Ask hard questions that reveal definitive intentions or reword as a question for more context. No generic phrases like "can we discuss". Keep it under 2 sentences: ${contextText}`;
+      const mildResponse = await getAIResponse(mildPrompt, userProfile, 'therapy');
+      suggestions.push({
+        text: mildResponse.trim().replace(/^["']|["']$/g, '').replace(/\*/g, ''),
+        tone: 'mild',
+        perspective: "This response directly addresses the situation and seeks clarity about intentions."
+      });
+
+      // Spicy response - Use therapy mode for boundary-setting
+      const spicyPrompt = `Generate a Spicy response to this situation. Set hard boundaries or expectations with a gut punch feel. Unless the text is clearly positive/flirtatious, be direct about boundaries. Keep it under 2 sentences: ${contextText}`;
+      const spicyResponse = await getAIResponse(spicyPrompt, userProfile, 'therapy');
+      suggestions.push({
+        text: spicyResponse.trim().replace(/^["']|["']$/g, '').replace(/\*/g, ''),
+        tone: 'spicy',
+        perspective: "This response establishes clear boundaries and expectations without compromise."
+      });
+
       setReplySuggestions(suggestions);
       
     } catch (error) {
