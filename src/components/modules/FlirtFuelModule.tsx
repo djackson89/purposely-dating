@@ -1463,10 +1463,18 @@ Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid gen
                         </div>
                       </div>
                     ) : (
-                      // Single question
-                      <p className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl 2xl:text-7xl font-bold text-white leading-tight max-w-5xl mx-auto">
-                        {getQuestionText(currentStarters[currentQuestionIndex])?.replace(/\*\*/g, '').replace(/[""'']/g, '"').replace(/[^\w\s\?\.\!\,\:\;\(\)\-\'\"]/g, '').trim()}
-                      </p>
+                      // Single question with line break support for formatted text
+                      <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl 2xl:text-7xl font-bold text-white leading-tight max-w-5xl mx-auto">
+                        {getQuestionText(currentStarters[currentQuestionIndex])?.replace(/\*\*/g, '').replace(/[""'']/g, '"').replace(/[^\w\s\?\.\!\,\:\;\(\)\-\'"]/g, '').trim().split('\n').map((line, index) => (
+                          <div key={index} className={
+                            index === 0 ? "mb-6" : 
+                            line.match(/^[A-D]\.\s/) ? "text-left text-lg sm:text-xl md:text-2xl font-bold mb-3 max-w-4xl mx-auto" : 
+                            "text-left text-xl sm:text-2xl md:text-3xl mb-2 max-w-4xl mx-auto"
+                          }>
+                            {line}
+                          </div>
+                        ))}
+                      </div>
                     )}
                   </div>
                 </div>
