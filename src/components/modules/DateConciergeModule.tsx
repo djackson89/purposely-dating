@@ -276,165 +276,267 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
   // AI-powered date suggestions based on user profile
   const getPersonalizedDates = () => {
     const allDateIdeas = [
+      // Home & Relaxed Activities
       {
-        name: "Cozy Coffee & Deep Conversation",
-        description: "Find a quiet café with comfortable seating for meaningful talks",
+        name: "Netflix & Chill Night",
+        description: "Create a cozy atmosphere at home with your favorite shows and snacks",
         budget: "Low",
-        mood: ["Intimate", "Relaxed"],
-        loveLanguageMatch: ["Words of Affirmation", "Quality Time"],
+        mood: ["Intimate", "Relaxed", "Home"],
+        categories: ["netflix", "chill", "home", "movies", "tv", "cozy", "indoor"],
+        loveLanguageMatch: ["Quality Time", "Physical Touch"],
         icon: Coffee
       },
       {
-        name: "Sunset Picnic Adventure", 
-        description: "Pack favorite foods and watch the sunset together",
-        budget: "Medium",
-        mood: ["Romantic", "Outdoor"],
+        name: "Movie Marathon Date",
+        description: "Pick a movie series and binge-watch together with homemade popcorn",
+        budget: "Low",
+        mood: ["Relaxed", "Home", "Fun"],
+        categories: ["movies", "home", "netflix", "indoor", "film", "cinema"],
         loveLanguageMatch: ["Quality Time", "Acts of Service"],
         icon: Heart
       },
       {
-        name: "Local Art Gallery Stroll",
-        description: "Explore creativity together and discuss what you see",
-        budget: "Medium", 
-        mood: ["Cultural", "Thoughtful"],
+        name: "Gaming Night Together",
+        description: "Play video games, board games, or card games for a fun competitive night",
+        budget: "Low",
+        mood: ["Fun", "Interactive", "Home"],
+        categories: ["gaming", "games", "indoor", "home", "competitive", "video games"],
+        loveLanguageMatch: ["Quality Time", "Physical Touch"],
+        icon: Sparkles
+      },
+      
+      // Nightlife & Party Activities
+      {
+        name: "Night Club Dancing",
+        description: "Hit the dance floor at a popular club and dance the night away",
+        budget: "High",
+        mood: ["Energetic", "Social", "Party"],
+        categories: ["nightclub", "night club", "dancing", "clubbing", "party", "drinks", "nightlife"],
+        loveLanguageMatch: ["Physical Touch", "Quality Time"],
+        icon: Heart
+      },
+      {
+        name: "Rooftop Bar Night",
+        description: "Enjoy cocktails and city views at a trendy rooftop bar",
+        budget: "High",
+        mood: ["Sophisticated", "Social", "Nightlife"],
+        categories: ["bar", "drinks", "nightlife", "cocktails", "social", "rooftop"],
         loveLanguageMatch: ["Quality Time", "Words of Affirmation"],
         icon: Sparkles
       },
       {
-        name: "Cooking Class Together",
-        description: "Learn to make a new cuisine side by side",
+        name: "Karaoke Night Out",
+        description: "Sing your hearts out at a karaoke bar with drinks and laughter",
         budget: "Medium",
-        mood: ["Interactive", "Fun"],
-        loveLanguageMatch: ["Quality Time", "Acts of Service"],
+        mood: ["Fun", "Social", "Party"],
+        categories: ["karaoke", "singing", "nightlife", "party", "fun", "social"],
+        loveLanguageMatch: ["Quality Time", "Words of Affirmation"],
         icon: Coffee
       },
-      {
-        name: "Stargazing Night",
-        description: "Find a quiet spot away from city lights to watch the stars",
-        budget: "Low",
-        mood: ["Romantic", "Peaceful"],
-        loveLanguageMatch: ["Quality Time", "Physical Touch"],
-        icon: Heart
-      },
+      
+      // Active & Adventure
       {
         name: "Adventure Hike",
         description: "Explore a scenic trail and enjoy nature together",
         budget: "Low",
-        mood: ["Outdoor", "Active"],
+        mood: ["Outdoor", "Active", "Adventure"],
+        categories: ["hiking", "outdoor", "nature", "adventure", "exercise", "walking"],
         loveLanguageMatch: ["Quality Time", "Physical Touch"],
         icon: Sparkles
-      },
-      {
-        name: "Wine Tasting Experience",
-        description: "Sample different wines and learn about wine pairing",
-        budget: "High",
-        mood: ["Sophisticated", "Relaxed"],
-        loveLanguageMatch: ["Quality Time", "Words of Affirmation"],
-        icon: Coffee
-      },
-      {
-        name: "Farmers Market & Brunch",
-        description: "Browse local vendors then cook a meal together",
-        budget: "Medium",
-        mood: ["Casual", "Interactive"],
-        loveLanguageMatch: ["Acts of Service", "Quality Time"],
-        icon: Heart
-      },
-      {
-        name: "Bookstore & Poetry Reading",
-        description: "Browse books together and attend a literary event",
-        budget: "Low",
-        mood: ["Intellectual", "Intimate"],
-        loveLanguageMatch: ["Words of Affirmation", "Quality Time"],
-        icon: Sparkles
-      },
-      {
-        name: "Mini Golf & Ice Cream",
-        description: "Play a fun round of mini golf followed by sweet treats",
-        budget: "Low",
-        mood: ["Playful", "Fun"],
-        loveLanguageMatch: ["Quality Time", "Physical Touch"],
-        icon: Coffee
       },
       {
         name: "Beach Day Escape",
         description: "Relax by the water with games, music, and good conversation",
         budget: "Low",
-        mood: ["Relaxed", "Outdoor"],
+        mood: ["Relaxed", "Outdoor", "Fun"],
+        categories: ["beach", "outdoor", "water", "swimming", "sun", "relaxing"],
         loveLanguageMatch: ["Quality Time", "Physical Touch"],
         icon: Heart
       },
       {
-        name: "Pottery Class Date",
-        description: "Get your hands dirty creating something beautiful together",
+        name: "Mini Golf & Arcade",
+        description: "Play mini golf and arcade games for a fun, competitive date",
         budget: "Medium",
-        mood: ["Creative", "Interactive"],
-        loveLanguageMatch: ["Quality Time", "Acts of Service"],
-        icon: Sparkles
+        mood: ["Playful", "Fun", "Competitive"],
+        categories: ["mini golf", "arcade", "games", "fun", "competitive", "indoor"],
+        loveLanguageMatch: ["Quality Time", "Physical Touch"],
+        icon: Coffee
+      },
+      
+      // Food & Dining
+      {
+        name: "Fine Dining Experience",
+        description: "Dress up for an elegant dinner at an upscale restaurant",
+        budget: "High",
+        mood: ["Sophisticated", "Romantic", "Elegant"],
+        categories: ["dining", "restaurant", "food", "fancy", "elegant", "dinner"],
+        loveLanguageMatch: ["Acts of Service", "Quality Time"],
+        icon: Heart
       },
       {
         name: "Food Truck Adventure",
         description: "Try different cuisines from various food trucks around town",
         budget: "Medium",
-        mood: ["Adventurous", "Casual"],
+        mood: ["Adventurous", "Casual", "Fun"],
+        categories: ["food", "casual", "street food", "adventure", "variety"],
         loveLanguageMatch: ["Quality Time", "Acts of Service"],
         icon: Coffee
       },
       {
-        name: "Dancing Lesson",
-        description: "Learn a new dance style together in a fun, supportive environment",
+        name: "Cooking Class Together",
+        description: "Learn to make a new cuisine side by side",
         budget: "Medium",
-        mood: ["Active", "Romantic"],
-        loveLanguageMatch: ["Physical Touch", "Quality Time"],
+        mood: ["Interactive", "Fun", "Learning"],
+        categories: ["cooking", "food", "learning", "hands-on", "class"],
+        loveLanguageMatch: ["Quality Time", "Acts of Service"],
+        icon: Sparkles
+      },
+      
+      // Cultural & Arts
+      {
+        name: "Live Concert Experience",
+        description: "See your favorite artist perform live or discover new music",
+        budget: "High",
+        mood: ["Energetic", "Musical", "Social"],
+        categories: ["concert", "music", "live", "performance", "nightlife"],
+        loveLanguageMatch: ["Quality Time", "Physical Touch"],
         icon: Heart
       },
       {
-        name: "Museum & Lunch Date",
-        description: "Explore history or science exhibits then discuss over lunch",
+        name: "Art Gallery Stroll",
+        description: "Explore creativity together and discuss what you see",
+        budget: "Medium", 
+        mood: ["Cultural", "Thoughtful", "Relaxed"],
+        categories: ["art", "gallery", "culture", "museum", "creative"],
+        loveLanguageMatch: ["Quality Time", "Words of Affirmation"],
+        icon: Sparkles
+      },
+      {
+        name: "Comedy Show Night",
+        description: "Laugh together at a stand-up comedy show or improv night",
         budget: "Medium",
-        mood: ["Educational", "Thoughtful"],
+        mood: ["Fun", "Social", "Entertainment"],
+        categories: ["comedy", "show", "entertainment", "laughs", "performance"],
+        loveLanguageMatch: ["Quality Time", "Words of Affirmation"],
+        icon: Coffee
+      },
+      
+      // Romantic & Intimate
+      {
+        name: "Sunset Picnic Adventure", 
+        description: "Pack favorite foods and watch the sunset together",
+        budget: "Medium",
+        mood: ["Romantic", "Outdoor", "Intimate"],
+        categories: ["picnic", "outdoor", "romantic", "sunset", "nature"],
+        loveLanguageMatch: ["Quality Time", "Acts of Service"],
+        icon: Heart
+      },
+      {
+        name: "Stargazing Night",
+        description: "Find a quiet spot away from city lights to watch the stars",
+        budget: "Low",
+        mood: ["Romantic", "Peaceful", "Intimate"],
+        categories: ["stargazing", "romantic", "outdoor", "peaceful", "night"],
+        loveLanguageMatch: ["Quality Time", "Physical Touch"],
+        icon: Heart
+      },
+      {
+        name: "Wine Tasting Experience",
+        description: "Sample different wines and learn about wine pairing",
+        budget: "High",
+        mood: ["Sophisticated", "Relaxed", "Romantic"],
+        categories: ["wine", "tasting", "sophisticated", "drinks", "romantic"],
+        loveLanguageMatch: ["Quality Time", "Words of Affirmation"],
+        icon: Sparkles
+      },
+      
+      // Coffee & Casual
+      {
+        name: "Cozy Coffee & Deep Conversation",
+        description: "Find a quiet café with comfortable seating for meaningful talks",
+        budget: "Low",
+        mood: ["Intimate", "Relaxed", "Casual"],
+        categories: ["coffee", "cafe", "conversation", "casual", "relaxed"],
+        loveLanguageMatch: ["Words of Affirmation", "Quality Time"],
+        icon: Coffee
+      },
+      {
+        name: "Bookstore & Poetry Reading",
+        description: "Browse books together and attend a literary event",
+        budget: "Low",
+        mood: ["Intellectual", "Intimate", "Cultural"],
+        categories: ["books", "reading", "literature", "intellectual", "culture"],
         loveLanguageMatch: ["Words of Affirmation", "Quality Time"],
         icon: Sparkles
       }
     ];
 
-    // Filter based on user preferences
-    let filteredIdeas = allDateIdeas;
-    
-    if (datingPreferences) {
-      // Filter based on liked activities
-      const userLikes = [...datingPreferences.likedActivities, ...datingPreferences.customLikes];
-      const userDislikes = [...datingPreferences.dislikedActivities, ...datingPreferences.customDislikes];
-      
-      filteredIdeas = allDateIdeas.filter(idea => {
-        // Check if idea matches user's liked activities
-        const matchesLikes = userLikes.some(like => 
-          idea.name.toLowerCase().includes(like.toLowerCase()) ||
-          idea.description.toLowerCase().includes(like.toLowerCase()) ||
-          idea.mood.some(mood => mood.toLowerCase().includes(like.toLowerCase()))
-        );
-        
-        // Check if idea conflicts with dislikes
-        const conflictsWithDislikes = userDislikes.some(dislike =>
-          idea.name.toLowerCase().includes(dislike.toLowerCase()) ||
-          idea.description.toLowerCase().includes(dislike.toLowerCase())
-        );
-        
-        // Prefer ideas that match likes and don't conflict with dislikes
-        return matchesLikes || (!conflictsWithDislikes && Math.random() > 0.3);
-      });
+    // Improved matching algorithm that prioritizes user preferences
+    if (!datingPreferences) {
+      return allDateIdeas.slice(0, visibleSuggestions);
     }
 
-    // Further filter based on personality and love language
-    const personalityFiltered = filteredIdeas.filter(idea => {
-      if (userProfile.personalityType.includes("Introspective") && idea.mood.includes("Intimate")) return true;
-      if (userProfile.personalityType.includes("Adventurous") && idea.mood.includes("Outdoor")) return true;
-      if (idea.loveLanguageMatch.includes(userProfile.loveLanguage)) return true;
-      return Math.random() > 0.4; // Include some random variety
+    const userLikes = [...datingPreferences.likedActivities, ...datingPreferences.customLikes];
+    const userDislikes = [...datingPreferences.dislikedActivities, ...datingPreferences.customDislikes];
+    
+    // Score each date idea based on how well it matches user preferences
+    const scoredIdeas = allDateIdeas.map(idea => {
+      let score = 0;
+      
+      // High priority: Direct matches with user's liked activities
+      userLikes.forEach(like => {
+        const likeWords = like.toLowerCase().split(' ');
+        likeWords.forEach(word => {
+          // Check if any category contains the word
+          if (idea.categories.some(cat => cat.includes(word) || word.includes(cat))) {
+            score += 10; // High score for category matches
+          }
+          // Check name and description
+          if (idea.name.toLowerCase().includes(word) || idea.description.toLowerCase().includes(word)) {
+            score += 8;
+          }
+          // Check moods
+          if (idea.mood.some(mood => mood.toLowerCase().includes(word) || word.includes(mood.toLowerCase()))) {
+            score += 6;
+          }
+        });
+      });
+      
+      // Penalty for conflicting with dislikes
+      userDislikes.forEach(dislike => {
+        const dislikeWords = dislike.toLowerCase().split(' ');
+        dislikeWords.forEach(word => {
+          if (idea.categories.some(cat => cat.includes(word) || word.includes(cat))) {
+            score -= 15; // Heavy penalty for disliked activities
+          }
+          if (idea.name.toLowerCase().includes(word) || idea.description.toLowerCase().includes(word)) {
+            score -= 10;
+          }
+        });
+      });
+      
+      // Small bonus for love language match (but much less important than preferences)
+      if (idea.loveLanguageMatch.includes(userProfile.loveLanguage)) {
+        score += 2;
+      }
+      
+      return { ...idea, score };
     });
-
-    // Return appropriate number based on visibleSuggestions
-    return personalityFiltered.slice(0, visibleSuggestions);
+    
+    // Sort by score (highest first) and filter out negative scores
+    const sortedIdeas = scoredIdeas
+      .filter(idea => idea.score >= 0)
+      .sort((a, b) => b.score - a.score);
+    
+    // If we don't have enough high-scoring matches, include some with score 0 but no conflicts
+    let finalIdeas = sortedIdeas.filter(idea => idea.score > 0);
+    if (finalIdeas.length < visibleSuggestions) {
+      const neutralIdeas = sortedIdeas.filter(idea => idea.score === 0);
+      finalIdeas = [...finalIdeas, ...neutralIdeas];
+    }
+    
+    // Return the requested number of suggestions
+    return finalIdeas.slice(0, visibleSuggestions);
   };
 
   // Reset preferences functionality
