@@ -19,9 +19,7 @@ import {
   ChevronUp,
   MessageSquare,
   Heart,
-  Flame,
-  ThumbsUp,
-  ThumbsDown
+  Flame
 } from 'lucide-react';
 import { useCamera, PhotoResult } from '@/hooks/useCamera';
 import { useRelationshipAI } from '@/hooks/useRelationshipAI';
@@ -735,26 +733,25 @@ Give the user a fresh but equally protective way to view the situation.`;
                 <Button
                   variant="outline"
                   size="sm"
-                  className="flex items-center space-x-2 hover:bg-green-50 hover:border-green-200"
-                  onClick={() => {
-                    toast({
-                      title: "Great!",
-                      description: "Glad this perspective resonates with you.",
-                    });
-                  }}
-                >
-                  <ThumbsUp className="w-4 h-4 text-green-600" />
-                  <span>Agreed</span>
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center space-x-2 hover:bg-orange-50 hover:border-orange-200"
+                  className="flex items-center space-x-2"
                   onClick={generateNewPerspective}
                   disabled={isGeneratingPerspective}
                 >
-                  <ThumbsDown className="w-4 h-4 text-orange-600" />
-                  <span>{isGeneratingPerspective ? 'Generating...' : 'Disagree'}</span>
+                  <span>{isGeneratingPerspective ? 'Loading...' : 'See More'}</span>
+                </Button>
+                <Button
+                  variant="romance"
+                  size="sm"
+                  className="flex items-center space-x-2"
+                  onClick={() => {
+                    // This could navigate to a dedicated Q&A section in the future
+                    toast({
+                      title: "Coming Soon!",
+                      description: "Ask Purposely feature will be available soon.",
+                    });
+                  }}
+                >
+                  <span>Ask Purposely</span>
                 </Button>
               </div>
             </div>
