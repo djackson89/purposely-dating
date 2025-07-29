@@ -393,28 +393,35 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
   const adjustQuestionDepth = async (originalQuestion: string, depth: number) => {
     try {
       const depthInstructions = {
-        0: "Transform this into a witty, sarcastic conversation starter (225 chars max). Mix between: 1) Multiple choice with format 'Question?\nA. Option\nB. Option\nC. Option\nD. Option', 2) Open-ended questions, 3) True/False statements. Keep tone playful and edgy. Vary the question type randomly.",
-        1: "Transform this into a balanced conversation starter (225 chars max). Mix between: 1) Multiple choice with format 'Question?\nA. Option\nB. Option\nC. Option\nD. Option', 2) Open-ended questions, 3) True/False statements. Keep tone engaging but moderate. Vary the question type randomly.",
-        2: "Transform this into a deep, psychological conversation starter (225 chars max). Mix between: 1) Multiple choice with format 'Question?\nA. Option\nB. Option\nC. Option\nD. Option', 2) Open-ended questions, 3) True/False statements. Focus on self-awareness and emotional intelligence. Vary the question type randomly."
+        0: "Transform this into a witty, sarcastic conversation starter. Make it playful and slightly edgy. Use exactly 150 characters or less. Return ONLY the transformed question, nothing else.",
+        1: "Transform this into a balanced conversation starter. Make it engaging but moderate. Use exactly 150 characters or less. Return ONLY the transformed question, nothing else.", 
+        2: "Transform this into a deep, psychological conversation starter focusing on self-awareness. Use exactly 150 characters or less. Return ONLY the transformed question, nothing else."
       };
 
-      const prompt = `Take this conversation starter: "${originalQuestion}" and ${depthInstructions[depth as keyof typeof depthInstructions]} Keep the core intent but adjust the tone and complexity. Return ONLY ONE question. Do not add multiple questions or extra text.`;
+      const prompt = `Transform this conversation starter: "${originalQuestion}"\n\n${depthInstructions[depth as keyof typeof depthInstructions]}\n\nIMPORTANT: Return ONLY the transformed question. Do not add explanations, multiple questions, or extra text.`;
       
       const response = await getAIResponse(prompt, userProfile, 'general');
       
-      // Clean and process the response
-      let cleanedResponse = response.trim().replace(/^["']|["']$/g, ''); // Remove quotes if present
+      // Aggressive cleaning to ensure we only get one question
+      let cleanedResponse = response.trim()
+        .replace(/^["']|["']$/g, '') // Remove quotes
+        .replace(/\n\n+/g, '\n') // Remove multiple line breaks
+        .split('\n')[0] // Take only the first line if multiple exist
+        .replace(/[.]{2,}/g, '.') // Remove multiple periods
+        .trim();
       
-      // If multiple questions are detected, take only the first one
-      const questionSeparators = /\?\s*(?:[A-Z]|\n|$)/;
-      if (questionSeparators.test(cleanedResponse)) {
-        const firstQuestionMatch = cleanedResponse.match(/^.*?\?(?:\n[A-D]\..*)*$/m);
-        if (firstQuestionMatch) {
-          cleanedResponse = firstQuestionMatch[0];
+      // If it's longer than 200 chars, truncate at the last complete sentence
+      if (cleanedResponse.length > 200) {
+        const lastSentence = cleanedResponse.substring(0, 200).lastIndexOf('?');
+        if (lastSentence > 0) {
+          cleanedResponse = cleanedResponse.substring(0, lastSentence + 1);
+        } else {
+          cleanedResponse = cleanedResponse.substring(0, 200) + '?';
         }
       }
       
       return cleanedResponse;
+      
     } catch (error) {
       console.error('Error adjusting question depth:', error);
       return originalQuestion; // Fallback to original
@@ -432,11 +439,16 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
           const transformedQuestions = await Promise.all(
             defaultCategory.prompts.map(async (question) => {
               if (typeof question === 'string') {
+                // For simple text questions, just transform them
                 return await adjustQuestionDepth(question, depthLevel[0]);
               } else {
-                // For multiple choice questions, transform the statement and keep the structure
+                // For complex multiple choice questions, transform only the statement
                 const transformedStatement = await adjustQuestionDepth(question.statement, depthLevel[0]);
-                return transformedStatement; // Return as string to be parsed by rendering logic
+                // Return the original structure but with transformed statement
+                return {
+                  statement: transformedStatement,
+                  options: question.options
+                };
               }
             })
           );
@@ -488,9 +500,12 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
               if (typeof question === 'string') {
                 return await adjustQuestionDepth(question, depthLevel[0]);
               } else {
-                // For multiple choice questions, transform the statement and keep the structure
+                // For complex multiple choice questions, transform only the statement
                 const transformedStatement = await adjustQuestionDepth(question.statement, depthLevel[0]);
-                return transformedStatement; // Return as string to be parsed by rendering logic
+                return {
+                  statement: transformedStatement,
+                  options: question.options
+                };
               }
             })
           );
