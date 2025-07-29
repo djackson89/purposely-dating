@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Share2, MessageCircle, Send } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useRelationshipAI } from '@/hooks/useRelationshipAI';
+import QuickStartModule from '@/components/QuickStartModule';
 
 interface OnboardingData {
   loveLanguage: string;
@@ -21,6 +22,13 @@ interface HomeProps {
   onNavigateToAIPractice: (scenario?: string) => void;
 }
 
+// Module navigation mapping
+const moduleNavigationMap = {
+  'flirtfuel': 'flirtfuel',
+  'therapy': 'therapy',
+  'concierge': 'concierge'
+};
+
 const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavigateToAIPractice }) => {
   const [dailyQuestion, setDailyQuestion] = useState('');
   const [showQuestionInput, setShowQuestionInput] = useState(false);
@@ -35,6 +43,31 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
   
   const { toast } = useToast();
   const { getAIResponse } = useRelationshipAI();
+
+  // Handle QuickStart module navigation
+  const handleQuickStartNavigation = (module: string) => {
+    switch (module) {
+      case 'flirtfuel':
+        onNavigateToFlirtFuel();
+        break;
+      case 'therapy':
+        // For now, show a toast - proper navigation would need to be passed from Index
+        toast({
+          title: "Therapy Companion! 💝",
+          description: "Navigate via the bottom menu to access this feature!",
+        });
+        break;
+      case 'concierge':
+        // For now, show a toast - proper navigation would need to be passed from Index
+        toast({
+          title: "Date Planner! 📅",
+          description: "Navigate via the bottom menu to access this feature!",
+        });
+        break;
+      default:
+        onNavigateToFlirtFuel();
+    }
+  };
 
   // Minimum swipe distance (in pixels)
   const minSwipeDistance = 50;
@@ -223,6 +256,9 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
         </h1>
         <p className="text-muted-foreground">Your daily dose of relationship growth</p>
       </div>
+
+      {/* Quick Start Module */}
+      <QuickStartModule onNavigateToModule={handleQuickStartNavigation} />
 
       {/* Daily Question of the Day */}
       <Card className="shadow-romance border-primary/20">
