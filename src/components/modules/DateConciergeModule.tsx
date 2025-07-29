@@ -85,7 +85,7 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
   const [showDatingOnboarding, setShowDatingOnboarding] = useState(false);
   const [favoriteDates, setFavoriteDates] = useState<any[]>([]);
   const [showFavorites, setShowFavorites] = useState(false);
-  const [showMoreSuggestions, setShowMoreSuggestions] = useState(false);
+  const [visibleSuggestions, setVisibleSuggestions] = useState(3);
   
   // Dating Prospects state
   const [prospects, setProspects] = useState<DatingProspect[]>([]);
@@ -433,8 +433,8 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
       return Math.random() > 0.4; // Include some random variety
     });
 
-    // Return appropriate number based on showMoreSuggestions
-    return showMoreSuggestions ? personalityFiltered : personalityFiltered.slice(0, 3);
+    // Return appropriate number based on visibleSuggestions
+    return personalityFiltered.slice(0, visibleSuggestions);
   };
 
   // Reset preferences functionality
@@ -442,7 +442,13 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
     setDatingPreferences(null);
     setShowDatingOnboarding(true);
     setShowFavorites(false);
+    setVisibleSuggestions(3);
     localStorage.removeItem('datingPreferences');
+  };
+
+  // Show more suggestions functionality
+  const showMoreSuggestions = () => {
+    setVisibleSuggestions(prev => prev + 3);
   };
 
   const personalizedDates = getPersonalizedDates();
@@ -759,12 +765,12 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
               </Button>
             </div>
             
-            <div className="space-y-1">
+            <div className="space-y-3">
               <div className="flex items-center justify-center space-x-2">
-                <h2 className="text-xl font-semibold text-primary">Dating Planner</h2>
+                <h2 className="text-xl font-semibold text-primary">Personalized Date Suggestions</h2>
                 <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center cursor-pointer hover:bg-primary/20 transition-colors">
                   <InfoDialog
-                    title="Dating Planner"
+                    title="Personalized Date Suggestions"
                     description="Get personalized date ideas perfectly tailored to your preferences, love language, and personality."
                   />
                 </div>
@@ -777,62 +783,54 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
               >
                 Edit Preferences
               </Button>
-            </div>
-          </div>
-          
-          <Card className="shadow-romance border-primary/20">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <HeartIcon className="w-5 h-5 text-primary animate-heart-pulse" size={20} />
-                <span>Personalized Date Suggestions</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground mb-4">
-                Based on your preferences and {userProfile.loveLanguage} love language
-              </p>
               
-              {/* Show user's liked preferences as bubbles */}
-              {datingPreferences && (
-                <div className="space-y-3">
-                  <div>
-                    <p className="text-xs font-medium text-muted-foreground mb-2">Your favorite activities:</p>
-                    <div className="flex flex-wrap gap-2">
-                      {datingPreferences.likedActivities.map((activity) => (
-                        <Badge key={activity} variant="default" className="text-xs">
-                          {activity}
-                        </Badge>
-                      ))}
-                      {datingPreferences.customLikes.map((activity) => (
-                        <Badge key={activity} variant="default" className="text-xs">
-                          {activity}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                  
-                  {(datingPreferences.dislikedActivities.length > 0 || datingPreferences.customDislikes.length > 0) && (
+              <div className="text-center">
+                <p className="text-sm text-muted-foreground mb-4">
+                  Based on your preferences and {userProfile.loveLanguage} love language
+                </p>
+                
+                {/* Show user's liked preferences as bubbles */}
+                {datingPreferences && (
+                  <div className="space-y-3">
                     <div>
-                      <p className="text-xs font-medium text-muted-foreground mb-2">Activities to avoid:</p>
-                      <div className="flex flex-wrap gap-2">
-                        {datingPreferences.dislikedActivities.map((activity) => (
-                          <Badge key={activity} variant="destructive" className="text-xs">
+                      <p className="text-xs font-medium text-muted-foreground mb-2">Your favorite activities:</p>
+                      <div className="flex flex-wrap gap-2 justify-center">
+                        {datingPreferences.likedActivities.map((activity) => (
+                          <Badge key={activity} variant="default" className="text-xs">
                             {activity}
                           </Badge>
                         ))}
-                        {datingPreferences.customDislikes.map((activity) => (
-                          <Badge key={activity} variant="destructive" className="text-xs">
+                        {datingPreferences.customLikes.map((activity) => (
+                          <Badge key={activity} variant="default" className="text-xs">
                             {activity}
                           </Badge>
                         ))}
                       </div>
                     </div>
-                  )}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
+                    
+                    {(datingPreferences.dislikedActivities.length > 0 || datingPreferences.customDislikes.length > 0) && (
+                      <div>
+                        <p className="text-xs font-medium text-muted-foreground mb-2">Activities to avoid:</p>
+                        <div className="flex flex-wrap gap-2 justify-center">
+                          {datingPreferences.dislikedActivities.map((activity) => (
+                            <Badge key={activity} variant="destructive" className="text-xs">
+                              {activity}
+                            </Badge>
+                          ))}
+                          {datingPreferences.customDislikes.map((activity) => (
+                            <Badge key={activity} variant="destructive" className="text-xs">
+                              {activity}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+          
           {personalizedDates.map((date, index) => {
             const IconComponent = date.icon;
             return (
@@ -884,15 +882,20 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
           })}
 
           {/* See More Button */}
-          <div className="text-center">
-            <Button 
-              onClick={() => setShowMoreSuggestions(!showMoreSuggestions)}
-              variant="outline"
-              size="sm"
-            >
-              {showMoreSuggestions ? "Show Less" : "See More"}
-            </Button>
-          </div>
+          {(() => {
+            const allFilteredDates = getPersonalizedDates();
+            return visibleSuggestions < 15; // Show button until we've reached the max of our date ideas
+          })() && (
+            <div className="text-center">
+              <Button 
+                onClick={showMoreSuggestions}
+                variant="outline"
+                size="sm"
+              >
+                See More
+              </Button>
+            </div>
+          )}
         </div>
       )}
 
