@@ -495,8 +495,29 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
     if (!isCustom) {
       const bufferedQuestions = getBufferedQuestions(selectedCategory, depthLevel[0]);
       setCurrentStarters(bufferedQuestions);
+    } else {
+      // For custom categories, apply depth adjustment when depth changes
+      const applyDepthToCustomCategory = async () => {
+        if (customCategories[selectedCategory]) {
+          try {
+            const adjustedQuestions = await Promise.all(
+              customCategories[selectedCategory].map(async (question) => {
+                if (typeof question === 'string') {
+                  return await adjustQuestionDepth(question, depthLevel[0]);
+                }
+                return question; // Keep complex objects as-is
+              })
+            );
+            setCurrentStarters(adjustedQuestions);
+          } catch (error) {
+            console.error('Error adjusting custom category depth:', error);
+            setCurrentStarters(customCategories[selectedCategory]); // Fallback to original
+          }
+        }
+      };
+      applyDepthToCustomCategory();
     }
-  }, [depthLevel, selectedCategory, isCustom]);
+  }, [depthLevel, selectedCategory, isCustom, customCategories]);
 
   // Preload other popular categories in background for instant switching
   React.useEffect(() => {
@@ -671,14 +692,36 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
         ).slice(0, 8);
         
         if (questions.length > 0) {
-          setCurrentStarters(questions);
+          // Apply depth adjustment to custom category questions
+          const adjustedQuestions = await Promise.all(
+            questions.map(async (question) => {
+              if (typeof question === 'string') {
+                return await adjustQuestionDepth(question, depthLevel[0]);
+              }
+              return question; // Keep complex objects as-is
+            })
+          );
+          setCurrentStarters(adjustedQuestions);
           setCurrentQuestionIndex(0);
         }
       } catch (error) {
         console.error('Error loading more starters:', error);
-        // Fallback: shuffle the existing questions
+        // Fallback: shuffle the existing questions and apply depth adjustment
         const shuffled = [...customCategories[selectedCategory]].sort(() => Math.random() - 0.5);
-        setCurrentStarters(shuffled);
+        try {
+          const adjustedQuestions = await Promise.all(
+            shuffled.map(async (question) => {
+              if (typeof question === 'string') {
+                return await adjustQuestionDepth(question, depthLevel[0]);
+              }
+              return question; // Keep complex objects as-is
+            })
+          );
+          setCurrentStarters(adjustedQuestions);
+        } catch (adjustError) {
+          // Ultimate fallback: use original questions
+          setCurrentStarters(shuffled);
+        }
         setCurrentQuestionIndex(0);
       }
     } else {
@@ -762,7 +805,24 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
     // Check if it's a custom category
     if (customCategories[categoryName]) {
       setIsCustom(true);
-      setCurrentStarters(customCategories[categoryName]);
+      // Apply depth adjustment to custom category questions
+      const applyDepthToCustomCategory = async () => {
+        try {
+          const adjustedQuestions = await Promise.all(
+            customCategories[categoryName].map(async (question) => {
+              if (typeof question === 'string') {
+                return await adjustQuestionDepth(question, depthLevel[0]);
+              }
+              return question; // Keep complex objects as-is
+            })
+          );
+          setCurrentStarters(adjustedQuestions);
+        } catch (error) {
+          console.error('Error adjusting custom category depth:', error);
+          setCurrentStarters(customCategories[categoryName]); // Fallback to original
+        }
+      };
+      applyDepthToCustomCategory();
       setCurrentQuestionIndex(0);
       setShowCategorySelection(false); // Move to question display
     } else {
