@@ -362,9 +362,13 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
                       </div>
                     </div>
                   ) : (
-                    <p className="text-xl sm:text-2xl font-bold text-white leading-relaxed text-center px-4">
-                      {getQuestionText(currentStarters[currentQuestionIndex])}
-                    </p>
+                    <div className="text-xl sm:text-2xl font-bold text-white leading-relaxed text-center px-4">
+                      {getQuestionText(currentStarters[currentQuestionIndex]).split('\n').map((line, index) => (
+                        <div key={index} className={index === 0 ? "mb-3" : "text-left text-base mb-1"}>
+                          {line}
+                        </div>
+                      ))}
+                    </div>
                   )}
                 </div>
               </CardContent>
