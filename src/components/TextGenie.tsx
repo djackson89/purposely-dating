@@ -441,16 +441,18 @@ Perspective: [explanation]
 Keep replies concise (max 2 sentences each). Focus on responses that build chemistry, show interest, and create romantic momentum.`;
 
       } else {
-        // UNCLEAR or fallback
-        responsePrompt = `The incoming message needs clarification: ${contextText}
+        // UNCLEAR or fallback - assume potential manipulation unless clearly positive
+        responsePrompt = `The incoming message is unclear or ambiguous: ${contextText}
 
-Generate 3 response suggestions focused on UNDERSTANDING and ENGAGEMENT:
+You are a relationship coach specializing in manipulation detection and boundary-setting. When someone is vague or confusing, assume it could be a manipulation tactic rather than flirtation (unless the flirtation is obvious and certain). Generate 3 response suggestions that help the user gain CLARITY and establish BOUNDARIES:
 
-1. Sweet: A curious, caring response that seeks to understand their meaning
-2. Mild: A direct but friendly response that asks for clarification
-3. Spicy: A confident response that either clarifies your position or playfully calls out the ambiguity
+1. Sweet: A warm but direct response that asks for specific clarification about their intentions or meaning
+2. Mild: An assertive response with 1-2 specific questions that would give the user clarity on potentially negative situations or relationship directions (avoid vague questions like "Can we discuss our expectations?" - instead ask specific questions like "How do you define that exactly? Is it a feeling you're looking to have or something tangible you're looking to establish?")
+3. Spicy: A confident, direct response that calls out the ambiguity and demands clear communication or sets boundaries
 
-For each reply, provide a "Purposely Perspective" explaining the strategic approach (max 2 sentences).
+Each response should help her get specific answers that protect her from confusion, manipulation, or unclear intentions.
+
+For each reply, provide a "Purposely Perspective" explaining how this response serves her need for clarity and emotional safety (max 2 sentences).
 
 Format as:
 Sweet: [reply text]
@@ -462,7 +464,7 @@ Perspective: [explanation]
 Spicy: [reply text]
 Perspective: [explanation]
 
-Keep replies concise (max 2 sentences each). Focus on responses that either seek clarity or demonstrate confidence.`;
+Keep replies concise (max 2 sentences each). Focus on responses that demand specificity and protect against potential manipulation through vagueness.`;
       }
 
       const response = await getFlirtSuggestion(responsePrompt, userProfile);
