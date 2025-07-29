@@ -308,7 +308,7 @@ const TextGenie: React.FC<TextGenieProps> = ({ userProfile }) => {
       }
 
       // First, get the Purposely Perspective using therapy mode
-      const perspectivePrompt = `Analyze this message/situation and provide a brief "Purposely Perspective" (1-2 sentences max) that validates their intuition and identifies potential red flags: ${contextText}`;
+      const perspectivePrompt = `Analyze this message/situation and explain why the toxic implications are detrimental. Focus on what this behavior indicates about his character, emotional maturity, and viability as a long-term partner. Keep it to 2-3 sentences max: ${contextText}`;
       const perspective = await getAIResponse(perspectivePrompt, userProfile, 'therapy');
       setPurposelyPerspective(perspective.trim());
 
@@ -423,17 +423,17 @@ const TextGenie: React.FC<TextGenieProps> = ({ userProfile }) => {
         contextText += (contextText ? '\n\n' : '') + `Screenshot Analysis:\n${imageAnalysis}`;
       }
 
-      const newPerspectivePrompt = `The user disagreed with the previous assessment. As a no-nonsense relationship coach specializing in boundaries and manipulation detection, provide a DIFFERENT "Purposely Perspective" on this message/situation: ${contextText}
+      const newPerspectivePrompt = `The user wants a different perspective on this situation. Analyze the toxic implications from a different angle and explain what this behavior indicates about his character, emotional maturity, and viability as a long-term partner: ${contextText}
 
 Your new response should:
-- Offer a completely different interpretation than before, but still assume potential toxicity unless obviously positive
-- Look for different red flags or manipulation tactics
-- Focus on boundary-setting and self-advocacy
-- Use direct, protective language about their worth and peace
-- Be 1-2 sentences maximum with tough-love energy
-- Channel the energy: "Your anxiety around them isn't chemistry—it's your nervous system's alarm system"
+- Examine different red flags or manipulation tactics than previously identified
+- Focus on what this reveals about his long-term relationship potential
+- Explain why this behavior pattern is detrimental to healthy relationships
+- Address his emotional intelligence and capacity for growth
+- Keep it to 2-3 sentences maximum
+- Use direct, protective language about relationship standards
 
-Give the user a fresh but equally protective way to view the situation.`;
+Provide a fresh analytical perspective on why this behavior is problematic for long-term partnership.`;
 
       const newPerspective = await getFlirtSuggestion(newPerspectivePrompt, userProfile);
       setPurposelyPerspective(newPerspective.trim());
