@@ -232,9 +232,9 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
                   <p className="text-xs text-muted-foreground mt-2">- Anonymous</p>
                 </div>
                 
-                <div className="p-4 bg-gradient-romance rounded-lg border border-primary/20">
-                  <p className="text-sm font-semibold text-white mb-2">Purposely Says:</p>
-                  <p className="text-white leading-relaxed">
+                <div className="p-4 bg-white rounded-lg border border-border">
+                  <p className="text-sm font-semibold text-foreground mb-2">Purposely Says:</p>
+                  <p className="text-foreground leading-relaxed">
                     {getCurrentScenario().answer}
                   </p>
                 </div>
@@ -270,9 +270,9 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
                 />
                 
                 {purposelyResponse && (
-                  <div className="p-4 bg-gradient-romance rounded-lg border border-primary/20">
-                    <p className="text-sm font-semibold text-white mb-2">Purposely Perspective:</p>
-                    <p className="text-white leading-relaxed">
+                  <div className="p-4 bg-white rounded-lg border border-border">
+                    <p className="text-sm font-semibold text-foreground mb-2">Purposely Perspective:</p>
+                    <p className="text-foreground leading-relaxed">
                       {purposelyResponse}
                     </p>
                   </div>
