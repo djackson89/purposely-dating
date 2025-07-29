@@ -31,6 +31,7 @@ interface FlirtFuelModuleProps {
 
 const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
   const [activeSection, setActiveSection] = useState<'starters' | 'practice' | 'textgenie'>('starters');
+  const [masterCategory, setMasterCategory] = useState('Date Night');
   const [showCategorySelection, setShowCategorySelection] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('Relationship Talk');
   const [customKeywords, setCustomKeywords] = useState('');
@@ -144,7 +145,8 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
           ]
     },
     {
-      category: "Relationship Clarity", 
+      category: "Relationship Clarity",
+      masterCategory: "Date Night", 
       prompts: [
         `Since your love language is ${userProfile.loveLanguage}, how do you communicate when you're not feeling loved in that way?`,
         "What's the difference between how you show love when you feel secure versus when you feel anxious?",
@@ -158,6 +160,7 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
     },
     {
       category: "Boundaries & Values",
+      masterCategory: "Date Night",
       prompts: [
         "How do you feel about maintaining friendships with people of the opposite sex while in a relationship?",
         "What are your thoughts on partner transparency with social media interactions and online activities?",
@@ -175,6 +178,7 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
     },
     {
       category: "Trust & Transparency",
+      masterCategory: "Date Night",
       prompts: [
         "True or False: Complete transparency about daily interactions should be standard in healthy relationships.",
         "True or False: A partner's reluctance to share phone passwords indicates they have something to hide.",
@@ -195,6 +199,7 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
     },
     {
       category: "Intimacy & Connection",
+      masterCategory: "Date Night",
       prompts: [
         "How do you differentiate between physical chemistry and deeper emotional intimacy?",
         "What does it mean to you when someone makes you feel emotionally safe during vulnerable moments?",
@@ -212,6 +217,7 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
     },
     {
       category: "Communication & Conflict",
+      masterCategory: "Date Night",
       prompts: [
         "How do you recognize when you're being defensive versus when you're legitimately protecting yourself?",
         "What's the difference between someone who avoids conflict and someone who chooses their battles wisely?",
@@ -229,6 +235,7 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
     },
     {
       category: "Red Flags & Green Flags",
+      masterCategory: "Date Night",
       prompts: [
         "What's a subtle red flag that most people overlook but you've learned to watch for?",
         "How do you distinguish between someone who's going through a rough patch and someone who has concerning patterns?",
@@ -246,6 +253,7 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
     },
     {
       category: "Emotional Intelligence",
+      masterCategory: "Date Night",
       prompts: [
         "How do you differentiate between someone having strong boundaries and someone being emotionally unavailable?",
         "What does it look like when someone takes responsibility for their emotional triggers?",
@@ -263,6 +271,7 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
     },
     {
       category: "Values & Future Vision",
+      masterCategory: "Date Night",
       prompts: [
         "How do you navigate when you and a partner have different timelines for relationship milestones?",
         "What does financial compatibility mean beyond just earning similar amounts?",
@@ -280,6 +289,7 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
     },
     {
       category: "Self-Awareness & Growth",
+      masterCategory: "Date Night",
       prompts: [
         "What insecurities do you recognize as your own responsibility to address rather than your partner's to manage?",
         "How has your understanding of healthy love evolved from your earlier relationships?",
@@ -297,6 +307,7 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
     },
     {
       category: "Date Night Debates",
+      masterCategory: "Date Night",
       type: "multiple-choice",
       prompts: [
         {
@@ -389,6 +400,103 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
             { key: "D", text: "Strongly Disagree — Y'all just need better drinks" }
           ]
         }
+      ]
+    },
+    
+    // Girl's Night Categories
+    {
+      category: "Pillow Talk & Tea",
+      masterCategory: "Girl's Night",
+      type: "multiple-choice",
+      prompts: [
+        {
+          statement: "What's your ultimate turn-on during a makeout session?",
+          options: [
+            { key: "A", text: "Neck kisses" },
+            { key: "B", text: "Whispering in my ear" },
+            { key: "C", text: "Hands exploring slowly" },
+            { key: "D", text: "Being pinned down" }
+          ]
+        },
+        {
+          statement: "Your biggest bedroom confession that you'd only tell your girls:",
+          options: [
+            { key: "A", text: "I fake it sometimes to end it faster" },
+            { key: "B", text: "I think about someone else during" },
+            { key: "C", text: "I've never had the Big O with a partner" },
+            { key: "D", text: "I'm way kinkier than I let on" }
+          ]
+        },
+        {
+          statement: "The sexiest thing a man can do outside the bedroom:",
+          options: [
+            { key: "A", text: "Cook me dinner without being asked" },
+            { key: "B", text: "Defend me when I'm not around" },
+            { key: "C", text: "Handle his business like a grown man" },
+            { key: "D", text: "Make me laugh until I cry" }
+          ]
+        },
+        {
+          statement: "What would make you instantly end a hookup?",
+          options: [
+            { key: "A", text: "Bad hygiene situation" },
+            { key: "B", text: "Selfish lover vibes" },
+            { key: "C", text: "Too aggressive too fast" },
+            { key: "D", text: "Weird dirty talk" }
+          ]
+        }
+      ]
+    },
+    {
+      category: "Retrograde & Regrets",
+      masterCategory: "Girl's Night",
+      type: "true-false",
+      prompts: [
+        "True or False: You always fall hardest when Mercury is in retrograde and you're ghosting a Libra.",
+        "True or False: Air signs give the best head but the worst commitment.",
+        "True or False: Dating a Scorpio is like signing up for beautiful trauma.",
+        "True or False: Earth signs are boring in bed but amazing at building a life.",
+        "True or False: Fire signs will have you catching feelings and catching flights.",
+        "True or False: Your ex's zodiac sign explains 90% of why y'all didn't work.",
+        "True or False: Water signs will drown you in emotions then act surprised when you're suffocating.",
+        "True or False: Every time you check your horoscope, it's basically asking your ex back.",
+        "True or False: Geminis are just commitment-phobic Virgos who haven't found their person yet.",
+        "True or False: Leo season makes everyone think they deserve better than they do."
+      ]
+    },
+    {
+      category: "Vulnerable & Valid",
+      masterCategory: "Girl's Night",
+      prompts: [
+        "What's one way you've outgrown the version of yourself who accepted the bare minimum in love?",
+        "How has healing your relationship with your father changed what you look for in men?",
+        "What's a fear about love that you're still working through with your therapist?",
+        "When did you realize that being alone was better than being with the wrong person?",
+        "What's something you need to forgive yourself for in your past relationships?",
+        "How do you show yourself the love you wish you'd received growing up?",
+        "What's a boundary you had to set that felt mean but was necessary for your peace?",
+        "What's the most healing thing someone has ever said to you about your worth?",
+        "How do you know when someone is safe enough to share your triggers with?",
+        "What does unconditional self-love look like when you're having an off day?",
+        "What's a toxic pattern you inherited that you're determined not to pass on?",
+        "How has your definition of emotional safety evolved as you've gotten older?"
+      ]
+    },
+    {
+      category: "Hot Mess Express",
+      masterCategory: "Girl's Night",
+      type: "would-you-rather",
+      prompts: [
+        "Would you rather: Catch feelings for your sneaky link OR get back with your toxic ex during cuffing season?",
+        "Would you rather: Send a thirst trap to your ex by accident OR have your mom find your dating app?",
+        "Would you rather: Date someone with an ugly car OR someone with an ugly laugh?",
+        "Would you rather: Be the side chick to someone rich OR the main girl to someone broke?",
+        "Would you rather: Have amazing sex with bad conversation OR amazing conversation with bad sex?",
+        "Would you rather: Accidentally like your ex's new girl's photo OR have her slide into your DMs asking about him?",
+        "Would you rather: Date someone your friends hate OR someone your family loves but you're not attracted to?",
+        "Would you rather: Get caught stalking his social media OR have him catch you talking about him to your girls?",
+        "Would you rather: Date someone with daddy issues OR someone with mommy issues?",
+        "Would you rather: Be single for 5 years OR settle for someone who's 'fine' for the rest of your life?"
       ]
     }
   ];
@@ -1173,6 +1281,7 @@ Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid gen
         <ConversationStartersSection
           userProfile={userProfile}
           conversationStarters={conversationStarters}
+          masterCategory={masterCategory}
           selectedCategory={selectedCategory}
           customKeywords={customKeywords}
           currentStarters={currentStarters}
@@ -1189,6 +1298,7 @@ Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid gen
           touchStart={touchStart}
           touchEnd={touchEnd}
           showCategorySelection={showCategorySelection}
+          setMasterCategory={setMasterCategory}
           setShowCategorySelection={setShowCategorySelection}
           setSelectedCategory={setSelectedCategory}
           setCustomKeywords={setCustomKeywords}

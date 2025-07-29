@@ -17,6 +17,7 @@ interface OnboardingData {
 
 interface ConversationStarter {
   category: string;
+  masterCategory?: string;
   type?: string;
   prompts: (string | { statement: string; options: { key: string; text: string; }[] })[];
 }
@@ -24,6 +25,7 @@ interface ConversationStarter {
 interface ConversationStartersSectionProps {
   userProfile: OnboardingData;
   conversationStarters: ConversationStarter[];
+  masterCategory: string;
   selectedCategory: string;
   customKeywords: string;
   currentStarters: (string | { statement: string; options: { key: string; text: string; }[] })[];
@@ -40,6 +42,7 @@ interface ConversationStartersSectionProps {
   touchStart: { x: number; y: number };
   touchEnd: { x: number; y: number };
   showCategorySelection: boolean;
+  setMasterCategory: (category: string) => void;
   setShowCategorySelection: (show: boolean) => void;
   setSelectedCategory: (category: string) => void;
   setCustomKeywords: (keywords: string) => void;
@@ -68,6 +71,7 @@ interface ConversationStartersSectionProps {
 const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = React.memo(({
   userProfile,
   conversationStarters,
+  masterCategory,
   selectedCategory,
   customKeywords,
   currentStarters,
@@ -83,6 +87,7 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
   touchStart,
   touchEnd,
   showCategorySelection,
+  setMasterCategory,
   setShowCategorySelection,
   setSelectedCategory,
   setCustomKeywords,
@@ -124,7 +129,11 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
     "Getting to Know You": "🤝",
     "Future Plans": "🏡",
     "Personal Growth": "🌟",
-    "Fun & Playful": "🎭"
+    "Fun & Playful": "🎭",
+    "Pillow Talk & Tea": "🛏️",
+    "Retrograde & Regrets": "🌙",
+    "Vulnerable & Valid": "💕",
+    "Hot Mess Express": "🚂"
   }), []);
 
   // Memoized descriptions to prevent recreation
@@ -144,7 +153,11 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
     "Getting to Know You": "Discover each other's personalities and histories",
     "Future Plans": "Discuss dreams, goals, and shared visions",
     "Personal Growth": "Explore self-improvement and development",
-    "Fun & Playful": "Light-hearted questions for laughs and bonding"
+    "Fun & Playful": "Light-hearted questions for laughs and bonding",
+    "Pillow Talk & Tea": "Spill your secrets with a flirty twist - bedroom confessions & sexy secrets",
+    "Retrograde & Regrets": "Let the stars drag your dating life - zodiac-inspired relationship questions",
+    "Vulnerable & Valid": "Safe space conversations for emotional intimacy and growth",
+    "Hot Mess Express": "Unleash your chaos queen - girl-talk about dating drama"
   }), []);
 
   const getDescription = React.useCallback((category: string): string => {
@@ -166,48 +179,36 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
         </div>
       </div>
 
-      {/* Category Selection */}
+      {/* Master Category Selection */}
       {showCategorySelection && (
         <div className="space-y-3">
-          <Label className="text-sm font-medium">Choose Category:</Label>
+          <div className="flex items-center gap-3">
+            <Label className="text-sm font-medium">Choose Category:</Label>
+            <div className="flex gap-2">
+              <Button
+                variant={masterCategory === 'Date Night' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setMasterCategory('Date Night')}
+                className="rounded-full px-4 py-1 text-xs"
+              >
+                🌹 Date Night
+              </Button>
+              <Button
+                variant={masterCategory === "Girl's Night" ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setMasterCategory("Girl's Night")}
+                className="rounded-full px-4 py-1 text-xs"
+              >
+                👯‍♀️ Girl's Night
+              </Button>
+            </div>
+          </div>
           <div className="grid grid-cols-1 gap-3">
-            {/* Date Night Debates first */}
+            {/* Filtered categories based on master category */}
             {conversationStarters
-              .filter(starter => starter.category === "Date Night Debates")
-              .map((starter) => (
-                <Card
-                  key={starter.category}
-                  className={`cursor-pointer transition-all duration-200 border-2 ${
-                    selectedCategory === starter.category
-                      ? 'border-primary bg-primary/5 shadow-md'
-                      : 'border-border hover:border-primary/50 hover:shadow-sm'
-                  }`}
-                  onClick={() => selectCategory(starter.category)}
-                >
-                  <CardContent className="flex items-center p-4 space-x-4">
-                    <div className="text-2xl">🎯</div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-semibold text-foreground">
-                          {starter.category}
-                        </h3>
-                        {starter.type === 'multiple-choice' && (
-                          <span className="text-xs bg-accent text-accent-foreground px-2 py-0.5 rounded-full">
-                            Debate
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {getDescription(starter.category)}
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-
-            {/* Other predefined categories (excluding Date Night Debates) */}
-            {conversationStarters
-              .filter(starter => starter.category !== "Date Night Debates")
+              .filter(starter => 
+                (starter.masterCategory || 'Date Night') === masterCategory
+              )
               .map((starter) => (
                 <Card
                   key={starter.category}
@@ -229,7 +230,17 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
                         </h3>
                         {starter.type === 'multiple-choice' && (
                           <span className="text-xs bg-accent text-accent-foreground px-2 py-0.5 rounded-full">
-                            Debate
+                            Multiple Choice
+                          </span>
+                        )}
+                        {starter.type === 'true-false' && (
+                          <span className="text-xs bg-secondary text-secondary-foreground px-2 py-0.5 rounded-full">
+                            True/False
+                          </span>
+                        )}
+                        {starter.type === 'would-you-rather' && (
+                          <span className="text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded-full">
+                            Would You Rather
                           </span>
                         )}
                       </div>
