@@ -398,10 +398,23 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
         2: "Transform this into a deep, psychological conversation starter (225 chars max). Mix between: 1) Multiple choice with format 'Question?\nA. Option\nB. Option\nC. Option\nD. Option', 2) Open-ended questions, 3) True/False statements. Focus on self-awareness and emotional intelligence. Vary the question type randomly."
       };
 
-      const prompt = `Take this conversation starter: "${originalQuestion}" and ${depthInstructions[depth as keyof typeof depthInstructions]} Keep the core intent but adjust the tone and complexity. Return only the adjusted question.`;
+      const prompt = `Take this conversation starter: "${originalQuestion}" and ${depthInstructions[depth as keyof typeof depthInstructions]} Keep the core intent but adjust the tone and complexity. Return ONLY ONE question. Do not add multiple questions or extra text.`;
       
       const response = await getAIResponse(prompt, userProfile, 'general');
-      return response.trim().replace(/^["']|["']$/g, ''); // Remove quotes if present
+      
+      // Clean and process the response
+      let cleanedResponse = response.trim().replace(/^["']|["']$/g, ''); // Remove quotes if present
+      
+      // If multiple questions are detected, take only the first one
+      const questionSeparators = /\?\s*(?:[A-Z]|\n|$)/;
+      if (questionSeparators.test(cleanedResponse)) {
+        const firstQuestionMatch = cleanedResponse.match(/^.*?\?(?:\n[A-D]\..*)*$/m);
+        if (firstQuestionMatch) {
+          cleanedResponse = firstQuestionMatch[0];
+        }
+      }
+      
+      return cleanedResponse;
     } catch (error) {
       console.error('Error adjusting question depth:', error);
       return originalQuestion; // Fallback to original
