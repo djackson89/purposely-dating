@@ -88,7 +88,7 @@ const QuickStartModule: React.FC<QuickStartProps> = ({ onNavigateToModule }) => 
   };
 
   return (
-    <div className="w-full px-4 mb-16">
+    <div className="w-full px-4 mb-6">
       <div className="mb-6">
         <h2 className="text-2xl font-bold text-foreground mb-2">Quick Start</h2>
         <p className="text-muted-foreground">Choose your journey</p>
@@ -105,7 +105,7 @@ const QuickStartModule: React.FC<QuickStartProps> = ({ onNavigateToModule }) => 
           {quickStartItems.map((item) => (
             <CarouselItem key={item.id} className="pl-2 basis-1/2 sm:basis-1/3 md:basis-1/4">
               <Card 
-                className="cursor-pointer transition-all duration-300 hover:scale-105 border-0 overflow-hidden h-52 shadow-2xl hover:shadow-3xl"
+                className="cursor-pointer transition-all duration-300 hover:scale-105 border-0 overflow-hidden h-44 shadow-2xl hover:shadow-3xl"
                 onClick={() => handleCardClick(item)}
               >
                 <CardContent className="p-0 h-full relative">

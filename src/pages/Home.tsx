@@ -384,6 +384,9 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
         </CardContent>
       </Card>
 
+      {/* Quick Start Module */}
+      <QuickStartModule onNavigateToModule={handleQuickStartNavigation} />
+
       {/* Invite a Friend */}
       <div className="space-y-4">
         <Card className="w-full shadow-elegant border-primary/20 bg-gradient-burgundy">
@@ -404,9 +407,6 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
           Invite a Friend to Try Purposely
         </Button>
       </div>
-
-      {/* Quick Start Module */}
-      <QuickStartModule onNavigateToModule={handleQuickStartNavigation} />
     </div>
   );
 };
