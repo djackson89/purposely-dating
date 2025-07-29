@@ -138,7 +138,8 @@ const QuickStartModule: React.FC<QuickStartProps> = ({ onNavigateToModule }) => 
                           <img 
                             src={item.customImage} 
                             alt={item.title}
-                            className="w-24 h-24 sm:w-28 sm:h-28 object-contain drop-shadow-lg" 
+                            className="w-24 h-24 sm:w-28 sm:h-28 object-contain drop-shadow-lg mix-blend-normal" 
+                            style={{ backgroundColor: 'transparent' }}
                           />
                         </div>
                       ) : (
