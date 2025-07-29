@@ -257,9 +257,6 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
         <p className="text-muted-foreground">Your daily dose of relationship growth</p>
       </div>
 
-      {/* Quick Start Module */}
-      <QuickStartModule onNavigateToModule={handleQuickStartNavigation} />
-
       {/* Daily Question of the Day */}
       <Card className="shadow-romance border-primary/20">
         <CardHeader>
@@ -407,6 +404,9 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
           Invite a Friend to Try Purposely
         </Button>
       </div>
+
+      {/* Quick Start Module */}
+      <QuickStartModule onNavigateToModule={handleQuickStartNavigation} />
     </div>
   );
 };
