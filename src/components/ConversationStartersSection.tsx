@@ -146,17 +146,24 @@ const ConversationStartersSection = memo<ConversationStartersSectionProps>(({
                 onChange={(e) => setCustomKeywords(e.target.value)}
                 className="flex-1 min-w-0"
               />
-              <Button
-                onClick={() => {
-                  generateCustomStarters();
-                  setShowCategorySelection(false);
-                }}
-                disabled={isTransforming || !customKeywords.trim()}
-                variant="romance"
-                className="whitespace-nowrap"
-              >
-                {isTransforming ? '...' : 'Generate'}
-              </Button>
+                  <Button
+                    onClick={() => {
+                      generateCustomStarters();
+                      setShowCategorySelection(false);
+                    }}
+                    disabled={isTransforming || !customKeywords.trim()}
+                    variant="romance"
+                    className="whitespace-nowrap"
+                  >
+                    {isTransforming ? (
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        <span>Generating...</span>
+                      </div>
+                    ) : (
+                      'Generate'
+                    )}
+                  </Button>
             </div>
           </CardContent>
         </Card>

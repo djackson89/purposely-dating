@@ -86,7 +86,7 @@ export const useConversationStarters = (
     return isMultipleChoice(question) ? question.statement : question;
   }, [isMultipleChoice]);
 
-  // Optimized category selection with caching
+  // Optimized category selection with depth-based filtering
   const selectCategory = useCallback((category: string) => {
     const cacheKey = `${category}-${depthLevel[0]}`;
     
@@ -118,8 +118,27 @@ export const useConversationStarters = (
 
     const starterCategory = filteredStarters.find(s => s.category === category);
     if (starterCategory) {
-      setCurrentStarters(starterCategory.prompts);
-      setQuestionCache(prev => new Map(prev).set(cacheKey, starterCategory.prompts));
+      // Apply depth-based filtering to questions
+      let filteredPrompts = starterCategory.prompts;
+      
+      // For depth filtering, we'll slice different portions of the questions array
+      const totalQuestions = filteredPrompts.length;
+      if (depthLevel[0] === 0) {
+        // Light: Use first third of questions (lighter topics)
+        filteredPrompts = filteredPrompts.slice(0, Math.ceil(totalQuestions / 3));
+      } else if (depthLevel[0] === 1) {
+        // Casual: Use middle third of questions
+        const start = Math.floor(totalQuestions / 3);
+        const end = Math.ceil((totalQuestions * 2) / 3);
+        filteredPrompts = filteredPrompts.slice(start, end);
+      } else {
+        // Deep: Use last third of questions (deeper topics)
+        const start = Math.floor((totalQuestions * 2) / 3);
+        filteredPrompts = filteredPrompts.slice(start);
+      }
+      
+      setCurrentStarters(filteredPrompts);
+      setQuestionCache(prev => new Map(prev).set(cacheKey, filteredPrompts));
       setSelectedCategory(category);
       setCurrentQuestionIndex(0);
       setIsCustom(false);
@@ -210,6 +229,24 @@ export const useConversationStarters = (
       selectCategory(filteredStarters[0].category);
     }
   }, [filteredStarters, selectCategory]);
+
+  // Re-apply depth filtering when depth level changes
+  useEffect(() => {
+    if (selectedCategory && selectedCategory !== 'Customize' && !isCustom) {
+      // Clear cache for current category and re-select to apply new depth
+      setQuestionCache(prev => {
+        const newCache = new Map(prev);
+        // Remove all cache entries for the current category
+        for (const [key] of newCache) {
+          if (key.startsWith(selectedCategory + '-')) {
+            newCache.delete(key);
+          }
+        }
+        return newCache;
+      });
+      selectCategory(selectedCategory);
+    }
+  }, [depthLevel, selectedCategory, isCustom, selectCategory]);
 
   return {
     // State
