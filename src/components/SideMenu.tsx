@@ -8,9 +8,11 @@ import {
   Calendar, 
   Heart, 
   BookOpen,
-  X
+  X,
+  HelpCircle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import SupportDialog from '@/components/SupportDialog';
 
 interface SideMenuProps {
   isOpen: boolean;
@@ -21,6 +23,7 @@ interface SideMenuProps {
 const SideMenu: React.FC<SideMenuProps> = ({ isOpen, onClose, onNavigateToModule }) => {
   const menuRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
+  const [showSupportDialog, setShowSupportDialog] = useState(false);
 
   const menuItems = [
     { id: 'profile', label: 'Profile', icon: User },
@@ -76,6 +79,10 @@ const SideMenu: React.FC<SideMenuProps> = ({ isOpen, onClose, onNavigateToModule
       onNavigateToModule(targetModule);
     }
     onClose();
+  };
+
+  const handleSupportClick = () => {
+    setShowSupportDialog(true);
   };
 
   const handleOverlayClick = (e: React.MouseEvent) => {
@@ -140,6 +147,17 @@ const SideMenu: React.FC<SideMenuProps> = ({ isOpen, onClose, onNavigateToModule
           })}
         </div>
 
+        {/* Support Section */}
+        <div className="border-t border-border">
+          <button
+            onClick={handleSupportClick}
+            className="w-full flex items-center space-x-4 px-6 py-4 hover:bg-muted/50 transition-colors text-left"
+          >
+            <HelpCircle className="w-6 h-6 text-primary" />
+            <span className="text-lg font-bold text-primary">Support</span>
+          </button>
+        </div>
+
         {/* Footer */}
         <div className="p-6 border-t border-border">
           <p className="text-xs text-muted-foreground text-center">
@@ -147,6 +165,12 @@ const SideMenu: React.FC<SideMenuProps> = ({ isOpen, onClose, onNavigateToModule
           </p>
         </div>
       </div>
+
+      {/* Support Dialog */}
+      <SupportDialog 
+        isOpen={showSupportDialog} 
+        onClose={() => setShowSupportDialog(false)} 
+      />
     </>
   );
 };
