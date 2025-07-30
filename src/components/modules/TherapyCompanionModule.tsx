@@ -337,7 +337,7 @@ const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userPro
     });
   };
 
-  const dailyPrompt = userProfile.personalityType.includes("Introspective") 
+  const dailyPrompt = userProfile.personalityType?.includes("Introspective") 
     ? "What inner dialogue has been most prominent today, and how has it affected your relationships?"
     : "What moments of connection did you create or experience today?";
 
