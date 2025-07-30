@@ -16,6 +16,7 @@ const config: CapacitorConfig = {
       NSPhotoLibraryAddUsageDescription: 'This app saves processed images (such as background-removed photos) to your photo library so you can use them in your dating profiles.',
       NSFaceIDUsageDescription: 'This app uses Face ID for secure authentication to protect your privacy and personal information.',
       NSUserTrackingUsageDescription: 'This app uses tracking data to provide personalized dating recommendations and improve your experience. You can opt out at any time.',
+      NSLocationWhenInUseUsageDescription: 'This app uses your location to show you potential matches nearby and help you connect with people in your area.',
       NSMicrophoneUsageDescription: 'This app uses your microphone to record voice messages for relationship advice and profile enhancement.',
       CFBundleDisplayName: 'Purposely',
       CFBundleName: 'Purposely'
