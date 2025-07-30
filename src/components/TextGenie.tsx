@@ -52,7 +52,7 @@ interface UploadedImage {
   file?: File;
 }
 
-const TextGenie: React.FC<TextGenieProps> = memo(({ userProfile }) => {
+const TextGenie: React.FC<TextGenieProps> = ({ userProfile }) => {
   const [description, setDescription] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [isRetrying, setIsRetrying] = useState(false);
@@ -793,6 +793,6 @@ Provide a fresh analytical perspective on why this behavior is problematic for l
       )}
     </div>
   );
-});
+};
 
-export default TextGenie;
+export default React.memo(TextGenie);
