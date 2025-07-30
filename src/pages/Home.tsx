@@ -3,10 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Share2, MessageCircle, Send } from 'lucide-react';
+import { Share2, MessageCircle, Send, Menu } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useRelationshipAI } from '@/hooks/useRelationshipAI';
 import QuickStartModule from '@/components/QuickStartModule';
+import SideMenu from '@/components/SideMenu';
 
 interface OnboardingData {
   loveLanguage: string;
@@ -37,6 +38,7 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
   const [purposelyResponse, setPurposelyResponse] = useState('');
   const [isLoadingResponse, setIsLoadingResponse] = useState(false);
   const [currentScenarioIndex, setCurrentScenarioIndex] = useState(0);
+  const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
   
   // Touch/swipe handling state
   const [touchStart, setTouchStart] = useState<number | null>(null);
@@ -248,8 +250,16 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
     const isLeftSwipe = distance > minSwipeDistance;
     const isRightSwipe = distance < -minSwipeDistance;
 
+    // Left to right swipe opens side menu (only if swipe starts from left edge)
+    if (isRightSwipe && touchStart < 50) {
+      setIsSideMenuOpen(true);
+      toast({
+        title: "Menu Opened! 📱",
+        description: "Navigate to different features from here!",
+      });
+    }
     // Right to left swipe navigates to Conversation Starters
-    if (isLeftSwipe) {
+    else if (isLeftSwipe) {
       onNavigateToFlirtFuel();
       toast({
         title: "Swiped to Conversation Starters! 💬",
@@ -267,9 +277,18 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
     >
       {/* Header */}
       <div className="text-center space-y-4">
-        <h1 className="text-2xl font-bold bg-gradient-romance bg-clip-text text-transparent">
-          Purposely 💕
-        </h1>
+        <div className="flex items-center justify-between">
+          <button
+            onClick={() => setIsSideMenuOpen(true)}
+            className="p-2 hover:bg-white/10 rounded-full transition-colors"
+          >
+            <Menu className="w-6 h-6 text-primary" />
+          </button>
+          <h1 className="text-2xl font-bold bg-gradient-romance bg-clip-text text-transparent">
+            Purposely 💕
+          </h1>
+          <div className="w-10 h-10" /> {/* Spacer for center alignment */}
+        </div>
         
         {/* Invite Partner Banner */}
         <div className="w-screen bg-gradient-to-r from-burgundy to-primary -mx-4 relative left-1/2 right-1/2 ml-[-50vw] mr-[-50vw]">
@@ -421,6 +440,13 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
 
       {/* Quick Start Module */}
       <QuickStartModule onNavigateToModule={handleQuickStartNavigation} />
+
+      {/* Side Menu */}
+      <SideMenu 
+        isOpen={isSideMenuOpen}
+        onClose={() => setIsSideMenuOpen(false)}
+        onNavigateToModule={onNavigateToModule}
+      />
     </div>
   );
 };
