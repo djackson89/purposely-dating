@@ -11,7 +11,7 @@ const config: CapacitorConfig = {
   },
   ios: {
     infoPlist: {
-      NSPhotoLibraryUsageDescription: 'This app accesses your photo library to let you select profile pictures, upload conversation screenshots for AI relationship advice, and remove image backgrounds to enhance your dating profile photos.',
+      NSPhotoLibraryUsageDescription: 'This app needs access to your photo library to help you select and enhance photos for your dating profile. You can choose existing photos to upload as profile pictures and use our background removal feature to create better dating photos.',
       NSCameraUsageDescription: 'This app uses your camera to take new profile pictures and capture conversation screenshots that you can analyze with our AI relationship coach.',
       NSPhotoLibraryAddUsageDescription: 'This app saves processed images (such as background-removed photos) to your photo library so you can use them in your dating profiles.',
       NSFaceIDUsageDescription: 'This app uses Face ID for secure authentication to protect your privacy and personal information.',
