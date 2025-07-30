@@ -15,6 +15,8 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 
 interface OnboardingData {
+  firstName: string;
+  profilePhoto?: string;
   loveLanguage: string;
   relationshipStatus: string;
   age: string;
@@ -24,6 +26,7 @@ interface OnboardingData {
 
 const Index = () => {
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
+  const [hasSeenPaywall, setHasSeenPaywall] = useState(false);
   const [userProfile, setUserProfile] = useState<OnboardingData | null>(null);
   const [activeModule, setActiveModule] = useState<'home' | 'flirtfuel' | 'concierge' | 'therapy' | 'profile'>('home');
   const [showPaywallModal, setShowPaywallModal] = useState(false);
@@ -42,10 +45,15 @@ const Index = () => {
     localStorage.removeItem('hasSeenPaywall');
     
     const savedProfile = localStorage.getItem('relationshipCompanionProfile');
-    const savedPaywall = localStorage.getItem('relationshipCompanionPaywall');
+    const savedPaywallFlag = localStorage.getItem('hasSeenPaywall');
+    
     if (savedProfile) {
       setUserProfile(JSON.parse(savedProfile));
       setHasCompletedOnboarding(true);
+    }
+    
+    if (savedPaywallFlag) {
+      setHasSeenPaywall(true);
     }
     
     // Premium users skip onboarding automatically
@@ -53,6 +61,8 @@ const Index = () => {
       if (!savedProfile) {
         // Create a default profile for premium users
         const defaultProfile: OnboardingData = {
+          firstName: 'User',
+          profilePhoto: undefined,
           loveLanguage: 'Words of Affirmation',
           relationshipStatus: 'Single',
           age: '25-30',
@@ -63,6 +73,7 @@ const Index = () => {
         localStorage.setItem('relationshipCompanionProfile', JSON.stringify(defaultProfile));
       }
       setHasCompletedOnboarding(true);
+      setHasSeenPaywall(true);
     }
   }, [subscription.subscribed, subscriptionLoading]);
 
@@ -93,10 +104,13 @@ const Index = () => {
     // Start the Stripe checkout process
     await createCheckoutSession('yearly', true);
     setShowPaywallModal(false);
+    setHasSeenPaywall(true);
+    localStorage.setItem('hasSeenPaywall', 'true');
   };
 
   const handleSkipToFree = () => {
     console.log('User chose free version');
+    setHasSeenPaywall(true);
     localStorage.setItem('hasSeenPaywall', 'true');
     setShowPaywallModal(false);
   };
@@ -105,14 +119,14 @@ const Index = () => {
     setShowPaywallModal(true);
   };
 
-  // Show onboarding if not completed and not premium
-  if (!subscriptionLoading && !subscription.subscribed && (!hasCompletedOnboarding || !userProfile)) {
-    return <OnboardingFlow onComplete={handleOnboardingComplete} />;
+  // Show paywall first if user doesn't have subscription and hasn't seen it yet
+  if (!subscriptionLoading && !subscription.subscribed && !hasSeenPaywall) {
+    return <Paywall onPlanSelected={handlePlanSelected} onSkipToFree={handleSkipToFree} />;
   }
 
-  // Show paywall if user doesn't have subscription and hasn't seen it yet
-  if (!subscriptionLoading && !subscription.subscribed && !localStorage.getItem('hasSeenPaywall')) {
-    return <Paywall onPlanSelected={handlePlanSelected} onSkipToFree={handleSkipToFree} />;
+  // Show onboarding if paywall has been seen but onboarding not completed and not premium
+  if (!subscriptionLoading && hasSeenPaywall && (!hasCompletedOnboarding || !userProfile)) {
+    return <OnboardingFlow onComplete={handleOnboardingComplete} />;
   }
 
   const handleProfileUpdate = (updatedProfile: OnboardingData) => {

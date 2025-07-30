@@ -1,11 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Heart, Sparkles, Calendar, MessageCircle } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Heart, Sparkles, Calendar, MessageCircle, Camera, User } from 'lucide-react';
 import { HeartIcon } from '@/components/ui/heart-icon';
 import NotificationPermissionStep from '@/components/NotificationPermissionStep';
 
 interface OnboardingData {
+  firstName: string;
+  profilePhoto?: string;
   loveLanguage: string;
   relationshipStatus: string;
   age: string;
@@ -24,6 +27,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
   const [formData, setFormData] = useState<Partial<OnboardingData>>({});
   const [touchStart, setTouchStart] = useState({ x: 0, y: 0 });
   const [touchEnd, setTouchEnd] = useState({ x: 0, y: 0 });
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const tourSteps = [
     {
@@ -55,8 +59,23 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
 
   const quizSteps = [
     {
+      title: "What's Your First Name?",
+      subtitle: "We'd love to personalize your experience",
+      type: 'input',
+      key: 'firstName',
+      icon: User
+    },
+    {
+      title: "Add Your Profile Photo",
+      subtitle: "This helps us personalize your journey (optional)",
+      type: 'photo',
+      key: 'profilePhoto',
+      icon: Camera
+    },
+    {
       title: "What's Your Love Language?",
       subtitle: "How do you prefer to give and receive love?",
+      type: 'options',
       options: [
         "Words of Affirmation",
         "Quality Time", 
@@ -69,6 +88,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
     {
       title: "What's Your Relationship Status?",
       subtitle: "This helps me personalize your experience",
+      type: 'options',
       options: [
         "Single & Looking",
         "Single & NOT Looking",
@@ -81,6 +101,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
     {
       title: "What's Your Age Range?",
       subtitle: "Just to customize content for you",
+      type: 'options',
       options: [
         "18-24",
         "25-34",
@@ -92,6 +113,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
     {
       title: "How Would You Describe Your Personality?",
       subtitle: "This helps me suggest the perfect activities for you",
+      type: 'options',
       options: [
         "Outgoing & Social (Extrovert)",
         "Thoughtful & Introspective (Introvert)",
@@ -123,6 +145,38 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
       // Show notification permission step after quiz completion
       setShowNotificationStep(true);
     }
+  };
+
+  const handleInputChange = (value: string) => {
+    const currentQuizStep = quizSteps[currentStep];
+    const updatedData = { ...formData, [currentQuizStep.key]: value };
+    setFormData(updatedData);
+  };
+
+  const handleNext = () => {
+    if (currentStep < quizSteps.length - 1) {
+      setCurrentStep(currentStep + 1);
+    } else {
+      // Show notification permission step after quiz completion
+      setShowNotificationStep(true);
+    }
+  };
+
+  const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        const updatedData = { ...formData, profilePhoto: result };
+        setFormData(updatedData);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handlePhotoButtonClick = () => {
+    fileInputRef.current?.click();
   };
 
   const handleNotificationStepComplete = () => {
@@ -260,25 +314,102 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
               />
             ))}
           </div>
-          <div className="space-y-3">
-            {quizStep.options.map((option) => {
-              const isSelected = formData[quizStep.key as keyof OnboardingData] === option;
-              return (
+
+          {/* Render different input types based on quiz step */}
+          {quizStep.type === 'input' && (
+            <div className="space-y-4">
+              <Input
+                placeholder="Enter your first name"
+                value={formData.firstName || ''}
+                onChange={(e) => handleInputChange(e.target.value)}
+                className="w-full text-center text-lg"
+              />
+              <Button
+                onClick={handleNext}
+                variant="romance"
+                size="lg"
+                className="w-full"
+                disabled={!formData.firstName || formData.firstName.trim() === ''}
+              >
+                Next
+              </Button>
+            </div>
+          )}
+
+          {quizStep.type === 'photo' && (
+            <div className="space-y-4">
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handlePhotoUpload}
+                accept="image/*"
+                className="hidden"
+              />
+              <div className="flex flex-col items-center space-y-4">
+                {formData.profilePhoto ? (
+                  <div className="relative">
+                    <img
+                      src={formData.profilePhoto}
+                      alt="Profile"
+                      className="w-32 h-32 rounded-full object-cover border-4 border-primary"
+                    />
+                    <Button
+                      onClick={handlePhotoButtonClick}
+                      variant="outline"
+                      size="sm"
+                      className="absolute -bottom-2 -right-2 rounded-full w-10 h-10 p-0"
+                    >
+                      <Camera className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div
+                    onClick={handlePhotoButtonClick}
+                    className="w-32 h-32 rounded-full border-2 border-dashed border-primary/50 flex items-center justify-center cursor-pointer hover:border-primary transition-colors"
+                  >
+                    <Camera className="w-8 h-8 text-primary/50" />
+                  </div>
+                )}
                 <Button
-                  key={option}
-                  onClick={() => handleQuizAnswer(option)}
-                  variant={isSelected ? "romance" : "outline"}
-                  className={`w-full justify-start transition-all duration-300 ${
-                    isSelected 
-                      ? "shadow-romance text-burgundy font-semibold" 
-                      : "hover:bg-primary/5 hover:border-primary hover:shadow-soft"
-                  }`}
+                  onClick={handlePhotoButtonClick}
+                  variant="outline"
+                  className="w-full"
                 >
-                  {option}
+                  {formData.profilePhoto ? 'Change Photo' : 'Upload Photo'}
                 </Button>
-              );
-            })}
-          </div>
+              </div>
+              <Button
+                onClick={handleNext}
+                variant="romance"
+                size="lg"
+                className="w-full"
+              >
+                {formData.profilePhoto ? 'Next' : 'Skip for Now'}
+              </Button>
+            </div>
+          )}
+
+          {quizStep.type === 'options' && (
+            <div className="space-y-3">
+              {quizStep.options?.map((option) => {
+                const isSelected = formData[quizStep.key as keyof OnboardingData] === option;
+                return (
+                  <Button
+                    key={option}
+                    onClick={() => handleQuizAnswer(option)}
+                    variant={isSelected ? "romance" : "outline"}
+                    className={`w-full justify-start transition-all duration-300 ${
+                      isSelected 
+                        ? "shadow-romance text-burgundy font-semibold" 
+                        : "hover:bg-primary/5 hover:border-primary hover:shadow-soft"
+                    }`}
+                  >
+                    {option}
+                  </Button>
+                );
+              })}
+            </div>
+          )}
           
           {/* Navigation buttons */}
           <div className="flex justify-between pt-4">
