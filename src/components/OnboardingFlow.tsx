@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Heart, Sparkles, Calendar, MessageCircle } from 'lucide-react';
 import { HeartIcon } from '@/components/ui/heart-icon';
+import NotificationPermissionStep from '@/components/NotificationPermissionStep';
 
 interface OnboardingData {
   loveLanguage: string;
@@ -19,6 +20,7 @@ interface OnboardingFlowProps {
 const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [showTour, setShowTour] = useState(true);
+  const [showNotificationStep, setShowNotificationStep] = useState(false);
   const [formData, setFormData] = useState<Partial<OnboardingData>>({});
   const [touchStart, setTouchStart] = useState({ x: 0, y: 0 });
   const [touchEnd, setTouchEnd] = useState({ x: 0, y: 0 });
@@ -111,9 +113,14 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
     if (currentStep < quizSteps.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
-      // Complete onboarding
-      onComplete(updatedData as OnboardingData);
+      // Show notification permission step after quiz completion
+      setShowNotificationStep(true);
     }
+  };
+
+  const handleNotificationStepComplete = () => {
+    // Complete onboarding after notification step
+    onComplete(formData as OnboardingData);
   };
 
   const handleBack = () => {
@@ -153,6 +160,16 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
       }
     }
   };
+
+  // Show notification permission step after quiz completion
+  if (showNotificationStep) {
+    return (
+      <NotificationPermissionStep 
+        onComplete={handleNotificationStepComplete}
+        userProfile={formData}
+      />
+    );
+  }
 
   if (showTour) {
     const step = tourSteps[currentStep];

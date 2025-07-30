@@ -20,6 +20,7 @@ import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { useBiometricAuth } from '@/hooks/useBiometricAuth';
 import { useHaptics } from '@/hooks/useHaptics';
 import { useToast } from '@/components/ui/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AppSettingsProps {
   onClose: () => void;
@@ -82,6 +83,35 @@ const AppSettings: React.FC<AppSettingsProps> = ({ onClose }) => {
     });
   };
 
+  const handleNotificationToggle = async (enabled: boolean) => {
+    updateSetting('pushNotifications', enabled);
+    
+    // Update notification preference in database
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase
+          .from('profiles')
+          .update({ notifications_enabled: enabled })
+          .eq('id', user.id);
+        
+        toast({
+          title: enabled ? "Notifications Enabled" : "Notifications Disabled",
+          description: enabled 
+            ? "You'll receive daily relationship questions and reminders." 
+            : "You won't receive any push notifications.",
+        });
+      }
+    } catch (error) {
+      console.error('Error updating notification preference:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update notification settings.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
       <Card className="w-full max-w-md max-h-[90vh] overflow-y-auto">
@@ -125,7 +155,7 @@ const AppSettings: React.FC<AppSettingsProps> = ({ onClose }) => {
               <Switch
                 id="push-notifications"
                 checked={settings.pushNotifications}
-                onCheckedChange={(checked) => updateSetting('pushNotifications', checked)}
+                onCheckedChange={handleNotificationToggle}
                 disabled={!pushSupported}
               />
             </div>
@@ -134,6 +164,43 @@ const AppSettings: React.FC<AppSettingsProps> = ({ onClose }) => {
               <p className="text-xs text-muted-foreground">
                 Push notifications are not supported on this platform.
               </p>
+            )}
+            
+            {settings.pushNotifications && (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full mt-2"
+                onClick={async () => {
+                  try {
+                    const response = await fetch('https://csupviqxprhtrbfbugct.supabase.co/functions/v1/daily-question-notification', {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                      },
+                      body: JSON.stringify({ test: true })
+                    });
+                    
+                    if (response.ok) {
+                      toast({
+                        title: "Test Notification Sent! 📱",
+                        description: "Check if you received a test notification.",
+                      });
+                    } else {
+                      throw new Error('Failed to send test notification');
+                    }
+                  } catch (error) {
+                    console.error('Error sending test notification:', error);
+                    toast({
+                      title: "Test Failed",
+                      description: "Could not send test notification. Check console for details.",
+                      variant: "destructive",
+                    });
+                  }
+                }}
+              >
+                Send Test Notification 🔔
+              </Button>
             )}
           </div>
 

@@ -12,6 +12,7 @@ import { useAppInitialization } from '@/hooks/useAppInitialization';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useReviewTracking } from '@/hooks/useReviewTracking';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { supabase } from '@/integrations/supabase/client';
 
 interface OnboardingData {
   loveLanguage: string;
@@ -61,11 +62,27 @@ const Index = () => {
     }
   }, [subscription.subscribed, subscriptionLoading]);
 
-  const handleOnboardingComplete = (data: OnboardingData) => {
+  const handleOnboardingComplete = async (data: OnboardingData) => {
     setUserProfile(data);
     setHasCompletedOnboarding(true);
     // Save to localStorage for persistence
     localStorage.setItem('relationshipCompanionProfile', JSON.stringify(data));
+    
+    // Save to Supabase if user is authenticated
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase
+          .from('profiles')
+          .upsert({
+            id: user.id,
+            ...data,
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+          });
+      }
+    } catch (error) {
+      console.error('Error saving profile to Supabase:', error);
+    }
   };
 
   const handlePlanSelected = async () => {
