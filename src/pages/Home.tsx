@@ -272,8 +272,8 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
         </h1>
         
         {/* Invite Partner Banner */}
-        <Card className="w-full shadow-elegant border-burgundy/20 bg-gradient-to-r from-burgundy to-primary">
-          <CardContent className="p-3">
+        <div className="w-full bg-gradient-to-r from-burgundy to-primary -mx-4">
+          <div className="p-3 px-4">
             <div className="text-base font-bold text-white leading-relaxed text-left">
               Know someone else who's dating with
             </div>
@@ -288,8 +288,8 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
                 Invite a Friend
               </Button>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
       {/* Daily Question of the Day */}
