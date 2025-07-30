@@ -6,8 +6,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { Share2, MessageCircle, Send, Menu } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useRelationshipAI } from '@/hooks/useRelationshipAI';
+import { useSubscription } from '@/hooks/useSubscription';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import QuickStartModule from '@/components/QuickStartModule';
 import SideMenu from '@/components/SideMenu';
+import WelcomeTour from '@/components/WelcomeTour';
 
 interface OnboardingData {
   loveLanguage: string;
@@ -18,7 +22,10 @@ interface OnboardingData {
 }
 
 interface HomeProps {
-  userProfile: OnboardingData;
+  userProfile: OnboardingData & {
+    first_name?: string;
+    full_name?: string;
+  };
   onNavigateToFlirtFuel: () => void;
   onNavigateToAIPractice: (scenario?: string) => void;
   onNavigateToModule?: (module: string) => void;
@@ -39,6 +46,8 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
   const [isLoadingResponse, setIsLoadingResponse] = useState(false);
   const [currentScenarioIndex, setCurrentScenarioIndex] = useState(0);
   const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
+  const [showWelcomeTour, setShowWelcomeTour] = useState(false);
+  const [isFirstTimeUser, setIsFirstTimeUser] = useState(false);
   
   // Touch/swipe handling state
   const [touchStart, setTouchStart] = useState<number | null>(null);
@@ -46,6 +55,8 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
   
   const { toast } = useToast();
   const { getAIResponse } = useRelationshipAI();
+  const { subscription } = useSubscription();
+  const { user } = useAuth();
 
   // Handle QuickStart module navigation
   const handleQuickStartNavigation = (module: string) => {
@@ -152,6 +163,92 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
       localStorage.setItem(`dailyQuestion_${today}`, newQuestion);
     }
   }, []);
+
+  // Check if user is first-time and show welcome tour
+  useEffect(() => {
+    const checkFirstTimeUser = async () => {
+      if (!user) return;
+
+      try {
+        const { data: settings, error } = await supabase
+          .from('user_settings')
+          .select('onboarding_completed')
+          .eq('user_id', user.id)
+          .single();
+
+        if (error && error.code !== 'PGRST116') {
+          console.error('Error checking user settings:', error);
+          return;
+        }
+
+        // If no settings exist or onboarding not completed, show welcome tour
+        const shouldShowTour = !settings || !settings.onboarding_completed;
+        setIsFirstTimeUser(shouldShowTour);
+        setShowWelcomeTour(shouldShowTour);
+      } catch (error) {
+        console.error('Error checking first time user:', error);
+      }
+    };
+
+    checkFirstTimeUser();
+  }, [user]);
+
+  const handleTourComplete = async () => {
+    setShowWelcomeTour(false);
+    
+    if (!user) return;
+
+    try {
+      // Mark onboarding as completed
+      await supabase
+        .from('user_settings')
+        .upsert(
+          {
+            user_id: user.id,
+            onboarding_completed: true,
+            updated_at: new Date().toISOString(),
+          },
+          {
+            onConflict: 'user_id',
+          }
+        );
+    } catch (error) {
+      console.error('Error updating onboarding status:', error);
+    }
+  };
+
+  const handleTourSkip = async () => {
+    setShowWelcomeTour(false);
+    
+    if (!user) return;
+
+    try {
+      // Mark onboarding as completed even if skipped
+      await supabase
+        .from('user_settings')
+        .upsert(
+          {
+            user_id: user.id,
+            onboarding_completed: true,
+            updated_at: new Date().toISOString(),
+          },
+          {
+            onConflict: 'user_id',
+          }
+        );
+    } catch (error) {
+      console.error('Error updating onboarding status:', error);
+    }
+  };
+
+  const getUserFirstName = () => {
+    if (userProfile.first_name) return userProfile.first_name;
+    if (userProfile.full_name) {
+      const parts = userProfile.full_name.split(' ');
+      return parts[0];
+    }
+    return '';
+  };
 
   const handleShare = async () => {
     if (navigator.share) {
@@ -267,6 +364,8 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
       });
     }
   };
+
+  const isPremiumUser = subscription?.subscription_tier === 'Premium' || subscription?.subscribed;
 
   return (
     <div 
@@ -447,6 +546,16 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
         onClose={() => setIsSideMenuOpen(false)}
         onNavigateToModule={onNavigateToModule}
       />
+
+      {/* Welcome Tour */}
+      {showWelcomeTour && (
+        <WelcomeTour
+          userFirstName={getUserFirstName()}
+          isPremium={isPremiumUser}
+          onComplete={handleTourComplete}
+          onSkip={handleTourSkip}
+        />
+      )}
     </div>
   );
 };
