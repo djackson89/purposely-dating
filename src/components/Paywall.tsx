@@ -91,7 +91,7 @@ const Paywall: React.FC<PaywallProps> = ({ onPlanSelected, onSkipToFree, isModal
           {isModal ? 'Unlock Premium Features' : 'Welcome to Purposely Premium'}
         </h1>
         <p className="text-muted-foreground leading-relaxed">
-          You know what you want, now let our expert-guided tools guide you in every step to get it. Your heart deserves more than trial and error.
+          You know what you want, now let our expert-guided journey ensure that you get it. Dating should come with depth, not deja vu.
         </p>
       </div>
 
@@ -113,7 +113,7 @@ const Paywall: React.FC<PaywallProps> = ({ onPlanSelected, onSkipToFree, isModal
               <span className="text-4xl font-bold text-primary">$0</span>
               <div className="text-left">
                 <div className="text-sm text-muted-foreground">for 3 days</div>
-                <div className="text-xs text-muted-foreground">then $49.99/year</div>
+                <div className="text-xs text-muted-foreground">then $0.96/week ($49.99/year)</div>
               </div>
             </div>
             <p className="text-sm text-muted-foreground">
