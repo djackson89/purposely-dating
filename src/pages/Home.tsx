@@ -278,7 +278,7 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
               Know someone else who's dating with
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-base font-bold text-white">purpose?</span>
+              <span className="text-base font-bold text-white">a purpose?</span>
               <Button
                 onClick={handleShare}
                 variant="outline"
