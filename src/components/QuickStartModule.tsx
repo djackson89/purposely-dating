@@ -72,19 +72,35 @@ const QuickStartModule: React.FC<QuickStartProps> = ({ onNavigateToModule }) => 
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
   const [count, setCount] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     if (!api) {
       return;
     }
 
-    setCount(api.scrollSnapList().length);
-    setCurrent(api.selectedScrollSnap() + 1);
+    const snapList = api.scrollSnapList();
+    // For mobile, calculate visible pages based on items per view
+    const itemsPerView = isMobile ? 2 : Math.min(4, quickStartItems.length);
+    const totalPages = Math.ceil(quickStartItems.length / itemsPerView);
+    
+    setCount(isMobile ? totalPages : snapList.length);
+    setCurrent(Math.floor(api.selectedScrollSnap() / (isMobile ? itemsPerView : 1)) + 1);
 
     api.on("select", () => {
-      setCurrent(api.selectedScrollSnap() + 1);
+      setCurrent(Math.floor(api.selectedScrollSnap() / (isMobile ? itemsPerView : 1)) + 1);
     });
-  }, [api]);
+  }, [api, isMobile]);
 
   const handleCardClick = (item: typeof quickStartItems[0]) => {
     // Store the specific sub-section for modules that have multiple features
