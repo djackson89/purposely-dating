@@ -37,6 +37,10 @@ const Index = () => {
 
   // Check for existing onboarding and paywall data
   useEffect(() => {
+    // Clear onboarding data to show the onboarding flow
+    localStorage.removeItem('relationshipCompanionProfile');
+    localStorage.removeItem('hasSeenPaywall');
+    
     const savedProfile = localStorage.getItem('relationshipCompanionProfile');
     const savedPaywall = localStorage.getItem('relationshipCompanionPaywall');
     if (savedProfile) {
