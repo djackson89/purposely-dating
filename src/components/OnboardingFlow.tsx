@@ -38,8 +38,8 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
     },
     {
       icon: Sparkles,
-      title: "AI Practice Partner & Coaching 🌟",
-      description: "Rehearse important conversations before they happen. Practice scenarios designed by relationship experts to help you communicate your standards with grace and confidence."
+      title: "Send the Perfect Reply Every Time",
+      description: "Our built in Practice Partner will let you practice flirting, setting boundaries, or deep convos with zero judgment. Or...just tag our Text Genie in and we'll craft the perfect reply for you!"
     },
     {
       icon: Calendar,
