@@ -14,3 +14,6 @@ verify_jwt = true
 
 [functions.create-admin-user]
 verify_jwt = false
+
+[functions.daily-question-notification]
+verify_jwt = false
