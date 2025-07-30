@@ -33,8 +33,8 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
     },
     {
       icon: MessageCircle,
-      title: "Conversation Starters & Text Genie ✨",
-      description: "Never run out of meaningful topics with expert-crafted conversation starters. Plus, get instant text suggestions that help you communicate with confidence and clarity."
+      title: "Boring small talk? Gone!",
+      description: "The mental stimulation never ends with our relationship expert-crafted conversation starters. Whether it's a deep date night discussion or a naughty girl's night in, we've got 5000+ categories to keep boredom away for good!"
     },
     {
       icon: Sparkles,
