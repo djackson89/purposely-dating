@@ -154,6 +154,11 @@ All colors MUST be HSL. Romance palette with warm pinks, corals, and creams.
   .touch-manipulation {
     touch-action: manipulation;
   }
+
+  /* Tour highlight z-index fix */
+  .z-45 {
+    z-index: 45;
+  }
   
   .tap-highlight-transparent {
     -webkit-tap-highlight-color: transparent;

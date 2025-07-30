@@ -380,6 +380,7 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
           <button
             onClick={() => setIsSideMenuOpen(true)}
             className="p-2 hover:bg-white/10 rounded-full transition-colors"
+            data-tour="side-menu"
           >
             <Menu className="w-6 h-6 text-primary" />
           </button>
@@ -411,7 +412,7 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
       </div>
 
       {/* Daily Question of the Day */}
-      <Card className="shadow-romance border-primary/20">
+      <Card className="shadow-romance border-primary/20" data-tour="conversation-starters">
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <MessageCircle className="w-5 h-5 text-primary animate-heart-pulse" />
@@ -439,7 +440,7 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
       </Card>
 
       {/* Ask Purposely Section */}
-      <Card className="shadow-romance border-primary/20">
+      <Card className="shadow-romance border-primary/20" data-tour="ask-purposely">
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <MessageCircle className="w-5 h-5 text-primary animate-heart-pulse" />
@@ -538,7 +539,9 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
       </Card>
 
       {/* Quick Start Module */}
-      <QuickStartModule onNavigateToModule={handleQuickStartNavigation} />
+      <div data-tour="quick-start-modules">
+        <QuickStartModule onNavigateToModule={handleQuickStartNavigation} />
+      </div>
 
       {/* Side Menu */}
       <SideMenu 

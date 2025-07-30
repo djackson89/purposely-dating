@@ -45,7 +45,7 @@ const Navigation: React.FC<NavigationProps> = ({ activeModule, onModuleChange })
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-md border-t border-border shadow-soft z-50 safe-area-pb">
+    <nav className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-md border-t border-border shadow-soft z-50 safe-area-pb" data-tour="main-menu">
       <div className="flex justify-around items-center py-2 px-1 max-w-md mx-auto">
         {navItems.map((item) => {
           const IconComponent = item.icon;
