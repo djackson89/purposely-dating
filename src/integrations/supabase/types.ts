@@ -182,6 +182,30 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_logs: {
+        Row: {
+          id: string
+          question: string
+          sent_at: string | null
+          success: boolean | null
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          question: string
+          sent_at?: string | null
+          success?: boolean | null
+          user_id: string
+        }
+        Update: {
+          id?: string
+          question?: string
+          sent_at?: string | null
+          success?: boolean | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           age: string | null
@@ -192,8 +216,11 @@ export type Database = {
           gender: string | null
           id: string
           love_language: string | null
+          notifications_enabled: boolean | null
           personality_type: string | null
+          push_token: string | null
           relationship_status: string | null
+          timezone: string | null
           updated_at: string
         }
         Insert: {
@@ -205,8 +232,11 @@ export type Database = {
           gender?: string | null
           id: string
           love_language?: string | null
+          notifications_enabled?: boolean | null
           personality_type?: string | null
+          push_token?: string | null
           relationship_status?: string | null
+          timezone?: string | null
           updated_at?: string
         }
         Update: {
@@ -218,8 +248,11 @@ export type Database = {
           gender?: string | null
           id?: string
           love_language?: string | null
+          notifications_enabled?: boolean | null
           personality_type?: string | null
+          push_token?: string | null
           relationship_status?: string | null
+          timezone?: string | null
           updated_at?: string
         }
         Relationships: []
