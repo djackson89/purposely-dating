@@ -70,7 +70,7 @@ const Paywall: React.FC<PaywallProps> = ({ onPlanSelected, onSkipToFree, isModal
   const features = [
     "Unlimited conversation starters",
     "AI-powered text message help",
-    "Dating prospects tracker", 
+    "Red Flag Detector", 
     "Therapy companion tools",
     "Mental health check-ins",
     "Growth journal",
