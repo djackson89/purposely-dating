@@ -260,7 +260,7 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
 
   return (
     <div 
-      className="pb-20 pt-6 px-4 space-y-6 bg-gradient-soft min-h-screen safe-area-pt"
+      className="pb-32 pt-6 px-4 space-y-6 bg-gradient-soft min-h-screen safe-area-pt"
       onTouchStart={onTouchStart}
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
