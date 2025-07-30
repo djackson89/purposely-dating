@@ -81,7 +81,8 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
         "Quality Time", 
         "Physical Touch",
         "Acts of Service",
-        "Receiving Gifts"
+        "Receiving Gifts",
+        "Not sure"
       ],
       key: 'loveLanguage'
     },
@@ -94,7 +95,8 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
         "Single & NOT Looking",
         "Dating",
         "In a Relationship", 
-        "Married"
+        "Married",
+        "Not sure"
       ],
       key: 'relationshipStatus'
     },
@@ -106,7 +108,8 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
         "18-24",
         "25-34",
         "35-44", 
-        "45+"
+        "45+",
+        "Not sure"
       ],
       key: 'age'
     },
@@ -119,7 +122,8 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
         "Thoughtful & Introspective (Introvert)",
         "Balanced Mix of Both",
         "Adventurous & Spontaneous",
-        "Calm & Steady"
+        "Calm & Steady",
+        "Not sure"
       ],
       key: 'personalityType'
     }
