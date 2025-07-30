@@ -551,8 +551,8 @@ const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userPro
       {activeSection === 'reflection' && (
         <div className="space-y-4 animate-fade-in-up">
           {/* Section Heading */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
+          <div className="space-y-2">
+            <div className="flex items-center justify-center space-x-2">
               <h2 className="text-xl font-semibold text-primary">Therapy Companion</h2>
               <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center cursor-pointer hover:bg-primary/20 transition-colors">
                 <InfoDialog
@@ -561,12 +561,14 @@ const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userPro
                 />
               </div>
             </div>
-            <button 
-              onClick={() => setShowInitialSetup(true)}
-              className="text-sm text-primary hover:text-primary/80 underline transition-colors"
-            >
-              Edit Therapy Goals
-            </button>
+            <div className="flex justify-end">
+              <button 
+                onClick={() => setShowInitialSetup(true)}
+                className="text-sm text-primary hover:text-primary/80 underline transition-colors"
+              >
+                Edit Therapy Goals
+              </button>
+            </div>
           </div>
           <Card className="shadow-romance border-primary/20">
             <CardHeader>
