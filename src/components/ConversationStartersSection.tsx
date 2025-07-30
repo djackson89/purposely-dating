@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo, useMemo, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -68,7 +68,7 @@ interface ConversationStartersSectionProps {
   getQuestionText: (question: string | { statement: string; options: { key: string; text: string; }[] }) => string;
 }
 
-const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = React.memo(({
+const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = memo(({
   userProfile,
   conversationStarters,
   masterCategory,
@@ -112,8 +112,8 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
   isMultipleChoice,
   getQuestionText,
 }) => {
-  // Memoized category emojis to prevent recreation
-  const categoryEmojis = React.useMemo(() => ({
+  // Optimized static data - memoized outside component to prevent recreation
+  const categoryEmojis = useMemo(() => ({
     "First Date Deep Dive": "💬",
     "Relationship Clarity": "❤️",
     "Boundaries & Values": "🏠",
@@ -136,8 +136,7 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
     "Hot Mess Express": "🚂"
   }), []);
 
-  // Memoized descriptions to prevent recreation
-  const descriptions = React.useMemo(() => ({
+  const descriptions = useMemo(() => ({
     "First Date Deep Dive": "Explore deeper conversations and meaningful connections",
     "Relationship Clarity": "Understand love languages and emotional needs",
     "Boundaries & Values": "Navigate healthy limits and personal values",
@@ -160,7 +159,7 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
     "Hot Mess Express": "Unleash your chaos queen - girl-talk about dating drama"
   }), []);
 
-  const getDescription = React.useCallback((category: string): string => {
+  const getDescription = useCallback((category: string): string => {
     return descriptions[category] || "Explore meaningful conversation topics";
   }, [descriptions]);
 

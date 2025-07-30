@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo, memo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -52,7 +52,7 @@ interface UploadedImage {
   file?: File;
 }
 
-const TextGenie: React.FC<TextGenieProps> = ({ userProfile }) => {
+const TextGenie: React.FC<TextGenieProps> = memo(({ userProfile }) => {
   const [description, setDescription] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [isRetrying, setIsRetrying] = useState(false);
@@ -75,11 +75,12 @@ const TextGenie: React.FC<TextGenieProps> = ({ userProfile }) => {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
 
-  const loadingMessages = [
+  // Memoized constants to prevent recreation
+  const loadingMessages = useMemo(() => [
     "Generating personalized suggestions...",
     "Analyzing conversation context...",
     "Creating perfect replies..."
-  ];
+  ], []);
 
   useEffect(() => {
     if (isProcessing) {
@@ -88,24 +89,25 @@ const TextGenie: React.FC<TextGenieProps> = ({ userProfile }) => {
     }
   }, [isProcessing]);
 
-  const getToneLabel = (level: number) => {
+  // Optimized helper functions with useCallback
+  const getToneLabel = useCallback((level: number) => {
     switch (level) {
       case 0: return 'Sweet';
       case 1: return 'Mild';  
       case 2: return 'Spicy';
       default: return 'Mild';
     }
-  };
+  }, []);
 
-  const getToneEmoji = (tone: 'sweet' | 'mild' | 'spicy') => {
+  const getToneEmoji = useCallback((tone: 'sweet' | 'mild' | 'spicy') => {
     switch (tone) {
       case 'sweet': return '💕';
       case 'mild': return '💭';
       case 'spicy': return '🔥';
     }
-  };
+  }, []);
 
-  const handleImageUpload = async () => {
+  const handleImageUpload = useCallback(async () => {
     if (uploadedImages.length >= 6) {
       toast({
         title: "Maximum reached",
@@ -119,9 +121,9 @@ const TextGenie: React.FC<TextGenieProps> = ({ userProfile }) => {
     if (fileInputRef.current) {
       fileInputRef.current.click();
     }
-  };
+  }, [uploadedImages.length, toast]);
 
-  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files) return;
 
@@ -160,7 +162,7 @@ const TextGenie: React.FC<TextGenieProps> = ({ userProfile }) => {
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
-  };
+  }, [uploadedImages.length, toast]);
 
   const convertFileToDataUrl = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -791,6 +793,6 @@ Provide a fresh analytical perspective on why this behavior is problematic for l
       )}
     </div>
   );
-};
+});
 
 export default TextGenie;
