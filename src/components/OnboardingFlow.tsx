@@ -34,7 +34,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
     {
       icon: MessageCircle,
       title: "Boring small talk? Gone!",
-      description: "The mental stimulation never ends with our relationship expert-crafted conversation starters. Whether it's a deep date night discussion or a naughty girl's night in, we've got 5000+ categories to keep boredom away for good!"
+      description: "The mental stimulation never ends with our relationship expert-crafted conversation starters. Whether it's a deep date night discussion or a naughty girl's night in, we've got 10,000+ questions to keep boredom away for good!"
     },
     {
       icon: Sparkles,
