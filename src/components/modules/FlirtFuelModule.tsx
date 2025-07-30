@@ -812,7 +812,8 @@ Provide 2-3 specific insights about communication strengths and areas for improv
         localStorage.setItem(`dailyQuestionIndex_${selectedCategory}_${today}`, randomIndex.toString());
       }
 
-      if (depthLevel[0] !== 1) {
+      // Only apply depth transformation for Date Night master category
+      if (masterCategory !== "Girl's Night" && depthLevel[0] !== 1) {
         setTimeout(() => {
           transformQuestionsForDepth(defaultCategory.prompts, depthLevel[0]);
         }, 100);
@@ -820,7 +821,7 @@ Provide 2-3 specific insights about communication strengths and areas for improv
     }
   }, [selectedCategory, isCustom, depthLevel, conversationStarters, transformQuestionsForDepth]);
 
-  // Optimized depth switching effect
+  // Optimized depth switching effect - only for Date Night categories
   React.useEffect(() => {
     const switchDepth = async () => {
       if (currentStarters.length === 0) return;
@@ -834,7 +835,10 @@ Provide 2-3 specific insights about communication strengths and areas for improv
         baseQuestions = categoryData?.prompts || currentStarters;
       }
 
-      if (depthLevel[0] === 1) {
+      // Only apply depth transformation for Date Night master category
+      if (masterCategory === "Girl's Night") {
+        setCurrentStarters(baseQuestions);
+      } else if (depthLevel[0] === 1) {
         setCurrentStarters(baseQuestions);
       } else {
         await transformQuestionsForDepth(baseQuestions, depthLevel[0]);
@@ -842,7 +846,7 @@ Provide 2-3 specific insights about communication strengths and areas for improv
     };
 
     switchDepth();
-  }, [depthLevel, isCustom, selectedCategory, customCategories, conversationStarters, transformQuestionsForDepth, currentStarters]);
+  }, [depthLevel, isCustom, selectedCategory, customCategories, conversationStarters, transformQuestionsForDepth, currentStarters, masterCategory]);
 
   return (
     <div className="min-h-screen bg-background p-4 space-y-6">
