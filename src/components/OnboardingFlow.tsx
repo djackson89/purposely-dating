@@ -28,7 +28,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
   const tourSteps = [
     {
       icon: Heart,
-      title: "Your Secret Weapon for High Standards 💕",
+      title: "Your relationship strategist, therapist, and wingwoman wrapped in one",
       description: "Designed by world-class relationship experts for women who refuse to settle. Master the art of intentional dating and attract the love you truly deserve."
     },
     {
