@@ -1,7 +1,14 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@2.0.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+
+// Create Supabase client using service role key for database writes
+const supabaseAdmin = createClient(
+  Deno.env.get("SUPABASE_URL") ?? "",
+  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+);
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -15,6 +22,8 @@ interface SupportEmailRequest {
   email: string;
   feedback: string;
   subject: string;
+  rating?: number;
+  user_id?: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -24,7 +33,7 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { type, name, email, feedback, subject }: SupportEmailRequest = await req.json();
+    const { type, name, email, feedback, subject, rating, user_id }: SupportEmailRequest = await req.json();
 
     // Validate required fields
     if (!feedback || !feedback.trim()) {
@@ -37,18 +46,48 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
+    // Save feedback to database
+    try {
+      const feedbackData = {
+        user_id: user_id || null,
+        feedback_type: rating && rating > 0 ? 'positive' : (type === 'feedback' ? 'negative' : 'support'),
+        name: name || null,
+        email: email !== 'not-provided@example.com' ? email : null,
+        message: feedback,
+        rating: rating || null,
+        status: 'unread',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+
+      const { error: dbError } = await supabaseAdmin
+        .from('feedback')
+        .insert([feedbackData]);
+
+      if (dbError) {
+        console.error('Error saving feedback to database:', dbError);
+        // Continue with email sending even if database save fails
+      } else {
+        console.log('Feedback saved to database successfully');
+      }
+    } catch (dbError) {
+      console.error('Database save failed:', dbError);
+      // Continue with email sending even if database save fails
+    }
+
     // Send email to business
     const businessEmailResponse = await resend.emails.send({
       from: "Purposely Support <onboarding@resend.dev>",
       to: ["info@thepurposelyapp.com"],
       subject: subject || `New ${type} from Purposely App`,
       html: `
-        <h2>New ${type === 'feedback' ? 'User Feedback' : 'Support Request'}</h2>
+        <h2>New ${rating && rating > 0 ? 'Positive Feedback' : (type === 'feedback' ? 'User Feedback' : 'Support Request')}</h2>
         <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; margin: 20px 0;">
           <p><strong>From:</strong> ${name} ${email !== 'not-provided@example.com' ? `(${email})` : '(Anonymous)'}</p>
-          <p><strong>Type:</strong> ${type === 'feedback' ? 'Improvement Feedback' : 'Support Request'}</p>
+          <p><strong>Type:</strong> ${rating && rating > 0 ? 'Positive Feedback' : (type === 'feedback' ? 'Improvement Feedback' : 'Support Request')}</p>
+          ${rating && rating > 0 ? `<p><strong>Rating:</strong> ${rating}/5 stars ⭐</p>` : ''}
           <p><strong>Message:</strong></p>
-          <div style="background: white; padding: 15px; border-radius: 4px; border-left: 4px solid #2563eb;">
+          <div style="background: white; padding: 15px; border-radius: 4px; border-left: 4px solid ${rating && rating > 0 ? '#22c55e' : '#2563eb'};">
             ${feedback.replace(/\n/g, '<br>')}
           </div>
         </div>

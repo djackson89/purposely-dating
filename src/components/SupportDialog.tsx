@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ThumbsUp, ThumbsDown, Mail, MessageCircle, Star, Send } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 
 interface SupportDialogProps {
@@ -23,6 +24,7 @@ const SupportDialog: React.FC<SupportDialogProps> = ({ isOpen, onClose }) => {
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const handleFeedbackTypeChange = (type: 'positive' | 'negative') => {
     setFeedbackType(type);
@@ -45,7 +47,23 @@ const SupportDialog: React.FC<SupportDialogProps> = ({ isOpen, onClose }) => {
 
     setIsSubmitting(true);
     try {
-      // Here you could send to your analytics or review system
+      // Save positive feedback to database
+      const { error } = await supabase.functions.invoke('send-support-email', {
+        body: {
+          type: 'feedback',
+          name: name || 'Anonymous',
+          email: email || 'not-provided@example.com',
+          feedback: feedback || `User gave ${rating} stars rating`,
+          subject: 'Positive User Feedback',
+          rating: rating,
+          user_id: user?.id
+        }
+      });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
       toast({
         title: "Thank you for your feedback! ⭐",
         description: `We appreciate your ${rating}-star rating! Your review helps others discover Purposely.`,
@@ -85,7 +103,8 @@ const SupportDialog: React.FC<SupportDialogProps> = ({ isOpen, onClose }) => {
           name: name || 'Anonymous',
           email: email || 'not-provided@example.com',
           feedback: feedback,
-          subject: 'User Feedback - Improvement Suggestions'
+          subject: 'User Feedback - Improvement Suggestions',
+          user_id: user?.id
         }
       });
 
