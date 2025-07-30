@@ -28,23 +28,28 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
   const tourSteps = [
     {
       icon: Heart,
-      title: "Welcome to Your Love Journey! 💕",
-      description: "I'm here to help you build deeper connections, plan amazing dates, and grow personally. Let's make your romantic life absolutely magical!"
+      title: "Your Secret Weapon for High Standards 💕",
+      description: "Designed by world-class relationship experts for women who refuse to settle. Master the art of intentional dating and attract the love you truly deserve."
     },
     {
       icon: MessageCircle,
-      title: "Clarity Coach - Spark Connections ✨",
-      description: "Get personalized conversation starters, clarity-building challenges, and practice with AI to boost your confidence!"
+      title: "Conversation Starters & Text Genie ✨",
+      description: "Never run out of meaningful topics with expert-crafted conversation starters. Plus, get instant text suggestions that help you communicate with confidence and clarity."
+    },
+    {
+      icon: Sparkles,
+      title: "AI Practice Partner & Coaching 🌟",
+      description: "Rehearse important conversations before they happen. Practice scenarios designed by relationship experts to help you communicate your standards with grace and confidence."
     },
     {
       icon: Calendar,
-      title: "Date Concierge - Never Lose the Spark 🌟",
-      description: "Discover amazing date ideas tailored to your love language and create shared planning boards with your partner!"
+      title: "Date Concierge & Planning 🗓️",
+      description: "Discover curated date ideas that align with your values and love language. Move beyond coffee dates to experiences that reveal true compatibility and character."
     },
     {
       icon: HeartIcon,
-      title: "Self-Love Journey - Grow Together 🌱",
-      description: "Reflect, journal, and track your emotional growth with personalized prompts and insights!"
+      title: "Therapy Companion & Growth 🌱",
+      description: "Daily reflection prompts and emotional intelligence tools designed by licensed therapists. Track your growth and maintain the self-awareness that attracts high-quality partners."
     }
   ];
 
