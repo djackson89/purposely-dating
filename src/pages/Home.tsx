@@ -272,8 +272,8 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
         </h1>
         
         {/* Invite Partner Banner */}
-        <div className="w-full bg-gradient-to-r from-burgundy to-primary -mx-4">
-          <div className="p-3 px-4">
+        <div className="w-screen bg-gradient-to-r from-burgundy to-primary -mx-4 relative left-1/2 right-1/2 ml-[-50vw] mr-[-50vw]">
+          <div className="p-3 px-4 max-w-full mx-auto" style={{ maxWidth: 'calc(100vw - 2rem)' }}>
             <div className="text-base font-bold text-white leading-relaxed text-left">
               Know someone else who's dating with
             </div>
