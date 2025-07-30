@@ -282,7 +282,7 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
               <Button
                 onClick={handleShare}
                 variant="outline"
-                className="bg-white/20 border-white/30 text-white hover:bg-white/30 font-semibold whitespace-nowrap"
+                className="bg-white/20 border-white/30 text-white hover:bg-white/30 font-semibold whitespace-nowrap py-1 px-3 h-auto"
               >
                 <Share2 className="w-4 h-4 mr-2" />
                 Invite a Friend
