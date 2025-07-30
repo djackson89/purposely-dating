@@ -33,8 +33,12 @@ const AppSettings: React.FC<AppSettingsProps> = ({ onClose }) => {
   const { isSupported: hapticsSupported, success, medium } = useHaptics();
   const { toast } = useToast();
 
+  // Check if notifications are supported (either native or browser)
+  const notificationsSupported = pushSupported || ('Notification' in window);
+  const currentNotificationPermission = 'Notification' in window ? Notification.permission : 'default';
+
   const [settings, setSettings] = useState({
-    pushNotifications: permissionStatus?.receive === 'granted',
+    pushNotifications: currentNotificationPermission === 'granted' || permissionStatus?.receive === 'granted',
     biometricAuth: isBiometricEnabled(),
     hapticFeedback: hapticsSupported,
     darkMode: localStorage.getItem('theme') === 'dark',
@@ -84,30 +88,59 @@ const AppSettings: React.FC<AppSettingsProps> = ({ onClose }) => {
   };
 
   const handleNotificationToggle = async (enabled: boolean) => {
-    updateSetting('pushNotifications', enabled);
-    
-    // Update notification preference in database
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        await supabase
-          .from('profiles')
-          .update({ notifications_enabled: enabled })
-          .eq('id', user.id);
-        
-        toast({
-          title: enabled ? "Notifications Enabled" : "Notifications Disabled",
-          description: enabled 
-            ? "You'll receive daily relationship questions and reminders." 
-            : "You won't receive any push notifications.",
-        });
+    if (enabled) {
+      // Request notification permission for browser
+      if ('Notification' in window) {
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+          updateSetting('pushNotifications', true);
+          
+          // Update notification preference in database
+          try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+              await supabase
+                .from('profiles')
+                .update({ notifications_enabled: true })
+                .eq('id', user.id);
+            }
+          } catch (error) {
+            console.error('Error updating notification preference:', error);
+          }
+          
+          toast({
+            title: "Notifications Enabled! 🔔",
+            description: "You'll receive daily relationship growth questions and reminders.",
+          });
+        } else {
+          updateSetting('pushNotifications', false);
+          toast({
+            title: "Permission Denied",
+            description: "Notification permission was denied. You can enable it in your browser settings.",
+            variant: "destructive",
+          });
+        }
       }
-    } catch (error) {
-      console.error('Error updating notification preference:', error);
+    } else {
+      // Disable notifications
+      updateSetting('pushNotifications', false);
+      
+      // Update notification preference in database
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          await supabase
+            .from('profiles')
+            .update({ notifications_enabled: false })
+            .eq('id', user.id);
+        }
+      } catch (error) {
+        console.error('Error updating notification preference:', error);
+      }
+      
       toast({
-        title: "Error",
-        description: "Failed to update notification settings.",
-        variant: "destructive",
+        title: "Notifications Disabled",
+        description: "You won't receive any push notifications.",
       });
     }
   };
@@ -156,11 +189,11 @@ const AppSettings: React.FC<AppSettingsProps> = ({ onClose }) => {
                 id="push-notifications"
                 checked={settings.pushNotifications}
                 onCheckedChange={handleNotificationToggle}
-                disabled={!pushSupported}
+                disabled={!notificationsSupported}
               />
             </div>
             
-            {!pushSupported && (
+            {!notificationsSupported && (
               <p className="text-xs text-muted-foreground">
                 Push notifications are not supported on this platform.
               </p>
