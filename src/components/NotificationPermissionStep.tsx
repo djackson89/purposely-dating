@@ -116,7 +116,7 @@ const NotificationPermissionStep: React.FC<NotificationPermissionStepProps> = ({
             )}
           </div>
           <CardTitle className="text-xl font-semibold bg-gradient-romance bg-clip-text text-transparent">
-            Stay Connected with Daily Love Reminders 💕
+            Get Your Daily Dose of Relationship Growth 💕
           </CardTitle>
         </CardHeader>
         <CardContent className="text-center space-y-6">

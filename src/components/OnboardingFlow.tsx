@@ -70,6 +70,8 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
       title: "What's Your Relationship Status?",
       subtitle: "This helps me personalize your experience",
       options: [
+        "Single & Looking",
+        "Single & NOT Looking",
         "Dating",
         "In a Relationship", 
         "Married"
