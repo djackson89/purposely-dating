@@ -117,7 +117,7 @@ const Paywall: React.FC<PaywallProps> = ({ onPlanSelected, onSkipToFree, isModal
               </div>
             </div>
             <p className="text-sm text-muted-foreground">
-              Cancel anytime during trial • Full year subscription after trial
+              No commitment. Cancel any time.
             </p>
           </div>
         </CardHeader>
@@ -176,7 +176,7 @@ const Paywall: React.FC<PaywallProps> = ({ onPlanSelected, onSkipToFree, isModal
                 onClick={onSkipToFree}
                 className="text-sm text-muted-foreground hover:text-foreground transition-colors underline"
               >
-                No thank you, continue with free version
+                Take A Sneak Peak Inside
               </button>
             </div>
           )}
