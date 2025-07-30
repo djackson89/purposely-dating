@@ -91,7 +91,7 @@ const Paywall: React.FC<PaywallProps> = ({ onPlanSelected, onSkipToFree, isModal
           {isModal ? 'Unlock Premium Features' : 'Welcome to Purposely Premium'}
         </h1>
         <p className="text-muted-foreground leading-relaxed">
-          Transform your dating and relationship journey with AI-powered tools designed for meaningful connections.
+          You know what you want, now let our expert-guided tools guide you in every step to get it. Your heart deserves more than trial and error.
         </p>
       </div>
 
