@@ -273,14 +273,14 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
         
         {/* Invite Partner Banner */}
         <Card className="w-full shadow-elegant border-burgundy/20 bg-gradient-to-r from-burgundy to-primary">
-          <CardContent className="p-3 flex flex-col justify-center items-center text-center">
-            <p className="text-base font-bold text-white leading-relaxed">
+          <CardContent className="p-3 flex items-center justify-between">
+            <p className="text-base font-bold text-white leading-relaxed flex-1 text-left">
               Know someone else who's dating with purpose?
             </p>
             <Button
               onClick={handleShare}
               variant="outline"
-              className="mt-2 bg-white/20 border-white/30 text-white hover:bg-white/30 font-semibold"
+              className="ml-3 bg-white/20 border-white/30 text-white hover:bg-white/30 font-semibold whitespace-nowrap"
             >
               <Share2 className="w-4 h-4 mr-2" />
               Invite a Friend
