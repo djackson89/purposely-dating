@@ -162,6 +162,15 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
     }
   };
 
+  const handleSkip = () => {
+    if (currentStep < quizSteps.length - 1) {
+      setCurrentStep(currentStep + 1);
+    } else {
+      // Show notification permission step after quiz completion
+      setShowNotificationStep(true);
+    }
+  };
+
   const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -412,7 +421,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
           )}
           
           {/* Navigation buttons */}
-          <div className="flex justify-between pt-4">
+          <div className="flex justify-between items-center pt-4">
             <Button
               onClick={handleBack}
               variant="ghost"
@@ -420,7 +429,12 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
             >
               Back
             </Button>
-            <div className="flex-1" />
+            <button
+              onClick={handleSkip}
+              className="text-sm text-muted-foreground hover:text-primary transition-colors underline"
+            >
+              Skip
+            </button>
           </div>
           
           <p className="text-xs text-muted-foreground/70 text-center">
