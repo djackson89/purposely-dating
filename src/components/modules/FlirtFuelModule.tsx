@@ -75,8 +75,15 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
   };
 
   // Helper function to get question text
-  const getQuestionText = (question: string | { statement: string; options: { key: string; text: string; }[] }): string => {
-    return isMultipleChoice(question) ? question.statement : question;
+  const getQuestionText = (question: string | { statement: string; options: { key: string; text: string; }[] } | { text: string }): string => {
+    if (typeof question === 'string') {
+      return question;
+    } else if ('statement' in question) {
+      return question.statement;
+    } else if ('text' in question) {
+      return question.text;
+    }
+    return '';
   };
 
   const handleShare = async (text: string) => {
