@@ -17,13 +17,13 @@ export const HeartIcon: React.FC<HeartIconProps> = ({ className = '', size = 24 
       {/* 3D Heart Shape based on the uploaded icon */}
       <defs>
         <linearGradient id="heartGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#dc2626" />
-          <stop offset="50%" stopColor="#991b1b" />
-          <stop offset="100%" stopColor="#7f1d1d" />
+          <stop offset="0%" stopColor="#e11d48" />
+          <stop offset="50%" stopColor="#be185d" />
+          <stop offset="100%" stopColor="#9d174d" />
         </linearGradient>
         <linearGradient id="heartShadow" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#450a0a" />
-          <stop offset="100%" stopColor="#7f1d1d" />
+          <stop offset="0%" stopColor="#831843" />
+          <stop offset="100%" stopColor="#9d174d" />
         </linearGradient>
       </defs>
       
@@ -43,7 +43,7 @@ export const HeartIcon: React.FC<HeartIconProps> = ({ className = '', size = 24 
       {/* Highlight */}
       <path
         d="M35 12 C42 12, 47 15, 50 20 C51 17, 53 15, 58 12 C65 10, 75 15, 78 22 C75 18, 65 15, 58 17 C53 18, 51 20, 50 23 C47 18, 42 15, 35 15 C25 15, 18 20, 18 25 C18 22, 25 12, 35 12 Z"
-        fill="#ef4444"
+        fill="#f472b6"
         opacity="0.6"
       />
     </svg>

@@ -8,51 +8,51 @@ All colors MUST be HSL. Romance palette with warm pinks, corals, and creams.
 
 @layer base {
   :root {
-    /* Romance Background Colors */
-    --background: 351 25% 97%; /* Soft cream-pink */
-    --foreground: 345 15% 15%; /* Deep romantic brown */
+    /* Hot Pink Background Colors */
+    --background: 330 15% 97%; /* Soft cream with pink undertones */
+    --foreground: 330 15% 15%; /* Deep magenta-brown */
 
     /* Card & Surface Colors */
     --card: 0 0% 100%; /* Pure white for contrast */
-    --card-foreground: 345 15% 15%;
+    --card-foreground: 330 15% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 345 15% 15%;
+    --popover-foreground: 330 15% 15%;
 
-    /* Primary Romance Colors */
-    --primary: 345 83% 61%; /* Rose pink */
+    /* Primary Hot Pink Colors */
+    --primary: 330 100% 55%; /* Vibrant hot pink */
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 345 65% 75%; /* Lighter rose for gradients */
+    --primary-glow: 330 85% 70%; /* Lighter hot pink for gradients */
 
-    /* Secondary Warm Colors */
-    --secondary: 25 35% 91%; /* Warm cream */
-    --secondary-foreground: 345 15% 15%;
+    /* Secondary Colors */
+    --secondary: 330 25% 91%; /* Very light pink cream */
+    --secondary-foreground: 330 15% 15%;
 
     /* Muted & Neutral */
-    --muted: 351 25% 94%; /* Very light pink-cream */
-    --muted-foreground: 345 8% 46%;
+    --muted: 330 20% 94%; /* Light pink-cream */
+    --muted-foreground: 330 8% 46%;
 
-    /* Accent Coral */
-    --accent: 14 78% 70%; /* Warm coral */
+    /* Accent Hot Pink */
+    --accent: 325 95% 65%; /* Bright pink accent */
     --accent-foreground: 0 0% 100%;
 
-    /* Burgundy Color */
-    --burgundy: 345 75% 30%; /* Deep burgundy */
+    /* Deep Magenta Color */
+    --burgundy: 330 85% 25%; /* Deep magenta */
 
     /* Status Colors */
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
     /* Borders & Inputs */
-    --border: 345 25% 88%; /* Soft pink border */
-    --input: 345 25% 88%;
-    --ring: 345 83% 61%; /* Rose focus ring */
+    --border: 330 25% 88%; /* Soft pink border */
+    --input: 330 25% 88%;
+    --ring: 330 100% 55%; /* Hot pink focus ring */
 
-    /* Romance Gradients */
-    --gradient-romance: linear-gradient(135deg, hsl(345, 83%, 50%), hsl(14, 78%, 55%)); /* Deeper, richer colors */
-    --gradient-sunset: linear-gradient(135deg, hsl(345, 83%, 61%), hsl(25, 78%, 70%), hsl(45, 93%, 80%));
+    /* Hot Pink Gradients */
+    --gradient-romance: linear-gradient(135deg, hsl(330, 100%, 45%), hsl(325, 95%, 55%)); /* Hot pink gradient */
+    --gradient-sunset: linear-gradient(135deg, hsl(330, 100%, 55%), hsl(325, 95%, 65%), hsl(320, 90%, 75%));
     --gradient-soft: linear-gradient(180deg, hsl(var(--background)), hsl(var(--muted)));
-    --gradient-burgundy: linear-gradient(135deg, hsl(345, 85%, 35%), hsl(345, 75%, 25%));
+    --gradient-burgundy: linear-gradient(135deg, hsl(330, 85%, 35%), hsl(330, 75%, 25%));
 
     /* Romantic Shadows */
     --shadow-romance: 0 10px 30px -10px hsl(var(--primary) / 0.3);
