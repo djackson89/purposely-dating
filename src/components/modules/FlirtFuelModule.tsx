@@ -1564,7 +1564,18 @@ Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid gen
 
       {/* Full Screen Question Modal */}
       <Dialog open={isFullScreen} onOpenChange={setIsFullScreen}>
-        <DialogContent className="max-w-full max-h-full w-screen h-screen m-0 p-0 rounded-none border-none bg-gradient-romance [&>button]:hidden">
+        <DialogContent className="max-w-full max-h-full w-screen h-screen m-0 p-0 rounded-none border-none bg-gradient-romance [&>button]:hidden relative overflow-hidden">
+          {/* Curved background decorations */}
+          <div className="absolute inset-0 overflow-hidden">
+            {/* Top left curve */}
+            <div className="absolute -top-20 -left-20 w-80 h-80 bg-black/10 rounded-full blur-3xl"></div>
+            {/* Top right curve */}
+            <div className="absolute -top-32 -right-32 w-96 h-96 bg-white/5 rounded-full blur-2xl"></div>
+            {/* Bottom curve */}
+            <div className="absolute -bottom-40 -left-10 w-96 h-96 bg-black/15 rounded-full blur-3xl"></div>
+            {/* Bottom right curve */}
+            <div className="absolute -bottom-20 -right-20 w-80 h-80 bg-white/10 rounded-full blur-2xl"></div>
+          </div>
           <div className="relative h-full flex flex-col">
             {/* Close button */}
             <div className="absolute top-4 right-4 z-10">
