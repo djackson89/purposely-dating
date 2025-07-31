@@ -1564,7 +1564,12 @@ Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid gen
 
       {/* Full Screen Question Modal */}
       <Dialog open={isFullScreen} onOpenChange={setIsFullScreen}>
-        <DialogContent className="max-w-full max-h-full w-screen h-screen m-0 p-0 rounded-none border-none [&>button]:hidden relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #EC4899, #F97316)' }}>
+        <DialogContent className="max-w-full max-h-full w-screen h-screen m-0 p-0 rounded-none border-none [&>button]:hidden relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #EC4899, #F97316)' }} aria-describedby="fullscreen-question-description">
+          {/* Hidden title for accessibility */}
+          <div className="sr-only">
+            <h2 id="fullscreen-question-title">Full Screen Question View</h2>
+            <p id="fullscreen-question-description">Interactive full screen view for conversation starter questions</p>
+          </div>
           {/* Curved background decorations optimized for mobile */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             {/* Simplified curves for better mobile performance */}
