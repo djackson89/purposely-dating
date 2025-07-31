@@ -411,30 +411,84 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
           ]
         },
         {
-          statement: "Your biggest bedroom confession that you'd only tell your girls:",
+          statement: "What's your post-hookup guilty pleasure?",
           options: [
-            { key: "A", text: "I fake it sometimes to end it faster" },
-            { key: "B", text: "I think about someone else during" },
-            { key: "C", text: "I've never had the Big O with a partner" },
-            { key: "D", text: "I'm way kinkier than I let on" }
+            { key: "A", text: "Stealing his hoodie" },
+            { key: "B", text: "Replaying the whole night in my head" },
+            { key: "C", text: "Posting a thirst trap" },
+            { key: "D", text: "Texting my bestie a full recap" }
           ]
         },
         {
-          statement: "The sexiest thing a man can do outside the bedroom:",
+          statement: "Where's your fantasy spot to hook up at least once?",
           options: [
-            { key: "A", text: "Cook me dinner without being asked" },
-            { key: "B", text: "Defend me when I'm not around" },
-            { key: "C", text: "Handle his business like a grown man" },
-            { key: "D", text: "Make me laugh until I cry" }
+            { key: "A", text: "In a hotel elevator" },
+            { key: "B", text: "On the beach at night" },
+            { key: "C", text: "Backseat of a car" },
+            { key: "D", text: "In his office after hours" }
           ]
         },
         {
-          statement: "What would make you instantly end a hookup?",
+          statement: "What makes you feel instantly sexy in the bedroom?",
           options: [
-            { key: "A", text: "Bad hygiene situation" },
-            { key: "B", text: "Selfish lover vibes" },
-            { key: "C", text: "Too aggressive too fast" },
-            { key: "D", text: "Weird dirty talk" }
+            { key: "A", text: "Wearing lingerie he hasn't seen" },
+            { key: "B", text: "When he's obsessed with every inch of me" },
+            { key: "C", text: "That first look before things get heated" },
+            { key: "D", text: "Knowing I'm the one in control tonight" }
+          ]
+        },
+        {
+          statement: "What's your late-night text likely to say?",
+          options: [
+            { key: "A", text: "U up?" },
+            { key: "B", text: "You better not fall asleep on me 😈" },
+            { key: "C", text: "Come over. Now." },
+            { key: "D", text: "Just a fire selfie with no caption" }
+          ]
+        },
+        {
+          statement: "Which roleplay would you secretly love to try?",
+          options: [
+            { key: "A", text: "Naughty nurse" },
+            { key: "B", text: "Strict boss" },
+            { key: "C", text: "Mysterious stranger at a bar" },
+            { key: "D", text: "Sweet girl with a hidden wild side" }
+          ]
+        },
+        {
+          statement: "What's your signature bedroom move?",
+          options: [
+            { key: "A", text: "Slow teasing until he begs" },
+            { key: "B", text: "Eye contact with a smirk" },
+            { key: "C", text: "Taking control on top" },
+            { key: "D", text: "Whispering exactly what I want" }
+          ]
+        },
+        {
+          statement: "How do you react when he surprises you with something new in bed?",
+          options: [
+            { key: "A", text: "Where did you learn that? 👀" },
+            { key: "B", text: "Pretend I'm shy but secretly love it" },
+            { key: "C", text: "Your move. My turn's next." },
+            { key: "D", text: "I'm impressed… do it again." }
+          ]
+        },
+        {
+          statement: "What instantly ruins the mood for you?",
+          options: [
+            { key: "A", text: "Bad breath" },
+            { key: "B", text: "Too much talking" },
+            { key: "C", text: "Awkward silence" },
+            { key: "D", text: "Rushing into it without foreplay" }
+          ]
+        },
+        {
+          statement: "What's a confession you've never told your girls?",
+          options: [
+            { key: "A", text: "I hooked up with someone I wasn't supposed to" },
+            { key: "B", text: "I faked it (more than once)" },
+            { key: "C", text: "I've had a dream about a friend's man" },
+            { key: "D", text: "I filmed myself doing that once" }
           ]
         }
       ]
