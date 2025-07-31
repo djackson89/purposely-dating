@@ -116,6 +116,8 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
   const [newProspectRanking, setNewProspectRanking] = useState(1);
   const [showMoreMetrics, setShowMoreMetrics] = useState<{ [key: string]: boolean }>({});
   const [aiContext, setAiContext] = useState<{ [key: string]: string }>({});
+  const [aiResponses, setAiResponses] = useState<{ [key: string]: string }>({});
+  const [loadingAI, setLoadingAI] = useState<{ [key: string]: boolean }>({});
   const { getFlirtSuggestion, isLoading } = useRelationshipAI();
 
   // Upcoming Dates state
@@ -292,6 +294,8 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
     const prospect = prospects.find(p => p.id === prospectId);
     if (!prospect) return;
     
+    setLoadingAI({ ...loadingAI, [prospectId]: true });
+    
     const context = aiContext[prospectId] || '';
     const grade = calculateGrade(prospect);
     
@@ -307,10 +311,12 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
     
     try {
       const response = await getFlirtSuggestion(prompt, userProfile);
-      alert(response); // You might want to replace this with a proper modal/dialog
+      setAiResponses({ ...aiResponses, [prospectId]: response });
     } catch (error) {
       console.error('Error getting AI advice:', error);
-      alert('Sorry, there was an error getting advice. Please try again.');
+      toast.error('Sorry, there was an error getting advice. Please try again.');
+    } finally {
+      setLoadingAI({ ...loadingAI, [prospectId]: false });
     }
   };
 
@@ -1484,12 +1490,20 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
                         />
                         <Button
                           onClick={() => handleAskPurposely(prospect.id)}
-                          disabled={isLoading}
+                          disabled={loadingAI[prospect.id]}
                           variant="romance"
                           className="w-full"
                         >
-                          {isLoading ? 'Getting advice...' : 'Ask Purposely'}
+                          {loadingAI[prospect.id] ? 'Getting advice...' : 'Ask Purposely'}
                         </Button>
+                        {aiResponses[prospect.id] && (
+                          <div className="mt-3 p-3 bg-primary/5 rounded-lg border border-primary/10">
+                            <p className="text-xs font-medium text-primary mb-2">Purposely's Insight:</p>
+                            <p className="text-sm text-muted-foreground">
+                              {aiResponses[prospect.id]}
+                            </p>
+                          </div>
+                        )}
                       </div>
 
                       {/* Delete Prospect Button */}
