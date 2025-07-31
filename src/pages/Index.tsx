@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import OnboardingFlow from '@/components/OnboardingFlow';
+import WelcomeTour from '@/components/WelcomeTour';
+import NotificationPermissionStep from '@/components/NotificationPermissionStep';
 import Paywall from '@/components/Paywall';
 import Navigation from '@/components/Navigation';
 import Home from '@/pages/Home';
@@ -25,8 +27,10 @@ interface OnboardingData {
 }
 
 const Index = () => {
-  const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
+  const [hasSeenWelcomeSlides, setHasSeenWelcomeSlides] = useState(false);
+  const [hasSeenNotificationPrompt, setHasSeenNotificationPrompt] = useState(false);
   const [hasSeenPaywall, setHasSeenPaywall] = useState(false);
+  const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
   const [userProfile, setUserProfile] = useState<OnboardingData | null>(null);
   const [activeModule, setActiveModule] = useState<'home' | 'flirtfuel' | 'concierge' | 'therapy' | 'profile'>('home');
   const [showPaywallModal, setShowPaywallModal] = useState(false);
@@ -38,14 +42,18 @@ const Index = () => {
   const { subscription, loading: subscriptionLoading, createCheckoutSession } = useSubscription();
   const { shouldShowReview, hideReviewModal, markReviewAsShown } = useReviewTracking();
 
-  // Check for existing onboarding and paywall data
+  // Check for existing onboarding and flow state
   useEffect(() => {
-    // Clear onboarding data to show the onboarding flow
+    // Clear all flow data to restart the flow properly
     localStorage.removeItem('relationshipCompanionProfile');
     localStorage.removeItem('hasSeenPaywall');
+    localStorage.removeItem('hasSeenWelcomeSlides');
+    localStorage.removeItem('hasSeenNotificationPrompt');
     
     const savedProfile = localStorage.getItem('relationshipCompanionProfile');
     const savedPaywallFlag = localStorage.getItem('hasSeenPaywall');
+    const savedWelcomeFlag = localStorage.getItem('hasSeenWelcomeSlides');
+    const savedNotificationFlag = localStorage.getItem('hasSeenNotificationPrompt');
     
     if (savedProfile) {
       setUserProfile(JSON.parse(savedProfile));
@@ -56,7 +64,15 @@ const Index = () => {
       setHasSeenPaywall(true);
     }
     
-    // Premium users skip onboarding automatically
+    if (savedWelcomeFlag) {
+      setHasSeenWelcomeSlides(true);
+    }
+    
+    if (savedNotificationFlag) {
+      setHasSeenNotificationPrompt(true);
+    }
+    
+    // Premium users skip all onboarding automatically
     if (!subscriptionLoading && subscription.subscribed) {
       if (!savedProfile) {
         // Create a default profile for premium users
@@ -72,8 +88,10 @@ const Index = () => {
         setUserProfile(defaultProfile);
         localStorage.setItem('relationshipCompanionProfile', JSON.stringify(defaultProfile));
       }
-      setHasCompletedOnboarding(true);
+      setHasSeenWelcomeSlides(true);
+      setHasSeenNotificationPrompt(true);
       setHasSeenPaywall(true);
+      setHasCompletedOnboarding(true);
     }
   }, [subscription.subscribed, subscriptionLoading]);
 
@@ -119,12 +137,38 @@ const Index = () => {
     setShowPaywallModal(true);
   };
 
-  // Show paywall first if user doesn't have subscription and hasn't seen it yet
-  if (!subscriptionLoading && !subscription.subscribed && !hasSeenPaywall) {
+  // Handler for welcome slides completion
+  const handleWelcomeSlidesComplete = () => {
+    setHasSeenWelcomeSlides(true);
+    localStorage.setItem('hasSeenWelcomeSlides', 'true');
+  };
+
+  // Handler for notification permission completion
+  const handleNotificationPromptComplete = () => {
+    setHasSeenNotificationPrompt(true);
+    localStorage.setItem('hasSeenNotificationPrompt', 'true');
+  };
+
+  // 1. Show welcome slides first (if not seen)
+  if (!subscriptionLoading && !hasSeenWelcomeSlides) {
+    return <WelcomeTour 
+      isPremium={subscription.subscribed} 
+      onComplete={handleWelcomeSlidesComplete} 
+      onSkip={handleWelcomeSlidesComplete} 
+    />;
+  }
+
+  // 2. Show notification permission after welcome slides (if not seen)
+  if (!subscriptionLoading && hasSeenWelcomeSlides && !hasSeenNotificationPrompt) {
+    return <NotificationPermissionStep onComplete={handleNotificationPromptComplete} userProfile={{}} />;
+  }
+
+  // 3. Show paywall after notification permission (if not premium and not seen)
+  if (!subscriptionLoading && !subscription.subscribed && hasSeenNotificationPrompt && !hasSeenPaywall) {
     return <Paywall onPlanSelected={handlePlanSelected} onSkipToFree={handleSkipToFree} />;
   }
 
-  // Show onboarding if paywall has been seen but onboarding not completed and not premium
+  // 4. Show onboarding quiz after paywall (if not completed)
   if (!subscriptionLoading && hasSeenPaywall && (!hasCompletedOnboarding || !userProfile)) {
     return <OnboardingFlow onComplete={handleOnboardingComplete} />;
   }
