@@ -243,7 +243,7 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
                    key={starter.category}
                    className={`cursor-pointer transition-all duration-200 border-2 ${
                      isCategoryLocked(starter.category)
-                       ? 'border-muted bg-muted/5 opacity-75'
+                       ? 'border-red-900 bg-red-50 dark:bg-red-950/20 shadow-lg hover:shadow-xl hover:border-red-800'
                        : selectedCategory === starter.category
                        ? 'border-primary bg-primary/5 shadow-md'
                        : 'border-border hover:border-primary/50 hover:shadow-sm'
@@ -255,7 +255,9 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
                        {isCategoryLocked(starter.category) ? (
                          <div className="relative">
                            <div className="opacity-50">{categoryEmojis[starter.category] || "💭"}</div>
-                           <Lock className="w-4 h-4 absolute -top-1 -right-1 text-muted-foreground" />
+                           <div className="absolute -top-1 -right-1 bg-red-900 rounded-full p-1">
+                             <Lock className="w-3 h-3 text-white" />
+                           </div>
                          </div>
                        ) : (
                          categoryEmojis[starter.category] || "💭"
@@ -263,11 +265,11 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
                      </div>
                      <div className="flex-1">
                        <div className="flex items-center gap-2">
-                         <h3 className={`font-semibold ${isCategoryLocked(starter.category) ? 'text-muted-foreground' : 'text-foreground'}`}>
+                         <h3 className={`font-semibold ${isCategoryLocked(starter.category) ? 'text-red-900 dark:text-red-300' : 'text-foreground'}`}>
                            {starter.category}
                          </h3>
                          {isCategoryLocked(starter.category) && (
-                           <span className="text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded-full">
+                           <span className="text-xs bg-red-900 text-white px-2 py-0.5 rounded-full font-medium">
                              Premium
                            </span>
                          )}
@@ -331,7 +333,7 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
             <Card
               className={`cursor-pointer transition-all duration-200 border-2 ${
                 isCategoryLocked("Customize")
-                  ? 'border-muted bg-muted/5 opacity-75'
+                  ? 'border-red-900 bg-red-50 dark:bg-red-950/20 shadow-lg hover:shadow-xl hover:border-red-800'
                   : selectedCategory === "Customize"
                   ? 'border-primary bg-primary/5 shadow-md'
                   : 'border-border hover:border-primary/50 hover:shadow-sm'
@@ -343,7 +345,9 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
                   {isCategoryLocked("Customize") ? (
                     <div className="relative">
                       <div className="opacity-50">✨</div>
-                      <Lock className="w-4 h-4 absolute -top-1 -right-1 text-muted-foreground" />
+                      <div className="absolute -top-1 -right-1 bg-red-900 rounded-full p-1">
+                        <Lock className="w-3 h-3 text-white" />
+                      </div>
                     </div>
                   ) : (
                     "✨"
@@ -351,11 +355,11 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <h3 className={`font-semibold ${isCategoryLocked("Customize") ? 'text-muted-foreground' : 'text-foreground'}`}>
+                    <h3 className={`font-semibold ${isCategoryLocked("Customize") ? 'text-red-900 dark:text-red-300' : 'text-foreground'}`}>
                       Customize
                     </h3>
                     {isCategoryLocked("Customize") && (
-                      <span className="text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded-full">
+                      <span className="text-xs bg-red-900 text-white px-2 py-0.5 rounded-full font-medium">
                         Premium
                       </span>
                     )}
