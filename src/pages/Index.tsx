@@ -8,6 +8,7 @@ import DateConciergeModule from '@/components/modules/DateConciergeModule';
 import TherapyCompanionModule from '@/components/modules/TherapyCompanionModule';
 import ProfileModule from '@/components/modules/ProfileModule';
 import ReviewRequestModal from '@/components/ReviewRequestModal';
+import NotificationPermissionStep from '@/components/NotificationPermissionStep';
 import { useAppInitialization } from '@/hooks/useAppInitialization';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useReviewTracking } from '@/hooks/useReviewTracking';
@@ -27,6 +28,8 @@ interface OnboardingData {
 const Index = () => {
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
   const [hasSeenPaywall, setHasSeenPaywall] = useState(false);
+  const [hasSeenWelcome, setHasSeenWelcome] = useState(false);
+  const [hasCompletedNotifications, setHasCompletedNotifications] = useState(false);
   const [userProfile, setUserProfile] = useState<OnboardingData | null>(null);
   const [activeModule, setActiveModule] = useState<'home' | 'flirtfuel' | 'concierge' | 'therapy' | 'profile'>('home');
   const [showPaywallModal, setShowPaywallModal] = useState(false);
@@ -43,9 +46,13 @@ const Index = () => {
     // Clear onboarding data to show the onboarding flow
     localStorage.removeItem('relationshipCompanionProfile');
     localStorage.removeItem('hasSeenPaywall');
+    localStorage.removeItem('hasSeenWelcome');
+    localStorage.removeItem('hasCompletedNotifications');
     
     const savedProfile = localStorage.getItem('relationshipCompanionProfile');
     const savedPaywallFlag = localStorage.getItem('hasSeenPaywall');
+    const savedWelcomeFlag = localStorage.getItem('hasSeenWelcome');
+    const savedNotificationsFlag = localStorage.getItem('hasCompletedNotifications');
     
     if (savedProfile) {
       setUserProfile(JSON.parse(savedProfile));
@@ -54,6 +61,14 @@ const Index = () => {
     
     if (savedPaywallFlag) {
       setHasSeenPaywall(true);
+    }
+    
+    if (savedWelcomeFlag) {
+      setHasSeenWelcome(true);
+    }
+    
+    if (savedNotificationsFlag) {
+      setHasCompletedNotifications(true);
     }
     
     // Premium users skip onboarding automatically
@@ -74,6 +89,8 @@ const Index = () => {
       }
       setHasCompletedOnboarding(true);
       setHasSeenPaywall(true);
+      setHasSeenWelcome(true);
+      setHasCompletedNotifications(true);
     }
   }, [subscription.subscribed, subscriptionLoading]);
 
@@ -100,6 +117,16 @@ const Index = () => {
     }
   };
 
+  const handleWelcomeComplete = () => {
+    setHasSeenWelcome(true);
+    localStorage.setItem('hasSeenWelcome', 'true');
+  };
+
+  const handleNotificationsComplete = () => {
+    setHasCompletedNotifications(true);
+    localStorage.setItem('hasCompletedNotifications', 'true');
+  };
+
   const handlePlanSelected = async () => {
     // Start the Stripe checkout process
     await createCheckoutSession('yearly', true);
@@ -119,14 +146,24 @@ const Index = () => {
     setShowPaywallModal(true);
   };
 
-  // Show paywall first if user doesn't have subscription and hasn't seen it yet
-  if (!subscriptionLoading && !subscription.subscribed && !hasSeenPaywall) {
+  // 1. Show welcome screens first
+  if (!subscriptionLoading && !hasSeenWelcome) {
+    return <OnboardingFlow onComplete={handleWelcomeComplete} showOnlyWelcome />;
+  }
+
+  // 2. Show notifications permission after welcome
+  if (!subscriptionLoading && hasSeenWelcome && !hasCompletedNotifications) {
+    return <NotificationPermissionStep onComplete={handleNotificationsComplete} userProfile={null} />;
+  }
+
+  // 3. Show paywall after notifications if user doesn't have subscription
+  if (!subscriptionLoading && hasCompletedNotifications && !subscription.subscribed && !hasSeenPaywall) {
     return <Paywall onPlanSelected={handlePlanSelected} onSkipToFree={handleSkipToFree} />;
   }
 
-  // Show onboarding if paywall has been seen but onboarding not completed and not premium
+  // 4. Show intake quiz if paywall has been seen but onboarding not completed and not premium
   if (!subscriptionLoading && hasSeenPaywall && (!hasCompletedOnboarding || !userProfile)) {
-    return <OnboardingFlow onComplete={handleOnboardingComplete} />;
+    return <OnboardingFlow onComplete={handleOnboardingComplete} showOnlyQuiz />;
   }
 
   const handleProfileUpdate = (updatedProfile: OnboardingData) => {

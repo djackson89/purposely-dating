@@ -18,11 +18,13 @@ interface OnboardingData {
 
 interface OnboardingFlowProps {
   onComplete: (data: OnboardingData) => void;
+  showOnlyWelcome?: boolean;
+  showOnlyQuiz?: boolean;
 }
 
-const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
+const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete, showOnlyWelcome = false, showOnlyQuiz = false }) => {
   const [currentStep, setCurrentStep] = useState(0);
-  const [showTour, setShowTour] = useState(true);
+  const [showTour, setShowTour] = useState(showOnlyWelcome || (!showOnlyQuiz));
   const [showNotificationStep, setShowNotificationStep] = useState(false);
   const [formData, setFormData] = useState<Partial<OnboardingData>>({});
   const [touchStart, setTouchStart] = useState({ x: 0, y: 0 });
@@ -133,8 +135,13 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
     if (currentStep < tourSteps.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
-      setShowTour(false);
-      setCurrentStep(0);
+      if (showOnlyWelcome) {
+        // Complete welcome tour directly
+        onComplete({} as OnboardingData);
+      } else {
+        setShowTour(false);
+        setCurrentStep(0);
+      }
     }
   };
 
@@ -146,8 +153,13 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
     if (currentStep < quizSteps.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
-      // Show notification permission step after quiz completion
-      setShowNotificationStep(true);
+      // Complete quiz directly when in quiz-only mode
+      if (showOnlyQuiz) {
+        onComplete(updatedData as OnboardingData);
+      } else {
+        // Show notification permission step after quiz completion
+        setShowNotificationStep(true);
+      }
     }
   };
 
@@ -161,8 +173,13 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
     if (currentStep < quizSteps.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
-      // Show notification permission step after quiz completion
-      setShowNotificationStep(true);
+      // Complete quiz directly when in quiz-only mode
+      if (showOnlyQuiz) {
+        onComplete(formData as OnboardingData);
+      } else {
+        // Show notification permission step after quiz completion
+        setShowNotificationStep(true);
+      }
     }
   };
 
@@ -170,8 +187,13 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
     if (currentStep < quizSteps.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
-      // Show notification permission step after quiz completion
-      setShowNotificationStep(true);
+      // Complete quiz directly when in quiz-only mode
+      if (showOnlyQuiz) {
+        onComplete(formData as OnboardingData);
+      } else {
+        // Show notification permission step after quiz completion
+        setShowNotificationStep(true);
+      }
     }
   };
 
