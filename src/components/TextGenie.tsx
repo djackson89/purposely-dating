@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback, useMemo, memo } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -75,12 +75,11 @@ const TextGenie: React.FC<TextGenieProps> = ({ userProfile }) => {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
 
-  // Memoized constants to prevent recreation
-  const loadingMessages = useMemo(() => [
+  const loadingMessages = [
     "Generating personalized suggestions...",
     "Analyzing conversation context...",
     "Creating perfect replies..."
-  ], []);
+  ];
 
   useEffect(() => {
     if (isProcessing) {
@@ -89,25 +88,24 @@ const TextGenie: React.FC<TextGenieProps> = ({ userProfile }) => {
     }
   }, [isProcessing]);
 
-  // Optimized helper functions with useCallback
-  const getToneLabel = useCallback((level: number) => {
+  const getToneLabel = (level: number) => {
     switch (level) {
       case 0: return 'Sweet';
       case 1: return 'Mild';  
       case 2: return 'Spicy';
       default: return 'Mild';
     }
-  }, []);
+  };
 
-  const getToneEmoji = useCallback((tone: 'sweet' | 'mild' | 'spicy') => {
+  const getToneEmoji = (tone: 'sweet' | 'mild' | 'spicy') => {
     switch (tone) {
       case 'sweet': return '💕';
       case 'mild': return '💭';
       case 'spicy': return '🔥';
     }
-  }, []);
+  };
 
-  const handleImageUpload = useCallback(async () => {
+  const handleImageUpload = async () => {
     if (uploadedImages.length >= 6) {
       toast({
         title: "Maximum reached",
@@ -121,9 +119,9 @@ const TextGenie: React.FC<TextGenieProps> = ({ userProfile }) => {
     if (fileInputRef.current) {
       fileInputRef.current.click();
     }
-  }, [uploadedImages.length, toast]);
+  };
 
-  const handleFileSelect = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files) return;
 
@@ -162,7 +160,7 @@ const TextGenie: React.FC<TextGenieProps> = ({ userProfile }) => {
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
-  }, [uploadedImages.length, toast]);
+  };
 
   const convertFileToDataUrl = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -795,4 +793,4 @@ Provide a fresh analytical perspective on why this behavior is problematic for l
   );
 };
 
-export default React.memo(TextGenie);
+export default TextGenie;

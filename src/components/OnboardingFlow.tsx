@@ -2,7 +2,9 @@ import React, { useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Camera, User } from 'lucide-react';
+import { Heart, Sparkles, Calendar, MessageCircle, Camera, User } from 'lucide-react';
+import { HeartIcon } from '@/components/ui/heart-icon';
+import NotificationPermissionStep from '@/components/NotificationPermissionStep';
 
 interface OnboardingData {
   firstName: string;
@@ -20,10 +22,40 @@ interface OnboardingFlowProps {
 
 const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
   const [currentStep, setCurrentStep] = useState(0);
+  const [showTour, setShowTour] = useState(true);
+  const [showNotificationStep, setShowNotificationStep] = useState(false);
   const [formData, setFormData] = useState<Partial<OnboardingData>>({});
   const [touchStart, setTouchStart] = useState({ x: 0, y: 0 });
   const [touchEnd, setTouchEnd] = useState({ x: 0, y: 0 });
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const tourSteps = [
+    {
+      icon: Heart,
+      title: "Your dating strategist, self-love coach, and wingwoman all in one",
+      description: "Designed by world-class relationship experts for women who refuse to settle. Master the art of intentional dating and attract the love you truly deserve."
+    },
+    {
+      icon: MessageCircle,
+      title: "Boring small talk? Gone!",
+      description: "The mental stimulation never ends with our relationship expert-crafted conversation starters. Whether it's a deep date night discussion or a naughty girl's night in, we've got 10,000+ questions to keep boredom away for good!"
+    },
+    {
+      icon: Sparkles,
+      title: "Send the Perfect Reply Every Time",
+      description: "Our built in Practice Partner will let you practice flirting, setting boundaries, or deep convos with zero judgment. Or...just tag our Text Genie in and we'll craft the perfect reply for you!"
+    },
+    {
+      icon: Calendar,
+      title: "Date Concierge & Planning 🗓️",
+      description: "Discover curated date ideas that align with your values and love language. Move beyond coffee dates to experiences that reveal true compatibility and character."
+    },
+    {
+      icon: HeartIcon,
+      title: "Therapy Companion & Growth 🌱",
+      description: "Daily reflection prompts and emotional intelligence tools designed by licensed therapists. Track your growth and maintain the self-awareness that attracts high-quality partners."
+    }
+  ];
 
   const quizSteps = [
     {
@@ -97,6 +129,15 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
     }
   ];
 
+  const handleTourNext = () => {
+    if (currentStep < tourSteps.length - 1) {
+      setCurrentStep(currentStep + 1);
+    } else {
+      setShowTour(false);
+      setCurrentStep(0);
+    }
+  };
+
   const handleQuizAnswer = (value: string) => {
     const currentQuizStep = quizSteps[currentStep];
     const updatedData = { ...formData, [currentQuizStep.key]: value };
@@ -105,8 +146,8 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
     if (currentStep < quizSteps.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
-      // Complete onboarding directly
-      onComplete(updatedData as OnboardingData);
+      // Show notification permission step after quiz completion
+      setShowNotificationStep(true);
     }
   };
 
@@ -120,8 +161,8 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
     if (currentStep < quizSteps.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
-      // Complete onboarding directly
-      onComplete(formData as OnboardingData);
+      // Show notification permission step after quiz completion
+      setShowNotificationStep(true);
     }
   };
 
@@ -129,8 +170,8 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
     if (currentStep < quizSteps.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
-      // Complete onboarding directly
-      onComplete(formData as OnboardingData);
+      // Show notification permission step after quiz completion
+      setShowNotificationStep(true);
     }
   };
 
@@ -149,6 +190,11 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
 
   const handlePhotoButtonClick = () => {
     fileInputRef.current?.click();
+  };
+
+  const handleNotificationStepComplete = () => {
+    // Complete onboarding after notification step
+    onComplete(formData as OnboardingData);
   };
 
   const handleBack = () => {
@@ -176,19 +222,78 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
     // Only trigger swipe if horizontal movement is greater than vertical
     if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50) {
       if (deltaX > 0) {
-        // Swiped left - next step (only for input/photo steps)
-        const currentQuizStep = quizSteps[currentStep];
-        if (currentQuizStep.type === 'input' || currentQuizStep.type === 'photo') {
-          handleNext();
+        // Swiped left - next step
+        if (showTour) {
+          handleTourNext();
         }
       } else {
         // Swiped right - previous step
-        if (currentStep > 0) {
+        if (!showTour && currentStep > 0) {
           handleBack();
         }
       }
     }
   };
+
+  // Show notification permission step after quiz completion
+  if (showNotificationStep) {
+    return (
+      <NotificationPermissionStep 
+        onComplete={handleNotificationStepComplete}
+        userProfile={formData}
+      />
+    );
+  }
+
+  if (showTour) {
+    const step = tourSteps[currentStep];
+    const IconComponent = step.icon;
+
+    return (
+      <div className="min-h-screen bg-gradient-soft flex items-center justify-center p-4">
+        <Card 
+          className="w-full max-w-md shadow-romance border-primary/20 animate-fade-in-up select-none"
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
+          <CardHeader className="text-center space-y-4">
+            <div className="mx-auto w-16 h-16 bg-gradient-romance rounded-full flex items-center justify-center shadow-glow">
+              <IconComponent className="w-8 h-8 text-white animate-heart-pulse" />
+            </div>
+            <CardTitle className="text-xl font-semibold bg-gradient-romance bg-clip-text text-transparent">
+              {step.title}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="text-center space-y-6">
+            <p className="text-muted-foreground leading-relaxed">
+              {step.description}
+            </p>
+            <div className="flex justify-center space-x-2">
+              {tourSteps.map((_, index) => (
+                <div
+                  key={index}
+                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                    index === currentStep ? 'bg-primary w-6' : 'bg-border'
+                  }`}
+                />
+              ))}
+            </div>
+            <Button 
+              onClick={handleTourNext}
+              variant="romance"
+              size="lg"
+              className="w-full"
+            >
+              {currentStep === tourSteps.length - 1 ? "Let's Get Started! 💕" : "Next"}
+            </Button>
+            <p className="text-xs text-muted-foreground/70">
+              Swipe left/right to navigate
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   const quizStep = quizSteps[currentStep];
 

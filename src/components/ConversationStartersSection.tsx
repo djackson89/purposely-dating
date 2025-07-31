@@ -1,4 +1,4 @@
-import React, { memo, useMemo, useCallback } from 'react';
+import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -68,7 +68,7 @@ interface ConversationStartersSectionProps {
   getQuestionText: (question: string | { statement: string; options: { key: string; text: string; }[] }) => string;
 }
 
-const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = memo(({
+const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = React.memo(({
   userProfile,
   conversationStarters,
   masterCategory,
@@ -112,8 +112,8 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
   isMultipleChoice,
   getQuestionText,
 }) => {
-  // Optimized static data - memoized outside component to prevent recreation
-  const categoryEmojis = useMemo(() => ({
+  // Memoized category emojis to prevent recreation
+  const categoryEmojis = React.useMemo(() => ({
     "First Date Deep Dive": "💬",
     "Relationship Clarity": "❤️",
     "Boundaries & Values": "🏠",
@@ -136,7 +136,8 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
     "Hot Mess Express": "🚂"
   }), []);
 
-  const descriptions = useMemo(() => ({
+  // Memoized descriptions to prevent recreation
+  const descriptions = React.useMemo(() => ({
     "First Date Deep Dive": "Explore deeper conversations and meaningful connections",
     "Relationship Clarity": "Understand love languages and emotional needs",
     "Boundaries & Values": "Navigate healthy limits and personal values",
@@ -159,7 +160,7 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
     "Hot Mess Express": "Unleash your chaos queen - girl-talk about dating drama"
   }), []);
 
-  const getDescription = useCallback((category: string): string => {
+  const getDescription = React.useCallback((category: string): string => {
     return descriptions[category] || "Explore meaningful conversation topics";
   }, [descriptions]);
 
@@ -392,45 +393,43 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
             </Card>
           </div>
 
-          {/* Depth Slider - Only show for Date Night master category */}
-          {masterCategory === 'Date Night' && (
-            <Card className="shadow-soft border-primary/10">
-              <CardContent className="pt-6 pb-4">
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="font-medium text-primary">Question Depth</span>
-                    <div className="flex items-center gap-2">
-                      {isLoading && (
-                        <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                      )}
-                      <span className="text-xs text-muted-foreground">
-                        {depthLevel[0] === 0 ? 'Light' : depthLevel[0] === 1 ? 'Casual' : 'Deep'}
-                      </span>
-                    </div>
+          {/* Depth Slider */}
+          <Card className="shadow-soft border-primary/10">
+            <CardContent className="pt-6 pb-4">
+              <div className="space-y-3">
+                <div className="flex justify-between items-center text-sm">
+                  <span className="font-medium text-primary">Question Depth</span>
+                  <div className="flex items-center gap-2">
+                    {isLoading && (
+                      <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                    )}
+                    <span className="text-xs text-muted-foreground">
+                      {depthLevel[0] === 0 ? 'Light' : depthLevel[0] === 1 ? 'Casual' : 'Deep'}
+                    </span>
                   </div>
-                  <div className="px-2">
-                    <Slider
-                      value={depthLevel}
-                      onValueChange={setDepthLevel}
-                      max={2}
-                      step={1}
-                      className="w-full"
-                    />
-                    <div className="flex justify-between text-xs text-muted-foreground mt-2">
-                      <span>Light</span>
-                      <span>Casual</span>
-                      <span>Deep</span>
-                    </div>
-                  </div>
-                  <p className="text-xs text-muted-foreground text-center">
-                    {depthLevel[0] === 0 && "Sarcastic & witty with dark humor"}
-                    {depthLevel[0] === 1 && "Balanced mix of fun and thought-provoking"}
-                    {depthLevel[0] === 2 && "Complex & meaningful for deep conversations"}
-                  </p>
                 </div>
-              </CardContent>
-            </Card>
-          )}
+                <div className="px-2">
+                  <Slider
+                    value={depthLevel}
+                    onValueChange={setDepthLevel}
+                    max={2}
+                    step={1}
+                    className="w-full"
+                  />
+                  <div className="flex justify-between text-xs text-muted-foreground mt-2">
+                    <span>Light</span>
+                    <span>Casual</span>
+                    <span>Deep</span>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground text-center">
+                  {depthLevel[0] === 0 && "Sarcastic & witty with dark humor"}
+                  {depthLevel[0] === 1 && "Balanced mix of fun and thought-provoking"}
+                  {depthLevel[0] === 2 && "Complex & meaningful for deep conversations"}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Navigation Controls */}
           <div className="flex justify-between items-center px-2 sm:px-4">
@@ -472,9 +471,7 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
                 </>
               ) : (
                 <>
-                  <span>
-                    {currentQuestionIndex === currentStarters.length - 1 ? 'Generate More' : 'Next'}
-                  </span>
+                  <span>Next</span>
                   <span>→</span>
                 </>
               )}
