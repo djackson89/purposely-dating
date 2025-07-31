@@ -846,7 +846,7 @@ Provide 2-3 specific insights about communication strengths and areas for improv
     };
 
     switchDepth();
-  }, [depthLevel, isCustom, selectedCategory, customCategories, conversationStarters, transformQuestionsForDepth, currentStarters, masterCategory]);
+  }, [depthLevel, isCustom, selectedCategory, customCategories, conversationStarters, transformQuestionsForDepth, masterCategory]); // Removed currentStarters from dependencies
 
   return (
     <div className="min-h-screen bg-background p-4 space-y-6">
@@ -1047,64 +1047,89 @@ Provide 2-3 specific insights about communication strengths and areas for improv
 
       {/* Full Screen Conversation Dialog */}
       <Dialog open={isFullScreen} onOpenChange={setIsFullScreen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-center">{selectedCategory}</DialogTitle>
+            <DialogTitle className="text-center text-xl font-semibold">{selectedCategory}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
-            <div className="text-center p-6">
+          <div className="space-y-6 py-4">
+            <div className="text-center px-2">
               {currentStarters.length > 0 && (
-                <div className="space-y-4">
+                <div className="space-y-6">
                   {isMultipleChoice(currentStarters[currentQuestionIndex]) ? (
-                    <div>
-                      <p className="text-lg font-semibold mb-4">
+                    <div className="space-y-4">
+                      <p className="text-xl font-bold leading-relaxed">
                         {(currentStarters[currentQuestionIndex] as any).statement}
                       </p>
-                      <div className="space-y-2 text-left">
+                      <div className="space-y-3 text-left max-w-md mx-auto">
                         {(currentStarters[currentQuestionIndex] as any).options.map((option: any) => (
-                          <div key={option.key} className="p-2 border rounded">
-                            <span className="font-bold">{option.key}. </span>
-                            <span>{option.text}</span>
+                          <div key={option.key} className="p-3 bg-muted/50 border rounded-lg">
+                            <span className="font-bold text-primary">{option.key}. </span>
+                            <span className="text-foreground">{option.text}</span>
                           </div>
                         ))}
                       </div>
                     </div>
                   ) : (
-                    <p className="text-lg font-semibold">
-                      {getQuestionText(currentStarters[currentQuestionIndex])}
-                    </p>
+                    <div className="max-w-md mx-auto">
+                      <p className="text-xl font-bold leading-relaxed text-center">
+                        {getQuestionText(currentStarters[currentQuestionIndex]).split('\n').map((line, index) => (
+                          <span key={index} className="block mb-2">
+                            {line}
+                          </span>
+                        ))}
+                      </p>
+                    </div>
                   )}
                 </div>
               )}
             </div>
 
-            <div className="flex items-center justify-between">
-              <Button onClick={previousQuestion} variant="outline" size="sm">
+            <div className="flex items-center justify-between px-4">
+              <Button 
+                onClick={previousQuestion} 
+                variant="outline" 
+                size="sm"
+                disabled={currentQuestionIndex === 0}
+                className="flex items-center gap-2"
+              >
                 <ChevronLeft className="w-4 h-4" />
+                <span className="hidden sm:inline">Previous</span>
               </Button>
               
               <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">
+                <span className="text-sm text-muted-foreground font-medium">
                   {currentQuestionIndex + 1} of {currentStarters.length}
                 </span>
               </div>
               
-              <Button onClick={nextQuestion} variant="outline" size="sm">
+              <Button 
+                onClick={nextQuestion} 
+                variant="outline" 
+                size="sm"
+                disabled={currentQuestionIndex === currentStarters.length - 1}
+                className="flex items-center gap-2"
+              >
+                <span className="hidden sm:inline">Next</span>
                 <ChevronRight className="w-4 h-4" />
               </Button>
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex gap-2 px-4">
               <Button
                 onClick={() => handleShare(getQuestionText(currentStarters[currentQuestionIndex]))}
                 variant="outline"
                 size="sm"
-                className="flex-1"
+                className="flex-1 flex items-center justify-center gap-2"
               >
-                <Share className="w-4 h-4 mr-2" />
+                <Share className="w-4 h-4" />
                 Share
               </Button>
-              <Button onClick={() => setIsFullScreen(false)} className="flex-1">
+              <Button 
+                onClick={() => setIsFullScreen(false)} 
+                variant="romance"
+                size="sm"
+                className="flex-1"
+              >
                 Close
               </Button>
             </div>
