@@ -454,23 +454,27 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
                      if (isMultiChoice) {
                        // Extract question text (statement part only)
                        let questionText = '';
+                       let fullText = '';
+                       
                        if (typeof currentQuestion === 'object' && 'statement' in currentQuestion) {
-                         questionText = currentQuestion.statement;
+                         fullText = currentQuestion.statement;
                        } else {
-                         const fullText = getQuestionText(currentQuestion);
-                         console.log('Full text for parsing:', fullText);
-                         
-                         // Handle inline format: "Question? A. option B. option C. option D. option"
-                         const questionMatch = fullText.match(/^(.*?)\?\s*(?=\s*[A-D]\.)/);
-                         if (questionMatch) {
-                           questionText = questionMatch[1].trim() + '?';
-                         } else {
-                           // Fallback: split by newline
-                           const parts = fullText.split(/\n(?=[A-D]\.)/);
-                           questionText = parts[0]?.trim() || fullText;
-                         }
-                         console.log('Extracted question text:', questionText);
+                         fullText = getQuestionText(currentQuestion);
                        }
+                       
+                       console.log('Full text for parsing:', fullText);
+                       
+                       // Always clean the text, regardless of source
+                       // Handle inline format: "Question? A. option B. option C. option D. option"
+                       const questionMatch = fullText.match(/^(.*?)\?\s*(?=\s*[A-D]\.)/);
+                       if (questionMatch) {
+                         questionText = questionMatch[1].trim() + '?';
+                       } else {
+                         // Fallback: split by newline or take everything before first A.
+                         const beforeOptions = fullText.split(/\s*[A-D]\./)[0];
+                         questionText = beforeOptions.trim();
+                       }
+                       console.log('Extracted question text:', questionText);
                        
                        // Extract options
                        let options: Array<{key: string; text: string}> = [];
