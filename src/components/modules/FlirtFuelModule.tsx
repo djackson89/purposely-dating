@@ -400,98 +400,7 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
       category: "Pillow Talk & Tea",
       masterCategory: "Girl's Night",
       type: "multiple-choice",
-      prompts: [
-        {
-          statement: "What's your ultimate turn-on during a makeout session?",
-          options: [
-            { key: "A", text: "Neck kisses" },
-            { key: "B", text: "Whispering in my ear" },
-            { key: "C", text: "Hands exploring slowly" },
-            { key: "D", text: "Being pinned down" }
-          ]
-        },
-        {
-          statement: "What's your post-hookup guilty pleasure?",
-          options: [
-            { key: "A", text: "Stealing his hoodie" },
-            { key: "B", text: "Replaying the whole night in my head" },
-            { key: "C", text: "Posting a thirst trap" },
-            { key: "D", text: "Texting my bestie a full recap" }
-          ]
-        },
-        {
-          statement: "Where's your fantasy spot to hook up at least once?",
-          options: [
-            { key: "A", text: "In a hotel elevator" },
-            { key: "B", text: "On the beach at night" },
-            { key: "C", text: "Backseat of a car" },
-            { key: "D", text: "In his office after hours" }
-          ]
-        },
-        {
-          statement: "What makes you feel instantly sexy in the bedroom?",
-          options: [
-            { key: "A", text: "Wearing lingerie he hasn't seen" },
-            { key: "B", text: "When he's obsessed with every inch of me" },
-            { key: "C", text: "That first look before things get heated" },
-            { key: "D", text: "Knowing I'm the one in control tonight" }
-          ]
-        },
-        {
-          statement: "What's your late-night text likely to say?",
-          options: [
-            { key: "A", text: "U up?" },
-            { key: "B", text: "You better not fall asleep on me 😈" },
-            { key: "C", text: "Come over. Now." },
-            { key: "D", text: "Just a fire selfie with no caption" }
-          ]
-        },
-        {
-          statement: "Which roleplay would you secretly love to try?",
-          options: [
-            { key: "A", text: "Naughty nurse" },
-            { key: "B", text: "Strict boss" },
-            { key: "C", text: "Mysterious stranger at a bar" },
-            { key: "D", text: "Sweet girl with a hidden wild side" }
-          ]
-        },
-        {
-          statement: "What's your signature bedroom move?",
-          options: [
-            { key: "A", text: "Slow teasing until he begs" },
-            { key: "B", text: "Eye contact with a smirk" },
-            { key: "C", text: "Taking control on top" },
-            { key: "D", text: "Whispering exactly what I want" }
-          ]
-        },
-        {
-          statement: "How do you react when he surprises you with something new in bed?",
-          options: [
-            { key: "A", text: "Where did you learn that? 👀" },
-            { key: "B", text: "Pretend I'm shy but secretly love it" },
-            { key: "C", text: "Your move. My turn's next." },
-            { key: "D", text: "I'm impressed… do it again." }
-          ]
-        },
-        {
-          statement: "What instantly ruins the mood for you?",
-          options: [
-            { key: "A", text: "Bad breath" },
-            { key: "B", text: "Too much talking" },
-            { key: "C", text: "Awkward silence" },
-            { key: "D", text: "Rushing into it without foreplay" }
-          ]
-        },
-        {
-          statement: "What's a confession you've never told your girls?",
-          options: [
-            { key: "A", text: "I hooked up with someone I wasn't supposed to" },
-            { key: "B", text: "I faked it (more than once)" },
-            { key: "C", text: "I've had a dream about a friend's man" },
-            { key: "D", text: "I filmed myself doing that once" }
-          ]
-        }
-      ]
+      prompts: [] // Dynamic generation - will be populated by generatePillowTalkQuestions
     },
     {
       category: "Retrograde & Regrets",
@@ -771,6 +680,76 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
     }
   };
 
+  // Function to generate dynamic Pillow Talk & Tea questions
+  const generatePillowTalkQuestions = async (count: number = 5) => {
+    try {
+      const response = await fetch('/api/functions/v1/generate-pillow-talk-questions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ count }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data.questions || [];
+    } catch (error) {
+      console.error('Error generating Pillow Talk questions:', error);
+      // Fallback to example questions if generation fails
+      return [
+        {
+          statement: "What's your ultimate turn-on during a makeout session?",
+          options: [
+            { key: "A", text: "Neck kisses" },
+            { key: "B", text: "Whispering in my ear" },
+            { key: "C", text: "Hands exploring slowly" },
+            { key: "D", text: "Being pinned down" }
+          ]
+        },
+        {
+          statement: "What's your post-hookup guilty pleasure?",
+          options: [
+            { key: "A", text: "Stealing his hoodie" },
+            { key: "B", text: "Replaying the whole night in my head" },
+            { key: "C", text: "Posting a thirst trap" },
+            { key: "D", text: "Texting my bestie a full recap" }
+          ]
+        },
+        {
+          statement: "Where's your fantasy spot to hook up at least once?",
+          options: [
+            { key: "A", text: "In a hotel elevator" },
+            { key: "B", text: "On the beach at night" },
+            { key: "C", text: "Backseat of a car" },
+            { key: "D", text: "In his office after hours" }
+          ]
+        },
+        {
+          statement: "What makes you feel instantly sexy in the bedroom?",
+          options: [
+            { key: "A", text: "Wearing lingerie he hasn't seen" },
+            { key: "B", text: "When he's obsessed with every inch of me" },
+            { key: "C", text: "That first look before things get heated" },
+            { key: "D", text: "Knowing I'm the one in control tonight" }
+          ]
+        },
+        {
+          statement: "What's your late-night text likely to say?",
+          options: [
+            { key: "A", text: "U up?" },
+            { key: "B", text: "You better not fall asleep on me 😈" },
+            { key: "C", text: "Come over. Now." },
+            { key: "D", text: "Just a fire selfie with no caption" }
+          ]
+        }
+      ];
+    }
+  };
+
   const saveCurrentCustom = () => {
     if (!isCustom || currentStarters.length === 0) return;
     
@@ -900,6 +879,23 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
     } else {
       const category = conversationStarters.find(cat => cat.category === selectedCategory);
       if (category) {
+        // Special handling for Pillow Talk & Tea - generate new questions dynamically
+        if (selectedCategory === "Pillow Talk & Tea") {
+          try {
+            const generatedQuestions = await generatePillowTalkQuestions(8);
+            setCurrentStarters(generatedQuestions);
+            setCurrentQuestionIndex(0);
+            return;
+          } catch (error) {
+            console.error('Error generating new Pillow Talk questions:', error);
+            // Fallback to default questions if generation fails
+            const fallbackQuestions = await generatePillowTalkQuestions(5); // Use fallback from function
+            setCurrentStarters(fallbackQuestions);
+            setCurrentQuestionIndex(0);
+            return;
+          }
+        }
+        
         // Enhanced prompt based on category type for deeper, more emotionally intelligent questions
         let prompt = '';
         
@@ -1029,26 +1025,46 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
       setIsCustom(false);
       const category = conversationStarters.find(cat => cat.category === categoryName);
       if (category) {
-        // Apply depth transformation to regular category questions
-        const applyDepthToCategory = async () => {
-          try {
-            const transformedQuestions = await Promise.all(
-              category.prompts.map(async (question) => {
-                if (typeof question === 'string') {
-                  return await adjustQuestionDepth(question, depthLevel[0]);
-                }
-                return question; // Keep multiple choice objects as-is
-              })
-            );
-            setCurrentStarters(transformedQuestions);
-          } catch (error) {
-            console.error('Error adjusting category depth:', error);
-            setCurrentStarters(category.prompts); // Fallback to original
-          }
-        };
-        applyDepthToCategory();
-        setCurrentQuestionIndex(0);
-        setShowCategorySelection(false); // Move to question display
+        // Special handling for Pillow Talk & Tea - generate questions dynamically
+        if (categoryName === "Pillow Talk & Tea") {
+          const loadPillowTalkQuestions = async () => {
+            try {
+              setIsLoadingMoreQuestions(true);
+              const generatedQuestions = await generatePillowTalkQuestions(8);
+              setCurrentStarters(generatedQuestions);
+              setCurrentQuestionIndex(0);
+              setShowCategorySelection(false);
+            } catch (error) {
+              console.error('Error loading Pillow Talk questions:', error);
+              // Fallback to empty array if generation fails
+              setCurrentStarters([]);
+            } finally {
+              setIsLoadingMoreQuestions(false);
+            }
+          };
+          loadPillowTalkQuestions();
+        } else {
+          // Apply depth transformation to regular category questions
+          const applyDepthToCategory = async () => {
+            try {
+              const transformedQuestions = await Promise.all(
+                category.prompts.map(async (question) => {
+                  if (typeof question === 'string') {
+                    return await adjustQuestionDepth(question, depthLevel[0]);
+                  }
+                  return question; // Keep multiple choice objects as-is
+                })
+              );
+              setCurrentStarters(transformedQuestions);
+            } catch (error) {
+              console.error('Error adjusting category depth:', error);
+              setCurrentStarters(category.prompts); // Fallback to original
+            }
+          };
+          applyDepthToCategory();
+          setCurrentQuestionIndex(0);
+          setShowCategorySelection(false); // Move to question display
+        }
       }
     }
   };
