@@ -153,7 +153,12 @@ const Index = () => {
   useEffect(() => {
     const initializeFlowState = async () => {
       // Don't initialize if still loading auth or subscription
-      if (authLoading || subscriptionLoading) return;
+      if (authLoading || subscriptionLoading) {
+        console.log('Still loading - auth:', authLoading, 'subscription:', subscriptionLoading);
+        return;
+      }
+
+      console.log('Initializing flow state - user:', !!user, 'subscription:', subscription.subscribed);
 
       const savedProfile = localStorage.getItem('relationshipCompanionProfile');
       const savedPaywallFlag = localStorage.getItem('hasSeenPaywall');
@@ -166,8 +171,10 @@ const Index = () => {
         
         // Load saved profile data
         if (savedProfile) {
-          setUserProfile(JSON.parse(savedProfile));
+          const profile = JSON.parse(savedProfile);
+          setUserProfile(profile);
           setHasCompletedOnboarding(true);
+          console.log('Loaded profile from localStorage:', profile);
         } else {
           // Try to load from Supabase for authenticated users
           try {
@@ -178,6 +185,7 @@ const Index = () => {
               .single();
             
             if (profile && profile.love_language) {
+              console.log('Loaded profile from Supabase:', profile);
               // User has completed onboarding, create local profile
               const profileData: OnboardingData = {
                 firstName: profile.full_name?.split(' ')[0] || 'User',
@@ -191,9 +199,15 @@ const Index = () => {
               setUserProfile(profileData);
               setHasCompletedOnboarding(true);
               localStorage.setItem('relationshipCompanionProfile', JSON.stringify(profileData));
+            } else {
+              console.log('No profile found in Supabase, user needs onboarding');
+              // User needs to complete onboarding
+              setHasCompletedOnboarding(false);
             }
           } catch (error) {
             console.error('Error loading profile from Supabase:', error);
+            // If error loading from Supabase, user needs to complete onboarding
+            setHasCompletedOnboarding(false);
           }
         }
         
@@ -244,10 +258,12 @@ const Index = () => {
         setHasSeenPaywall(true);
         setHasCompletedOnboarding(true);
       }
+      
+      console.log('Flow state initialization complete');
     };
 
     initializeFlowState();
-  }, [user, authLoading, subscription.subscribed, subscriptionLoading]);
+  }, [user?.id, authLoading, subscription.subscribed, subscriptionLoading]); // More specific dependencies
 
   // Show loading while auth or subscription is loading
   if (authLoading || subscriptionLoading) {
@@ -263,7 +279,7 @@ const Index = () => {
 
   // For authenticated users, if they have completed onboarding, show the app
   if (user && hasCompletedOnboarding && userProfile) {
-    // Show the main app interface
+    console.log('Showing app for authenticated user with profile');
     return (
       <div className="min-h-screen bg-background">
         {renderActiveModule()}
@@ -293,6 +309,12 @@ const Index = () => {
         />
       </div>
     );
+  }
+
+  // For authenticated users who need to complete onboarding
+  if (user && !hasCompletedOnboarding) {
+    console.log('Authenticated user needs onboarding');
+    return <OnboardingFlow onComplete={handleOnboardingComplete} />;
   }
 
   // For unauthenticated users, show the onboarding flow
