@@ -656,9 +656,37 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
   }, [customKeywords, userProfile, getFlirtSuggestion]);
 
   // Optimized navigation functions
-  const nextQuestion = useCallback(() => {
-    setCurrentQuestionIndex(prev => (prev + 1) % currentStarters.length);
-  }, [currentStarters.length]);
+  const nextQuestion = useCallback(async () => {
+    const nextIndex = currentQuestionIndex + 1;
+    
+    // If we're at the end of current questions, generate more
+    if (nextIndex >= currentStarters.length) {
+      if (isCustom || selectedCategory === "Customize") {
+        // For custom categories, just cycle back to beginning
+        setCurrentQuestionIndex(0);
+      } else {
+        // For predefined categories, regenerate questions with AI
+        const categoryData = conversationStarters.find(cat => cat.category === selectedCategory);
+        if (categoryData) {
+          setIsDepthChanging(true);
+          try {
+            // Apply depth transformation to generate new variations
+            await transformQuestionsForDepth(categoryData.prompts, depthLevel[0]);
+            setCurrentQuestionIndex(0);
+          } catch (error) {
+            console.error('Error generating new questions:', error);
+            setCurrentQuestionIndex(0);
+          } finally {
+            setIsDepthChanging(false);
+          }
+        } else {
+          setCurrentQuestionIndex(0);
+        }
+      }
+    } else {
+      setCurrentQuestionIndex(nextIndex);
+    }
+  }, [currentQuestionIndex, currentStarters.length, isCustom, selectedCategory, conversationStarters, depthLevel, transformQuestionsForDepth]);
 
   const previousQuestion = useCallback(() => {
     setCurrentQuestionIndex(prev => prev === 0 ? currentStarters.length - 1 : prev - 1);
@@ -1106,11 +1134,22 @@ Provide 2-3 specific insights about communication strengths and areas for improv
                 onClick={nextQuestion} 
                 variant="outline" 
                 size="sm"
-                disabled={currentQuestionIndex === currentStarters.length - 1}
+                disabled={isDepthChanging}
                 className="flex items-center gap-2"
               >
-                <span className="hidden sm:inline">Next</span>
-                <ChevronRight className="w-4 h-4" />
+                {isDepthChanging ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                    <span className="hidden sm:inline">Generating...</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="hidden sm:inline">
+                      {currentQuestionIndex === currentStarters.length - 1 ? 'Generate More' : 'Next'}
+                    </span>
+                    <ChevronRight className="w-4 h-4" />
+                  </>
+                )}
               </Button>
             </div>
 

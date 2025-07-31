@@ -472,7 +472,9 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
                 </>
               ) : (
                 <>
-                  <span>Next</span>
+                  <span>
+                    {currentQuestionIndex === currentStarters.length - 1 ? 'Generate More' : 'Next'}
+                  </span>
                   <span>→</span>
                 </>
               )}
