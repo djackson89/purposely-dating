@@ -670,20 +670,33 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
   }, [depthLevel]);
 
 
-  // Check for stored practice scenario from Home page navigation
+  // Check for stored section and scenario from Home page navigation
   React.useEffect(() => {
-    const storedScenario = localStorage.getItem('practiceScenario');
     const activePracticeSection = localStorage.getItem('activePracticeSection');
+    const storedScenario = localStorage.getItem('practiceScenario');
     
-    if (storedScenario && activePracticeSection === 'practice') {
-      setActiveSection('practice');
-      setCurrentScenarioText(storedScenario);
-      setPracticeMessages([{ role: 'ai', message: storedScenario }]);
-      setPracticePartnerActive(true);
-      setShowPracticeInput(true);
+    if (activePracticeSection) {
+      // Set the active section based on the stored value
+      switch (activePracticeSection) {
+        case 'starters':
+          setActiveSection('starters');
+          break;
+        case 'textgenie':
+          setActiveSection('textgenie');
+          break;
+        case 'practice':
+          setActiveSection('practice');
+          if (storedScenario) {
+            setCurrentScenarioText(storedScenario);
+            setPracticeMessages([{ role: 'ai', message: storedScenario }]);
+            setPracticePartnerActive(true);
+            setShowPracticeInput(true);
+            localStorage.removeItem('practiceScenario');
+          }
+          break;
+      }
       
-      // Clear the stored data after using it
-      localStorage.removeItem('practiceScenario');
+      // Clear the stored section after using it
       localStorage.removeItem('activePracticeSection');
     }
   }, []);

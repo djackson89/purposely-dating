@@ -113,7 +113,7 @@ const QuickStartModule: React.FC<QuickStartProps> = ({ onNavigateToModule }) => 
           localStorage.setItem('activePracticeSection', 'practice');
           break;
         case 'text-genie':
-          localStorage.setItem('activePracticeSection', 'genie');
+          localStorage.setItem('activePracticeSection', 'textgenie');
           break;
       }
     }
