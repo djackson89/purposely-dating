@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Heart, MessageCircle, Zap, Share, Send, Wand2, Trash2, Users, X, ChevronLeft, ChevronRight, Expand } from 'lucide-react';
+import { Heart, MessageCircle, Zap, Share, Send, Wand2, Trash2, Users, X, ChevronLeft, ChevronRight, Expand, Target, Star, TrendingUp, Clock, BarChart3, Play, Pause, RotateCcw, Mic, MicOff } from 'lucide-react';
 import { HeartIcon } from '@/components/ui/heart-icon';
 import { InfoDialog } from '@/components/ui/info-dialog';
 import { Share as CapacitorShare } from '@capacitor/share';
@@ -167,12 +167,20 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
   const [isTransformingDepth, setIsTransformingDepth] = useState(false);
   
   // Practice state
-  const [practiceMessages, setPracticeMessages] = useState<Array<{ role: 'user' | 'ai'; message: string }>>([]);
+  const [practiceMessages, setPracticeMessages] = useState<Array<{ role: 'user' | 'ai'; message: string; timestamp?: Date; rating?: number }>>([]);
   const [currentPracticeMessage, setCurrentPracticeMessage] = useState('');
   const [practiceScenario, setPracticeScenario] = useState('first_date');
   const [showPracticeInput, setShowPracticeInput] = useState(false);
   const [sessionFeedback, setSessionFeedback] = useState('');
   const [showFeedback, setShowFeedback] = useState(false);
+  const [practiceStats, setPracticeStats] = useState({ sessionsCompleted: 0, averageRating: 0, improvementAreas: [] as string[] });
+  const [activePracticeMode, setActivePracticeMode] = useState<'conversation' | 'roleplay' | 'coaching'>('conversation');
+  const [roleplayCharacter, setRoleplayCharacter] = useState('');
+  const [coachingFocus, setCoachingFocus] = useState('confidence');
+  const [practiceGoals, setPracticeGoals] = useState<string[]>([]);
+  const [sessionTimer, setSessionTimer] = useState(0);
+  const [isSessionActive, setIsSessionActive] = useState(false);
+  const [practiceHistory, setPracticeHistory] = useState<Array<{ date: Date; scenario: string; score: number; feedback: string }>>([]);
   
   // Caching
   const questionCacheRef = useRef(new Map<string, string>());
@@ -495,37 +503,93 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
     }
   }, [newCategoryName, isCustom, selectedCategory]);
 
-  // Practice conversation functions
+  // Enhanced Practice Partner functions
+  const startPracticeSession = useCallback(() => {
+    setIsSessionActive(true);
+    setSessionTimer(0);
+    setPracticeMessages([]);
+    const timer = setInterval(() => {
+      setSessionTimer(prev => prev + 1);
+    }, 1000);
+    // Store timer ID to clear later
+    (window as any).practiceTimer = timer;
+  }, []);
+
+  const endPracticeSession = useCallback(() => {
+    setIsSessionActive(false);
+    if ((window as any).practiceTimer) {
+      clearInterval((window as any).practiceTimer);
+    }
+  }, []);
+
+  const resetPracticeSession = useCallback(() => {
+    setPracticeMessages([]);
+    setSessionFeedback('');
+    setSessionTimer(0);
+    setIsSessionActive(false);
+    if ((window as any).practiceTimer) {
+      clearInterval((window as any).practiceTimer);
+    }
+  }, []);
+
   const sendPracticeMessage = useCallback(async () => {
     if (!currentPracticeMessage.trim()) return;
 
     const userMessage = currentPracticeMessage.trim();
-    setPracticeMessages(prev => [...prev, { role: 'user', message: userMessage }]);
+    const timestamp = new Date();
+    setPracticeMessages(prev => [...prev, { role: 'user', message: userMessage, timestamp }]);
     setCurrentPracticeMessage('');
 
     try {
-      const scenarioContext = {
-        first_date: "You're on a first date at a coffee shop. Keep responses flirty but appropriate, showing genuine interest.",
-        relationship_talk: "You're in a relationship having a deeper conversation. Be supportive, understanding, and emotionally intelligent.",
-        conflict_resolution: "You're working through a disagreement. Focus on understanding, compromise, and healthy communication."
-      };
+      let scenarioContext = '';
+      let aiType: 'therapy' | 'flirt' | 'general' = 'general';
 
-      const prompt = `Context: ${scenarioContext[practiceScenario as keyof typeof scenarioContext]}
+      switch (activePracticeMode) {
+        case 'conversation':
+          const conversationContexts = {
+            first_date: "You're on a first date at a coffee shop. Keep responses flirty but appropriate, showing genuine interest.",
+            relationship_talk: "You're in a relationship having a deeper conversation. Be supportive, understanding, and emotionally intelligent.",
+            conflict_resolution: "You're working through a disagreement. Focus on understanding, compromise, and healthy communication.",
+            workplace_chat: "You're having a casual conversation with a colleague. Keep it professional but friendly.",
+            party_networking: "You're at a social event meeting new people. Be engaging and show interest in others."
+          };
+          scenarioContext = conversationContexts[practiceScenario as keyof typeof conversationContexts] || conversationContexts.first_date;
+          aiType = practiceScenario === 'conflict_resolution' ? 'therapy' : 'flirt';
+          break;
+
+        case 'roleplay':
+          scenarioContext = `You are playing the role of: ${roleplayCharacter}. Stay in character and respond authentically based on this persona.`;
+          aiType = 'general';
+          break;
+
+        case 'coaching':
+          const coachingContexts = {
+            confidence: "You're a supportive coach helping build dating confidence. Provide encouraging, actionable advice.",
+            communication: "You're a communication coach. Help improve conversational skills and emotional expression.",
+            boundaries: "You're a relationship coach focused on healthy boundaries. Guide toward assertive, respectful communication.",
+            vulnerability: "You're a coach helping with emotional openness. Encourage authentic, vulnerable sharing."
+          };
+          scenarioContext = coachingContexts[coachingFocus as keyof typeof coachingContexts] || coachingContexts.confidence;
+          aiType = 'therapy';
+          break;
+      }
+
+      const prompt = `Context: ${scenarioContext}
       
 User said: "${userMessage}"
 
 Respond as someone would in this scenario. Keep it natural, engaging, and realistic. 1-2 sentences max.`;
 
-      const response = await getAIResponse(prompt, userProfile, 'general');
+      const response = await getAIResponse(prompt, userProfile, aiType);
       
       setTimeout(() => {
-        setPracticeMessages(prev => [...prev, { role: 'ai', message: response.trim() }]);
+        setPracticeMessages(prev => [...prev, { role: 'ai', message: response.trim(), timestamp: new Date() }]);
       }, 1000);
       
     } catch (error) {
       console.error('Error getting AI response:', error);
     }
-  }, [currentPracticeMessage, practiceScenario, userProfile, getAIResponse]);
+  }, [currentPracticeMessage, practiceScenario, activePracticeMode, roleplayCharacter, coachingFocus, userProfile, getAIResponse]);
 
   const generateSessionFeedback = useCallback(async () => {
     if (practiceMessages.length === 0) return;
@@ -535,15 +599,62 @@ Respond as someone would in this scenario. Keep it natural, engaging, and realis
         .map(msg => `${msg.role}: ${msg.message}`)
         .join('\n');
 
-      const prompt = `Analyze this practice conversation and provide constructive feedback:\n\n${conversationText}\n\nProvide 2-3 specific insights about communication strengths and areas for improvement. Keep it encouraging and actionable.`;
+      let feedbackPrompt = '';
+      
+      switch (activePracticeMode) {
+        case 'conversation':
+          feedbackPrompt = `Analyze this practice conversation and provide constructive feedback:\n\n${conversationText}\n\nProvide 2-3 specific insights about communication strengths and areas for improvement. Keep it encouraging and actionable.`;
+          break;
+        case 'roleplay':
+          feedbackPrompt = `Analyze this roleplay practice session:\n\n${conversationText}\n\nProvide feedback on authenticity, engagement, and character consistency. Suggest improvements for future roleplay scenarios.`;
+          break;
+        case 'coaching':
+          feedbackPrompt = `Review this coaching practice session:\n\n${conversationText}\n\nProvide insights on personal growth, communication skills, and progress toward the goal of improved ${coachingFocus}. Be supportive and specific.`;
+          break;
+      }
 
-      const feedback = await getAIResponse(prompt, userProfile, 'therapy');
+      const feedback = await getAIResponse(feedbackPrompt, userProfile, 'therapy');
       setSessionFeedback(feedback.trim());
       setShowFeedback(true);
+
+      // Calculate session score based on message count and timer
+      const score = Math.min(100, Math.floor((practiceMessages.length * 10) + (sessionTimer / 60) * 5));
+      
+      // Update practice stats
+      setPracticeStats(prev => ({
+        sessionsCompleted: prev.sessionsCompleted + 1,
+        averageRating: Math.floor((prev.averageRating * prev.sessionsCompleted + score) / (prev.sessionsCompleted + 1)),
+        improvementAreas: [...prev.improvementAreas]
+      }));
+
+      // Add to practice history
+      setPracticeHistory(prev => [...prev, {
+        date: new Date(),
+        scenario: `${activePracticeMode}: ${practiceScenario}`,
+        score,
+        feedback: feedback.substring(0, 100) + '...'
+      }]);
+
     } catch (error) {
       console.error('Error generating feedback:', error);
     }
-  }, [practiceMessages, userProfile, getAIResponse]);
+  }, [practiceMessages, userProfile, getAIResponse, activePracticeMode, practiceScenario, coachingFocus, sessionTimer]);
+
+  const addPracticeGoal = useCallback((goal: string) => {
+    if (goal.trim() && !practiceGoals.includes(goal.trim())) {
+      setPracticeGoals(prev => [...prev, goal.trim()]);
+    }
+  }, [practiceGoals]);
+
+  const removePracticeGoal = useCallback((goalToRemove: string) => {
+    setPracticeGoals(prev => prev.filter(goal => goal !== goalToRemove));
+  }, []);
+
+  const formatTimer = useCallback((seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  }, []);
 
   const openFullScreen = useCallback(() => {
     setIsFullScreen(true);
@@ -678,73 +789,263 @@ Respond as someone would in this scenario. Keep it natural, engaging, and realis
 
       {activeSection === 'practice' && (
         <div className="space-y-6">
+          {/* Practice Overview & Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card className="shadow-soft border-primary/10">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Target className="w-4 h-4 text-primary" />
+                  <span className="font-medium text-sm">Sessions</span>
+                </div>
+                <div className="text-2xl font-bold">{practiceStats.sessionsCompleted}</div>
+                <p className="text-xs text-muted-foreground">Completed</p>
+              </CardContent>
+            </Card>
+            
+            <Card className="shadow-soft border-primary/10">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Star className="w-4 h-4 text-primary" />
+                  <span className="font-medium text-sm">Average Score</span>
+                </div>
+                <div className="text-2xl font-bold">{practiceStats.averageRating}</div>
+                <p className="text-xs text-muted-foreground">Out of 100</p>
+              </CardContent>
+            </Card>
+            
+            <Card className="shadow-soft border-primary/10">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Clock className="w-4 h-4 text-primary" />
+                  <span className="font-medium text-sm">Session Time</span>
+                </div>
+                <div className="text-2xl font-bold">{formatTimer(sessionTimer)}</div>
+                <p className="text-xs text-muted-foreground">Current Session</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Practice Mode Selection */}
           <Card className="shadow-soft border-primary/10">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Zap className="w-5 h-5 text-primary" />
-                Practice Conversations
+                AI Practice Partner
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label className="text-sm font-medium mb-2 block">Scenario</Label>
-                <Select value={practiceScenario} onValueChange={setPracticeScenario}>
+                <Label className="text-sm font-medium mb-2 block">Practice Mode</Label>
+                <Select value={activePracticeMode} onValueChange={(value) => setActivePracticeMode(value as 'conversation' | 'roleplay' | 'coaching')}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="first_date">First Date</SelectItem>
-                    <SelectItem value="relationship_talk">Relationship Talk</SelectItem>
-                    <SelectItem value="conflict_resolution">Conflict Resolution</SelectItem>
+                    <SelectItem value="conversation">Conversation Practice</SelectItem>
+                    <SelectItem value="roleplay">Roleplay Scenarios</SelectItem>
+                    <SelectItem value="coaching">Personal Coaching</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
-              {practiceMessages.length > 0 && (
-                <div className="space-y-3 max-h-64 overflow-y-auto">
-                  {practiceMessages.map((msg, index) => (
-                    <div
-                      key={index}
-                      className={`p-3 rounded-lg ${
-                        msg.role === 'user'
-                          ? 'bg-primary text-primary-foreground ml-8'
-                          : 'bg-muted mr-8'
-                      }`}
-                    >
-                      <p className="text-sm">{msg.message}</p>
+              {/* Conversation Practice Settings */}
+              {activePracticeMode === 'conversation' && (
+                <div>
+                  <Label className="text-sm font-medium mb-2 block">Scenario</Label>
+                  <Select value={practiceScenario} onValueChange={setPracticeScenario}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="first_date">First Date</SelectItem>
+                      <SelectItem value="relationship_talk">Relationship Talk</SelectItem>
+                      <SelectItem value="conflict_resolution">Conflict Resolution</SelectItem>
+                      <SelectItem value="workplace_chat">Workplace Chat</SelectItem>
+                      <SelectItem value="party_networking">Party Networking</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {/* Roleplay Settings */}
+              {activePracticeMode === 'roleplay' && (
+                <div>
+                  <Label className="text-sm font-medium mb-2 block">Character Type</Label>
+                  <Input
+                    placeholder="e.g., Shy introvert, Confident artist, Busy professional..."
+                    value={roleplayCharacter}
+                    onChange={(e) => setRoleplayCharacter(e.target.value)}
+                  />
+                </div>
+              )}
+
+              {/* Coaching Settings */}
+              {activePracticeMode === 'coaching' && (
+                <div>
+                  <Label className="text-sm font-medium mb-2 block">Coaching Focus</Label>
+                  <Select value={coachingFocus} onValueChange={setCoachingFocus}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="confidence">Building Confidence</SelectItem>
+                      <SelectItem value="communication">Communication Skills</SelectItem>
+                      <SelectItem value="boundaries">Healthy Boundaries</SelectItem>
+                      <SelectItem value="vulnerability">Emotional Vulnerability</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {/* Session Controls */}
+              <div className="flex gap-2">
+                {!isSessionActive ? (
+                  <Button onClick={startPracticeSession} className="flex-1">
+                    <Play className="w-4 h-4 mr-2" />
+                    Start Session
+                  </Button>
+                ) : (
+                  <Button onClick={endPracticeSession} variant="outline" className="flex-1">
+                    <Pause className="w-4 h-4 mr-2" />
+                    End Session
+                  </Button>
+                )}
+                <Button onClick={resetPracticeSession} variant="outline">
+                  <RotateCcw className="w-4 h-4" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Chat Interface */}
+          {isSessionActive && (
+            <Card className="shadow-soft border-primary/10">
+              <CardContent className="space-y-4 p-4">
+                {practiceMessages.length > 0 && (
+                  <div className="space-y-3 max-h-80 overflow-y-auto p-4 bg-muted/20 rounded-lg">
+                    {practiceMessages.map((msg, index) => (
+                      <div
+                        key={index}
+                        className={`p-3 rounded-lg ${
+                          msg.role === 'user'
+                            ? 'bg-primary text-primary-foreground ml-8'
+                            : 'bg-background mr-8 border border-border'
+                        }`}
+                      >
+                        <p className="text-sm">{msg.message}</p>
+                        {msg.timestamp && (
+                          <p className="text-xs opacity-70 mt-1">
+                            {msg.timestamp.toLocaleTimeString()}
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div className="flex gap-2">
+                  <Textarea
+                    placeholder="Type your message..."
+                    value={currentPracticeMessage}
+                    onChange={(e) => setCurrentPracticeMessage(e.target.value)}
+                    className="flex-1"
+                    rows={2}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        sendPracticeMessage();
+                      }
+                    }}
+                  />
+                  <Button
+                    onClick={sendPracticeMessage}
+                    disabled={!currentPracticeMessage.trim() || isLoading}
+                  >
+                    <Send className="w-4 h-4" />
+                  </Button>
+                </div>
+
+                {practiceMessages.length > 0 && (
+                  <Button
+                    onClick={generateSessionFeedback}
+                    variant="outline"
+                    disabled={isLoading}
+                    className="w-full"
+                  >
+                    <BarChart3 className="w-4 h-4 mr-2" />
+                    Get Session Feedback
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Practice Goals */}
+          <Card className="shadow-soft border-primary/10">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="w-5 h-5 text-primary" />
+                Practice Goals
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Add a practice goal..."
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      addPracticeGoal((e.target as HTMLInputElement).value);
+                      (e.target as HTMLInputElement).value = '';
+                    }
+                  }}
+                />
+              </div>
+              
+              {practiceGoals.length > 0 && (
+                <div className="space-y-2">
+                  {practiceGoals.map((goal, index) => (
+                    <div key={index} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                      <span className="text-sm">{goal}</span>
+                      <Button
+                        onClick={() => removePracticeGoal(goal)}
+                        variant="ghost"
+                        size="sm"
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
                     </div>
                   ))}
                 </div>
               )}
-
-              <div className="flex gap-2">
-                <Textarea
-                  placeholder="Type your message..."
-                  value={currentPracticeMessage}
-                  onChange={(e) => setCurrentPracticeMessage(e.target.value)}
-                  className="flex-1"
-                  rows={2}
-                />
-                <Button
-                  onClick={sendPracticeMessage}
-                  disabled={!currentPracticeMessage.trim() || isLoading}
-                >
-                  <Send className="w-4 h-4" />
-                </Button>
-              </div>
-
-              {practiceMessages.length > 0 && (
-                <Button
-                  onClick={generateSessionFeedback}
-                  variant="outline"
-                  disabled={isLoading}
-                  className="w-full"
-                >
-                  Get Feedback
-                </Button>
-              )}
             </CardContent>
           </Card>
+
+          {/* Practice History */}
+          {practiceHistory.length > 0 && (
+            <Card className="shadow-soft border-primary/10">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Clock className="w-5 h-5 text-primary" />
+                  Recent Sessions
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {practiceHistory.slice(-5).reverse().map((session, index) => (
+                    <div key={index} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+                      <div>
+                        <p className="font-medium text-sm">{session.scenario}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {session.date.toLocaleDateString()} • Score: {session.score}/100
+                        </p>
+                      </div>
+                      <Badge variant="secondary">{session.score}/100</Badge>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       )}
 
