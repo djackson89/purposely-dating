@@ -146,6 +146,94 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
           ]
     },
     {
+      category: "Date Night Debates",
+      masterCategory: "Date Night",
+      type: "multiple-choice",
+      prompts: [
+        {
+          statement: "Women who demand 50/50 in relationships but still expect men to pay for dates are hypocrites who want equality only when it benefits them.",
+          options: [
+            { key: "A", text: "Strongly Agree — Pick a lane and stay in it" },
+            { key: "B", text: "Somewhat Agree — You can't have it both ways" },
+            { key: "C", text: "Somewhat Disagree — Dating and relationships are different stages" },
+            { key: "D", text: "Strongly Disagree — Traditional gestures don't negate modern equality" }
+          ]
+        },
+        {
+          statement: "Men who are obsessed with virginity are telling on themselves—they're either terrible in bed or deeply insecure about their past.",
+          options: [
+            { key: "A", text: "Strongly Agree — The obsession screams inadequacy" },
+            { key: "B", text: "Somewhat Agree — It's definitely a red flag mindset" },
+            { key: "C", text: "Somewhat Disagree — Some just value different things" },
+            { key: "D", text: "Strongly Disagree — People have preferences for valid reasons" }
+          ]
+        },
+        {
+          statement: "Any woman still defending cheating men after 30 has daddy issues so severe that therapy can't fix them.",
+          options: [
+            { key: "A", text: "Strongly Agree — Grown women know better by now" },
+            { key: "B", text: "Somewhat Agree — Patterns that deep don't change overnight" },
+            { key: "C", text: "Somewhat Disagree — Trauma responses aren't that simple" },
+            { key: "D", text: "Strongly Disagree — Y'all love diagnosing women for everything" }
+          ]
+        },
+        {
+          statement: "Marriage is just legalized prostitution with a tax break—women trade sex and domestic labor for financial security.",
+          options: [
+            { key: "A", text: "Strongly Agree — At least escorts are honest about the transaction" },
+            { key: "B", text: "Somewhat Agree — Most marriages are economic arrangements disguised as love" },
+            { key: "C", text: "Somewhat Disagree — That's a cynical view of genuine partnerships" },
+            { key: "D", text: "Strongly Disagree — Love and mutual support aren't transactions" }
+          ]
+        },
+        {
+          statement: "Women who constantly post about being 'independent' are usually the most desperate for male validation and financial support.",
+          options: [
+            { key: "A", text: "Strongly Agree — The loudest ones are always the neediest" },
+            { key: "B", text: "Somewhat Agree — Real independence doesn't need constant announcements" },
+            { key: "C", text: "Somewhat Disagree — Some are genuinely celebrating their achievements" },
+            { key: "D", text: "Strongly Disagree — Y'all can't stand seeing women proud of themselves" }
+          ]
+        },
+        {
+          statement: "Men who refuse to eat women out but expect blowjobs are selfish lovers who don't deserve sexual relationships with women.",
+          options: [
+            { key: "A", text: "Strongly Agree — Reciprocity is basic human decency" },
+            { key: "B", text: "Somewhat Agree — Sexual selfishness shows character flaws" },
+            { key: "C", text: "Somewhat Disagree — Everyone has boundaries and preferences" },
+            { key: "D", text: "Strongly Disagree — Sexual acts shouldn't be mandatory for anyone" }
+          ]
+        },
+        {
+          statement: "Most 'traditional women' are just lazy gold diggers who weaponize femininity to avoid adult responsibilities.",
+          options: [
+            { key: "A", text: "Strongly Agree — It's a hustle disguised as values" },
+            { key: "B", text: "Somewhat Agree — Many use it to avoid contributing equally" },
+            { key: "C", text: "Somewhat Disagree — Some genuinely prefer traditional roles" },
+            { key: "D", text: "Strongly Disagree — Different lifestyles work for different people" }
+          ]
+        },
+        {
+          statement: "Men who constantly talk about women being 'ran through' are usually the ones with the most pathetic body counts and sexual insecurities.",
+          options: [
+            { key: "A", text: "Strongly Agree — It's pure projection and misogyny" },
+            { key: "B", text: "Somewhat Agree — Insecure men always police women's sexuality" },
+            { key: "C", text: "Somewhat Disagree — Some genuinely care about values alignment" },
+            { key: "D", text: "Strongly Disagree — Men can have standards about sexual history" }
+          ]
+        },
+        {
+          statement: "Women who stay with cheating men for financial reasons are prostitutes who just don't want to admit it.",
+          options: [
+            { key: "A", text: "Strongly Agree — If money keeps you there, that's exactly what it is" },
+            { key: "B", text: "Somewhat Agree — Financial dependency compromises your dignity" },
+            { key: "C", text: "Somewhat Disagree — Complex situations don't deserve harsh judgments" },
+            { key: "D", text: "Strongly Disagree — Survival and love can coexist in complex ways" }
+          ]
+        }
+      ]
+    },
+    {
       category: "Relationship Clarity",
       masterCategory: "Date Night", 
       prompts: [
@@ -304,121 +392,6 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
         "How do you maintain your individual identity while building a life with someone else?",
         "What does emotional responsibility look like in your relationships?",
         "How do you recognize when you need to focus on personal growth versus when you need relationship support?"
-      ]
-    },
-    {
-      category: "Date Night Debates",
-      masterCategory: "Date Night",
-      type: "multiple-choice",
-      prompts: [
-        {
-          statement: "Women who demand 50/50 in relationships but still expect men to pay for dates are hypocrites who want equality only when it benefits them.",
-          options: [
-            { key: "A", text: "Strongly Agree — Pick a lane and stay in it" },
-            { key: "B", text: "Somewhat Agree — You can't have it both ways" },
-            { key: "C", text: "Somewhat Disagree — Dating and relationships are different stages" },
-            { key: "D", text: "Strongly Disagree — Traditional gestures don't negate modern equality" }
-          ]
-        },
-        {
-          statement: "Men who are obsessed with virginity are telling on themselves—they're either terrible in bed or deeply insecure about their past.",
-          options: [
-            { key: "A", text: "Strongly Agree — The obsession screams inadequacy" },
-            { key: "B", text: "Somewhat Agree — It's definitely a red flag mindset" },
-            { key: "C", text: "Somewhat Disagree — Some just value different things" },
-            { key: "D", text: "Strongly Disagree — People have preferences for valid reasons" }
-          ]
-        },
-        {
-          statement: "Any woman still defending cheating men after 30 has daddy issues so severe that therapy can't fix them.",
-          options: [
-            { key: "A", text: "Strongly Agree — Grown women know better by now" },
-            { key: "B", text: "Somewhat Agree — Patterns that deep don't change overnight" },
-            { key: "C", text: "Somewhat Disagree — Trauma responses aren't that simple" },
-            { key: "D", text: "Strongly Disagree — Y'all love diagnosing women for everything" }
-          ]
-        },
-        {
-          statement: "Marriage is just legalized prostitution with a tax break—women trade sex and domestic labor for financial security.",
-          options: [
-            { key: "A", text: "Strongly Agree — At least escorts are honest about the transaction" },
-            { key: "B", text: "Somewhat Agree — Most marriages are economic arrangements disguised as love" },
-            { key: "C", text: "Somewhat Disagree — That's a cynical view of genuine partnerships" },
-            { key: "D", text: "Strongly Disagree — Love and mutual support aren't transactions" }
-          ]
-        },
-        {
-          statement: "Women who constantly post about being 'independent' are usually the most desperate for male validation and financial support.",
-          options: [
-            { key: "A", text: "Strongly Agree — The loudest ones are always the neediest" },
-            { key: "B", text: "Somewhat Agree — Real independence doesn't need constant announcements" },
-            { key: "C", text: "Somewhat Disagree — Some are genuinely celebrating their achievements" },
-            { key: "D", text: "Strongly Disagree — Y'all can't stand seeing women proud of themselves" }
-          ]
-        },
-        {
-          statement: "Men who refuse to eat women out but expect blowjobs are selfish lovers who don't deserve sexual relationships with women.",
-          options: [
-            { key: "A", text: "Strongly Agree — Reciprocity is basic human decency" },
-            { key: "B", text: "Somewhat Agree — Sexual selfishness shows character flaws" },
-            { key: "C", text: "Somewhat Disagree — Everyone has boundaries and preferences" },
-            { key: "D", text: "Strongly Disagree — Sexual acts shouldn't be mandatory for anyone" }
-          ]
-        },
-        {
-          statement: "Most 'traditional women' are just lazy gold diggers who weaponize femininity to avoid adult responsibilities.",
-          options: [
-            { key: "A", text: "Strongly Agree — It's a hustle disguised as values" },
-            { key: "B", text: "Somewhat Agree — Many use it to avoid contributing equally" },
-            { key: "C", text: "Somewhat Disagree — Some genuinely prefer traditional roles" },
-            { key: "D", text: "Strongly Disagree — Different lifestyles work for different people" }
-          ]
-        },
-        {
-          statement: "Men who constantly talk about women being 'ran through' are usually the ones with the most pathetic body counts and sexual insecurities.",
-          options: [
-            { key: "A", text: "Strongly Agree — It's pure projection and misogyny" },
-            { key: "B", text: "Somewhat Agree — Insecure men always police women's sexuality" },
-            { key: "C", text: "Somewhat Disagree — Some genuinely care about values alignment" },
-            { key: "D", text: "Strongly Disagree — Men can have standards about sexual history" }
-          ]
-        },
-        {
-          statement: "Women who stay with cheating men for financial reasons are prostitutes who just don't want to admit it.",
-          options: [
-            { key: "A", text: "Strongly Agree — If money keeps you there, that's exactly what it is" },
-            { key: "B", text: "Somewhat Agree — Financial dependency compromises your dignity" },
-            { key: "C", text: "Somewhat Disagree — Complex situations don't deserve harsh judgments" },
-            { key: "D", text: "Strongly Disagree — Survival and sex work aren't the same thing" }
-          ]
-        },
-        {
-          statement: "Any man who makes his girlfriend split the bill while he's driving her car and sleeping in her bed is a certified loser who should be immediately dumped.",
-          options: [
-            { key: "A", text: "Strongly Agree — That's hobosexual behavior at its finest" },
-            { key: "B", text: "Somewhat Agree — At minimum, contribute something substantial" },
-            { key: "C", text: "Somewhat Disagree — Relationships aren't always about who pays more" },
-            { key: "D", text: "Strongly Disagree — Love shouldn't be measured by financial contributions" }
-          ]
-        },
-        {
-          statement: "Most polyamorous people are just commitment-phobic narcissists who dress up their inability to love one person as enlightenment.",
-          options: [
-            { key: "A", text: "Strongly Agree — It's emotional immaturity with fancy packaging" },
-            { key: "B", text: "Somewhat Agree — Most use it to avoid deep emotional work" },
-            { key: "C", text: "Somewhat Disagree — Some genuinely function better in multiple relationships" },
-            { key: "D", text: "Strongly Disagree — Different relationship styles work for different people" }
-          ]
-        },
-        {
-          statement: "Women who say 'all men are trash' but keep dating the same type of toxic men are addicted to drama and don't actually want healthy relationships.",
-          options: [
-            { key: "A", text: "Strongly Agree — They're choosing chaos then blaming all men for it" },
-            { key: "B", text: "Somewhat Agree — Patterns reveal preferences more than complaints do" },
-            { key: "C", text: "Somewhat Disagree — Breaking trauma bonds takes time and therapy" },
-            { key: "D", text: "Strongly Disagree — Victim-blaming women for men's bad behavior is toxic" }
-          ]
-        }
       ]
     },
     
