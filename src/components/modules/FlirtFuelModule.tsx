@@ -14,7 +14,6 @@ import { InfoDialog } from '@/components/ui/info-dialog';
 import { Share as CapacitorShare } from '@capacitor/share';
 import { useRelationshipAI } from '@/hooks/useRelationshipAI';
 import TextGenie from '@/components/TextGenie';
-import { supabase } from '@/integrations/supabase/client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface OnboardingData {
@@ -75,15 +74,8 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
   };
 
   // Helper function to get question text
-  const getQuestionText = (question: string | { statement: string; options: { key: string; text: string; }[] } | { text: string }): string => {
-    if (typeof question === 'string') {
-      return question;
-    } else if ('statement' in question) {
-      return question.statement;
-    } else if ('text' in question) {
-      return question.text;
-    }
-    return '';
+  const getQuestionText = (question: string | { statement: string; options: { key: string; text: string; }[] }): string => {
+    return isMultipleChoice(question) ? question.statement : question;
   };
 
   const handleShare = async (text: string) => {
@@ -749,12 +741,6 @@ Format as: Statement? followed by A. [option] B. [option] C. [option] D. [option
     switchDepth();
   }, [depthLevel]);
 
-  // Initialize question pool when category or depth changes
-  React.useEffect(() => {
-    if (selectedCategory && selectedCategory !== 'Customize' && !isCustom && userProfile) {
-      initializeQuestionPool();
-    }
-  }, [selectedCategory, depthLevel, isCustom, userProfile]);
 
   // Check for stored section and scenario from Home page navigation or side menu
   React.useEffect(() => {
@@ -909,35 +895,6 @@ Format as: Statement? followed by A. [option] B. [option] C. [option] D. [option
   };
 
   const loadMoreStarters = async () => {
-    console.log('Loading more starters...');
-    
-    // First, try to get a question from the pool for immediate response
-    if (!isCustom) {
-      try {
-        console.log('Attempting to get question from pool...');
-        const { data, error } = await supabase.functions.invoke('manage-question-pool', {
-          body: { 
-            action: 'get_pool_question',
-            category: selectedCategory,
-            depthLevel: depthLevel[0]
-          }
-        });
-
-        if (!error && data?.success && data?.question) {
-          console.log('Got question from pool:', data.question);
-          // Add the pool question to current starters immediately
-          setCurrentStarters(prev => [...prev, data.question]);
-          setCurrentQuestionIndex(prev => prev + 1);
-          
-          // Start background refill process
-          checkAndRefillPool();
-          return;
-        }
-      } catch (poolError) {
-        console.log('Pool unavailable, falling back to AI generation:', poolError);
-      }
-    }
-
     if (isCustom && customCategories[selectedCategory]) {
       // Generate more questions for custom category
       const existingQuestions = customCategories[selectedCategory];
@@ -1118,70 +1075,6 @@ Format as: Statement? followed by A. [option] B. [option] C. [option] D. [option
           setCurrentQuestionIndex(0);
         }
       }
-    }
-  };
-
-  // Helper function to check pool count and refill if needed
-  const checkAndRefillPool = async () => {
-    try {
-      console.log('Checking pool count...');
-      const { data, error } = await supabase.functions.invoke('manage-question-pool', {
-        body: { 
-          action: 'check_pool_count',
-          category: selectedCategory,
-          depthLevel: depthLevel[0]
-        }
-      });
-
-      if (!error && data?.success && data?.needsRefresh) {
-        console.log(`Pool needs refresh, only ${data.count} questions left`);
-        // Start background generation
-        refillQuestionPool();
-      }
-    } catch (error) {
-      console.error('Error checking pool count:', error);
-    }
-  };
-
-  // Helper function to refill the question pool in background
-  const refillQuestionPool = async () => {
-    try {
-      console.log('Refilling question pool in background...');
-      await supabase.functions.invoke('manage-question-pool', {
-        body: { 
-          action: 'populate_pool',
-          userProfile,
-          category: selectedCategory,
-          depthLevel: depthLevel[0],
-          questionsToGenerate: 20
-        }
-      });
-      console.log('Pool refill complete');
-    } catch (error) {
-      console.error('Error refilling pool:', error);
-    }
-  };
-
-  // Function to initialize the question pool when app starts
-  const initializeQuestionPool = async () => {
-    if (isCustom) return; // Don't initialize pool for custom categories
-    
-    try {
-      console.log('Initializing question pool...');
-      const { data, error } = await supabase.functions.invoke('manage-question-pool', {
-        body: { 
-          action: 'check_pool_count',
-          category: selectedCategory,
-          depthLevel: depthLevel[0]
-        }
-      });
-
-      if (!error && data?.success && data.count === 0) {
-        console.log('Pool is empty, populating...');
-        await refillQuestionPool();
-      }
-    } catch (error) {
-      console.error('Error initializing pool:', error);
     }
   };
 

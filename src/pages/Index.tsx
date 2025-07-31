@@ -12,7 +12,6 @@ import NotificationPermissionStep from '@/components/NotificationPermissionStep'
 import { useAppInitialization } from '@/hooks/useAppInitialization';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useReviewTracking } from '@/hooks/useReviewTracking';
-import { useQuestionPool } from '@/hooks/useQuestionPool';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -41,9 +40,6 @@ const Index = () => {
   // Subscription and review tracking hooks
   const { subscription, loading: subscriptionLoading, createCheckoutSession } = useSubscription();
   const { shouldShowReview, hideReviewModal, markReviewAsShown } = useReviewTracking();
-  
-  // Initialize question pools for smooth experience
-  useQuestionPool({ userProfile });
 
   // Check for existing onboarding and paywall data
   useEffect(() => {
