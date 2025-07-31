@@ -426,35 +426,67 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
                 </div>
 
                 <div className="flex items-center justify-center h-full w-full px-4">
-                  {isMultipleChoice(currentStarters[currentQuestionIndex]) ? (
-                    <div className="w-full text-center">
-                      <p className="text-lg sm:text-xl font-bold text-white leading-tight mb-3">
-                        {(currentStarters[currentQuestionIndex] as any).statement}
-                      </p>
-                      <div className="space-y-2 text-left">
-                        {(currentStarters[currentQuestionIndex] as any).options.map((option: any) => (
-                          <div key={option.key} className="text-white/90">
-                            <span className="font-bold text-sm">{option.key}. </span>
-                            <span className="text-sm font-bold leading-tight break-words">
-                              {option.text}
-                            </span>
+                  {(() => {
+                    const currentQuestion = currentStarters[currentQuestionIndex];
+                    if (!currentQuestion) return null;
+                    
+                     const isMultiChoice = currentQuestion && (
+                       (typeof currentQuestion === 'object' && 'options' in currentQuestion) || 
+                       isMultipleChoice(currentQuestion)
+                     );
+                    
+                    if (isMultiChoice) {
+                      // Extract question text (statement part only)
+                      let questionText = '';
+                      if (typeof currentQuestion === 'object' && 'statement' in currentQuestion) {
+                        questionText = currentQuestion.statement;
+                      } else {
+                        const fullText = getQuestionText(currentQuestion);
+                        const parts = fullText.split(/\n(?=[A-D]\.)/);
+                        questionText = parts[0]?.trim() || fullText;
+                      }
+                      
+                      // Extract options
+                      let options: Array<{key: string; text: string}> = [];
+                      if (typeof currentQuestion === 'object' && 'options' in currentQuestion) {
+                        options = (currentQuestion as any).options;
+                      } else {
+                        const fullText = getQuestionText(currentQuestion);
+                        const lines = fullText.split('\n');
+                        options = lines
+                          .filter(line => /^[A-D]\./.test(line))
+                          .map(line => {
+                            const match = line.match(/^([A-D])\.\s*(.+)/);
+                            return match ? { key: match[1], text: match[2] } : null;
+                          })
+                          .filter(Boolean) as Array<{key: string; text: string}>;
+                      }
+                      
+                      return (
+                        <div className="w-full text-center">
+                          <p className="text-lg sm:text-xl font-bold text-white leading-tight mb-6">
+                            {questionText}
+                          </p>
+                          <div className="space-y-2 text-left">
+                            {options.map((option) => (
+                              <div key={option.key} className="text-white/90">
+                                <span className="font-bold text-sm">{option.key}. </span>
+                                <span className="text-sm font-bold leading-tight break-words">
+                                  {option.text}
+                                </span>
+                              </div>
+                            ))}
                           </div>
-                        ))}
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="text-xl sm:text-2xl font-bold text-white leading-relaxed text-center px-4">
-                      {getQuestionText(currentStarters[currentQuestionIndex]).split('\n').map((line, index) => (
-                        <div key={index} className={
-                          index === 0 ? "mb-3" : 
-                          line.match(/^[A-D]\.\s/) ? "text-left text-sm font-bold mb-1" : 
-                          "text-left text-base mb-1"
-                        }>
-                          {line}
                         </div>
-                      ))}
-                    </div>
-                  )}
+                      );
+                    } else {
+                      return (
+                        <div className="text-xl sm:text-2xl font-bold text-white leading-relaxed text-center px-4">
+                          {getQuestionText(currentQuestion)}
+                        </div>
+                      );
+                    }
+                  })()}
                 </div>
               </CardContent>
             </Card>
