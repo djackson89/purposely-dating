@@ -460,43 +460,45 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
             </Card>
           </div>
 
-          {/* Depth Slider */}
-          <Card className="shadow-soft border-primary/10">
-            <CardContent className="pt-6 pb-4">
-              <div className="space-y-3">
-                <div className="flex justify-between items-center text-sm">
-                  <span className="font-medium text-primary">Question Depth</span>
-                  <div className="flex items-center gap-2">
-                    {isLoading && (
-                      <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                    )}
-                    <span className="text-xs text-muted-foreground">
-                      {depthLevel[0] === 0 ? 'Light' : depthLevel[0] === 1 ? 'Casual' : 'Deep'}
-                    </span>
+          {/* Depth Slider - Hidden for Girl's Night */}
+          {masterCategory !== "Girl's Night" && (
+            <Card className="shadow-soft border-primary/10">
+              <CardContent className="pt-6 pb-4">
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="font-medium text-primary">Question Depth</span>
+                    <div className="flex items-center gap-2">
+                      {isLoading && (
+                        <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                      )}
+                      <span className="text-xs text-muted-foreground">
+                        {depthLevel[0] === 0 ? 'Light' : depthLevel[0] === 1 ? 'Casual' : 'Deep'}
+                      </span>
+                    </div>
                   </div>
-                </div>
-                <div className="px-2">
-                  <Slider
-                    value={depthLevel}
-                    onValueChange={setDepthLevel}
-                    max={2}
-                    step={1}
-                    className="w-full"
-                  />
-                  <div className="flex justify-between text-xs text-muted-foreground mt-2">
-                    <span>Light</span>
-                    <span>Casual</span>
-                    <span>Deep</span>
+                  <div className="px-2">
+                    <Slider
+                      value={depthLevel}
+                      onValueChange={setDepthLevel}
+                      max={2}
+                      step={1}
+                      className="w-full"
+                    />
+                    <div className="flex justify-between text-xs text-muted-foreground mt-2">
+                      <span>Light</span>
+                      <span>Casual</span>
+                      <span>Deep</span>
+                    </div>
                   </div>
+                  <p className="text-xs text-muted-foreground text-center">
+                    {depthLevel[0] === 0 && "Sarcastic & witty with dark humor"}
+                    {depthLevel[0] === 1 && "Balanced mix of fun and thought-provoking"}
+                    {depthLevel[0] === 2 && "Complex & meaningful for deep conversations"}
+                  </p>
                 </div>
-                <p className="text-xs text-muted-foreground text-center">
-                  {depthLevel[0] === 0 && "Sarcastic & witty with dark humor"}
-                  {depthLevel[0] === 1 && "Balanced mix of fun and thought-provoking"}
-                  {depthLevel[0] === 2 && "Complex & meaningful for deep conversations"}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Navigation Controls */}
           <div className="flex justify-between items-center px-2 sm:px-4">
