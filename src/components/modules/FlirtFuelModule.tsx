@@ -550,47 +550,50 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
     }
   }, [userProfile, getAIResponse]);
 
-  // Optimized question transformation with batch processing
+  // Optimized question transformation with better error handling
   const transformQuestionsForDepth = useCallback(async (
     questions: (string | { statement: string; options: { key: string; text: string; }[] })[], 
     depth: number
   ) => {
-    if (depth === 1) return questions;
+    if (depth === 1) {
+      setCurrentStarters(questions);
+      return questions;
+    }
 
     setIsDepthChanging(true);
     
     try {
-      const batchSize = 3;
       const transformedQuestions = [...questions];
       
-      for (let i = 0; i < questions.length; i += batchSize) {
-        const batch = questions.slice(i, i + batchSize);
-        
-        const batchResults = await Promise.all(
-          batch.map(async (question) => {
-            if (typeof question === 'string') {
-              return await adjustQuestionDepth(question, depth);
-            } else {
-              const transformedStatement = await adjustQuestionDepth(question.statement, depth);
-              return { statement: transformedStatement, options: question.options };
-            }
-          })
-        );
-        
-        batchResults.forEach((result, batchIndex) => {
-          transformedQuestions[i + batchIndex] = result;
-        });
-        
-        setCurrentStarters([...transformedQuestions]);
-        
-        if (i + batchSize < questions.length) {
-          await new Promise(resolve => setTimeout(resolve, 200));
+      // Process questions sequentially to avoid overwhelming the API
+      for (let i = 0; i < questions.length; i++) {
+        try {
+          const question = questions[i];
+          
+          if (typeof question === 'string') {
+            const transformed = await adjustQuestionDepth(question, depth);
+            transformedQuestions[i] = transformed;
+          } else {
+            const transformedStatement = await adjustQuestionDepth(question.statement, depth);
+            transformedQuestions[i] = { statement: transformedStatement, options: question.options };
+          }
+          
+          // Update UI progressively and add small delay to prevent API overload
+          setCurrentStarters([...transformedQuestions]);
+          if (i < questions.length - 1) {
+            await new Promise(resolve => setTimeout(resolve, 150));
+          }
+        } catch (error) {
+          console.error(`Error transforming question ${i}:`, error);
+          // Keep original question if transformation fails
+          transformedQuestions[i] = questions[i];
         }
       }
       
       return transformedQuestions;
     } catch (error) {
       console.error('Error transforming questions:', error);
+      setCurrentStarters(questions); // Fallback to original questions
       return questions;
     } finally {
       setIsDepthChanging(false);
@@ -671,7 +674,7 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
           setIsDepthChanging(true);
           try {
             // Generate new variations of questions using AI
-            const prompt = `Based on these conversation starter questions: ${categoryData.prompts.slice(0, 3).join('; ')}, generate 6 new similar conversation starters for ${selectedCategory.toLowerCase()} that maintain the same tone and depth but offer fresh perspectives. Make them engaging and thought-provoking. Return only the questions, numbered 1-6.`;
+            const prompt = `Based on these ${selectedCategory.toLowerCase()} conversation starters: "${categoryData.prompts.slice(0, 3).join('"; "')}", create 6 new similar questions that maintain the same style and depth but offer fresh perspectives. Make them engaging and thought-provoking for ${userProfile.relationshipStatus.toLowerCase()} individuals. Return only the questions, numbered 1-6.`;
             
             const response = await getAIResponse(prompt, userProfile, 'general');
             const newQuestions = response.split('\n')
@@ -680,8 +683,17 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
               .filter(line => line.length > 20); // Filter out short/incomplete lines
 
             if (newQuestions.length > 0) {
-              // Add new questions to existing ones
-              setCurrentStarters(prev => [...prev, ...newQuestions]);
+              // Add new questions to existing ones and apply current depth if needed
+              let questionsToAdd = newQuestions;
+              
+              // Apply depth transformation if not at casual level
+              if (masterCategory !== "Girl's Night" && depthLevel[0] !== 1) {
+                questionsToAdd = await Promise.all(
+                  newQuestions.map(q => adjustQuestionDepth(q, depthLevel[0]))
+                );
+              }
+              
+              setCurrentStarters(prev => [...prev, ...questionsToAdd]);
               setCurrentQuestionIndex(currentStarters.length); // Go to first new question
             } else {
               // Fallback to cycling back to beginning
@@ -700,7 +712,7 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
     } else {
       setCurrentQuestionIndex(nextIndex);
     }
-  }, [currentQuestionIndex, currentStarters.length, isCustom, selectedCategory, conversationStarters, userProfile, getAIResponse]);
+  }, [currentQuestionIndex, currentStarters.length, isCustom, selectedCategory, conversationStarters, userProfile, getAIResponse, masterCategory, depthLevel, adjustQuestionDepth]);
 
   const previousQuestion = useCallback(() => {
     setCurrentQuestionIndex(prev => prev === 0 ? currentStarters.length - 1 : prev - 1);
@@ -841,8 +853,6 @@ Provide 2-3 specific insights about communication strengths and areas for improv
   React.useEffect(() => {
     const defaultCategory = conversationStarters.find(cat => cat.category === selectedCategory);
     if (defaultCategory && !isCustom) {
-      setCurrentStarters(defaultCategory.prompts);
-      
       const today = new Date().toDateString();
       const savedQuestionIndex = localStorage.getItem(`dailyQuestionIndex_${selectedCategory}_${today}`);
       
@@ -854,41 +864,58 @@ Provide 2-3 specific insights about communication strengths and areas for improv
         localStorage.setItem(`dailyQuestionIndex_${selectedCategory}_${today}`, randomIndex.toString());
       }
 
-      // Only apply depth transformation for Date Night master category
-      if (masterCategory !== "Girl's Night" && depthLevel[0] !== 1) {
+      // Set initial questions based on depth level
+      if (masterCategory === "Girl's Night" || depthLevel[0] === 1) {
+        // Use original questions for Girl's Night or casual depth
+        setCurrentStarters(defaultCategory.prompts);
+      } else {
+        // Apply depth transformation for Date Night with non-casual depth
+        setCurrentStarters(defaultCategory.prompts); // Set immediately, then transform
         setTimeout(() => {
           transformQuestionsForDepth(defaultCategory.prompts, depthLevel[0]);
         }, 100);
       }
     }
-  }, [selectedCategory, isCustom, depthLevel, conversationStarters, transformQuestionsForDepth]);
+  }, [selectedCategory, isCustom, masterCategory]); // Removed depthLevel dependency to prevent loops
 
   // Optimized depth switching effect - only for Date Night categories
   React.useEffect(() => {
     const switchDepth = async () => {
-      if (currentStarters.length === 0) return;
+      if (currentStarters.length === 0 || isDepthChanging) return;
       
+      // Only apply depth transformation for Date Night master category and when depth actually changes
+      if (masterCategory === "Girl's Night") {
+        return; // Girl's Night questions don't get depth transformation
+      }
+      
+      if (depthLevel[0] === 1) {
+        // For casual depth, use original questions
+        if (!isCustom) {
+          const categoryData = conversationStarters.find(cat => cat.category === selectedCategory);
+          if (categoryData) {
+            setCurrentStarters(categoryData.prompts);
+          }
+        }
+        return;
+      }
+      
+      // Only transform if we're not already at the right depth
       let baseQuestions: (string | { statement: string; options: { key: string; text: string; }[] })[];
       
       if (isCustom) {
-        baseQuestions = customCategories[selectedCategory] || currentStarters;
+        baseQuestions = customCategories[selectedCategory] || [];
       } else {
         const categoryData = conversationStarters.find(cat => cat.category === selectedCategory);
-        baseQuestions = categoryData?.prompts || currentStarters;
+        baseQuestions = categoryData?.prompts || [];
       }
 
-      // Only apply depth transformation for Date Night master category
-      if (masterCategory === "Girl's Night") {
-        setCurrentStarters(baseQuestions);
-      } else if (depthLevel[0] === 1) {
-        setCurrentStarters(baseQuestions);
-      } else {
+      if (baseQuestions.length > 0) {
         await transformQuestionsForDepth(baseQuestions, depthLevel[0]);
       }
     };
 
     switchDepth();
-  }, [depthLevel, isCustom, selectedCategory, customCategories, conversationStarters, transformQuestionsForDepth, masterCategory]); // Removed currentStarters from dependencies
+  }, [depthLevel[0], selectedCategory, masterCategory, isCustom]); // Removed problematic dependencies
 
   return (
     <div className="min-h-screen bg-background p-4 space-y-6">
