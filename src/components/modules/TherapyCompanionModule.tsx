@@ -119,6 +119,25 @@ const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userPro
       setSelectedTopics(setupData.topics || []);
     }
   }, []);
+
+  // Check for navigation from side menu
+  React.useEffect(() => {
+    const activeSection = localStorage.getItem('activeSection');
+    
+    if (activeSection) {
+      switch (activeSection) {
+        case 'companion':
+          setActiveSection('reflection');
+          break;
+        case 'journal':
+          setActiveSection('journal');
+          break;
+      }
+      
+      // Clear the stored section after using it
+      localStorage.removeItem('activeSection');
+    }
+  }, []);
   
   // Personalized therapy prompts based on user profile and selected topics
   const getPersonalizedPrompts = () => {

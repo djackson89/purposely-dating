@@ -643,17 +643,23 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
   }, [depthLevel]);
 
 
-  // Check for stored section and scenario from Home page navigation
+  // Check for stored section and scenario from Home page navigation or side menu
   React.useEffect(() => {
     const activePracticeSection = localStorage.getItem('activePracticeSection');
+    const activeSection = localStorage.getItem('activeSection');
     const storedScenario = localStorage.getItem('practiceScenario');
     
-    if (activePracticeSection) {
+    // Check both storage keys for navigation
+    const sectionToActivate = activePracticeSection || activeSection;
+    
+    if (sectionToActivate) {
       // Set the active section based on the stored value
-      switch (activePracticeSection) {
+      switch (sectionToActivate) {
+        case 'conversation-starters':
         case 'starters':
           setActiveSection('starters');
           break;
+        case 'text-genie':
         case 'textgenie':
           setActiveSection('textgenie');
           break;
@@ -669,8 +675,9 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
           break;
       }
       
-      // Clear the stored section after using it
+      // Clear the stored sections after using them
       localStorage.removeItem('activePracticeSection');
+      localStorage.removeItem('activeSection');
     }
   }, []);
 

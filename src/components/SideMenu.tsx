@@ -62,20 +62,36 @@ const SideMenu: React.FC<SideMenuProps> = ({ isOpen, onClose, onNavigateToModule
   }, [isOpen]);
 
   const handleMenuItemClick = (itemId: string) => {
-    // Map menu items to modules
+    // Map menu items to modules with specific sections
     const moduleMap: Record<string, string> = {
       'profile': 'profile',
-      'conversation-starters': 'flirtfuel',
-      'text-genie': 'flirtfuel',
-      'practice-partner': 'flirtfuel',
-      'dating-prospects': 'concierge',
-      'calendar': 'concierge',
-      'therapy-companion': 'therapy',
-      'journal': 'therapy',
+      'conversation-starters': 'flirtfuel', // Goes to flirtfuel module
+      'text-genie': 'flirtfuel', // Goes to flirtfuel module  
+      'practice-partner': 'flirtfuel', // Goes to flirtfuel module
+      'dating-prospects': 'concierge', // Goes to concierge module
+      'calendar': 'concierge', // Goes to concierge module
+      'therapy-companion': 'therapy', // Goes to therapy module
+      'journal': 'therapy', // Goes to therapy module
+    };
+
+    const sectionMap: Record<string, string> = {
+      'conversation-starters': 'conversation-starters',
+      'text-genie': 'text-genie', 
+      'practice-partner': 'practice',
+      'dating-prospects': 'prospects',
+      'calendar': 'calendar',
+      'therapy-companion': 'companion',
+      'journal': 'journal',
     };
 
     const targetModule = moduleMap[itemId];
+    const targetSection = sectionMap[itemId];
+    
     if (targetModule && onNavigateToModule) {
+      // Store the target section in localStorage so the module can navigate to it
+      if (targetSection) {
+        localStorage.setItem('activeSection', targetSection);
+      }
       onNavigateToModule(targetModule);
     }
     onClose();

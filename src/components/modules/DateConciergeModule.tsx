@@ -165,6 +165,25 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
       setShowDatingOnboarding(true);
     }
   }, [activeSection, datingPreferences]);
+
+  // Check for navigation from side menu
+  useEffect(() => {
+    const activeSection = localStorage.getItem('activeSection');
+    
+    if (activeSection) {
+      switch (activeSection) {
+        case 'prospects':
+          setActiveSection('prospects');
+          break;
+        case 'calendar':
+          setActiveSection('planning');
+          break;
+      }
+      
+      // Clear the stored section after using it
+      localStorage.removeItem('activeSection');
+    }
+  }, []);
   
   // Dating Prospects functions
   const addNewProspect = async () => {
