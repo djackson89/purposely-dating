@@ -665,14 +665,28 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
         // For custom categories, just cycle back to beginning
         setCurrentQuestionIndex(0);
       } else {
-        // For predefined categories, regenerate questions with AI
+        // For predefined categories, generate new variations using AI
         const categoryData = conversationStarters.find(cat => cat.category === selectedCategory);
-        if (categoryData) {
+        if (categoryData && categoryData.prompts.length > 0) {
           setIsDepthChanging(true);
           try {
-            // Apply depth transformation to generate new variations
-            await transformQuestionsForDepth(categoryData.prompts, depthLevel[0]);
-            setCurrentQuestionIndex(0);
+            // Generate new variations of questions using AI
+            const prompt = `Based on these conversation starter questions: ${categoryData.prompts.slice(0, 3).join('; ')}, generate 6 new similar conversation starters for ${selectedCategory.toLowerCase()} that maintain the same tone and depth but offer fresh perspectives. Make them engaging and thought-provoking. Return only the questions, numbered 1-6.`;
+            
+            const response = await getAIResponse(prompt, userProfile, 'general');
+            const newQuestions = response.split('\n')
+              .filter(line => line.trim())
+              .map(line => line.replace(/^\d+\.\s*/, '').trim())
+              .filter(line => line.length > 20); // Filter out short/incomplete lines
+
+            if (newQuestions.length > 0) {
+              // Add new questions to existing ones
+              setCurrentStarters(prev => [...prev, ...newQuestions]);
+              setCurrentQuestionIndex(currentStarters.length); // Go to first new question
+            } else {
+              // Fallback to cycling back to beginning
+              setCurrentQuestionIndex(0);
+            }
           } catch (error) {
             console.error('Error generating new questions:', error);
             setCurrentQuestionIndex(0);
@@ -686,7 +700,7 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
     } else {
       setCurrentQuestionIndex(nextIndex);
     }
-  }, [currentQuestionIndex, currentStarters.length, isCustom, selectedCategory, conversationStarters, depthLevel, transformQuestionsForDepth]);
+  }, [currentQuestionIndex, currentStarters.length, isCustom, selectedCategory, conversationStarters, userProfile, getAIResponse]);
 
   const previousQuestion = useCallback(() => {
     setCurrentQuestionIndex(prev => prev === 0 ? currentStarters.length - 1 : prev - 1);
