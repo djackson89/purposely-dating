@@ -60,6 +60,7 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
   // State for tracking question transformations
   const [isTransforming, setIsTransforming] = useState(false);
   const [isDepthChanging, setIsDepthChanging] = useState(false);
+  const [isLoadingMoreQuestions, setIsLoadingMoreQuestions] = useState(false);
   
   // Optimized cache for pre-loaded questions
   const [questionCache, setQuestionCache] = useState<Map<string, any>>(new Map());
@@ -1010,7 +1011,12 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
       setCurrentQuestionIndex(prev => prev + 1);
     } else {
       // When reaching the end, always load more questions for smooth experience
-      await loadMoreStarters();
+      setIsLoadingMoreQuestions(true);
+      try {
+        await loadMoreStarters();
+      } finally {
+        setIsLoadingMoreQuestions(false);
+      }
     }
   };
 
@@ -1704,8 +1710,13 @@ Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid gen
                   variant="ghost"
                   size="sm"
                   className="text-white/70 hover:text-white hover:bg-white/20 rounded-full w-8 h-8 p-0 transition-all"
+                  disabled={isLoadingMoreQuestions}
                 >
-                  <ChevronRight className="w-4 h-4" />
+                  {isLoadingMoreQuestions ? (
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    <ChevronRight className="w-4 h-4" />
+                  )}
                 </Button>
               </div>
             </div>
