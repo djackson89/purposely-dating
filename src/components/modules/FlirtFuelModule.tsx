@@ -1564,20 +1564,7 @@ Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid gen
 
       {/* Full Screen Question Modal */}
       <Dialog open={isFullScreen} onOpenChange={setIsFullScreen}>
-        <DialogContent className="max-w-full max-h-full w-screen h-screen m-0 p-0 rounded-none border-none [&>button]:hidden relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #EC4899, #F97316)' }} aria-describedby="fullscreen-question-description">
-          {/* Hidden title for accessibility */}
-          <div className="sr-only">
-            <h2 id="fullscreen-question-title">Full Screen Question View</h2>
-            <p id="fullscreen-question-description">Interactive full screen view for conversation starter questions</p>
-          </div>
-          {/* Curved background decorations optimized for mobile */}
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            {/* Simplified curves for better mobile performance */}
-            <div className="absolute -top-10 -left-10 w-32 h-32 bg-black/10 rounded-full blur-xl"></div>
-            <div className="absolute -top-16 -right-16 w-40 h-40 bg-white/5 rounded-full blur-lg"></div>
-            <div className="absolute -bottom-20 -left-5 w-40 h-40 bg-black/15 rounded-full blur-xl"></div>
-            <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-lg"></div>
-          </div>
+        <DialogContent className="max-w-full max-h-full w-screen h-screen m-0 p-0 rounded-none border-none bg-gradient-romance [&>button]:hidden">
           <div className="relative h-full flex flex-col">
             {/* Close button */}
             <div className="absolute top-4 right-4 z-10">
