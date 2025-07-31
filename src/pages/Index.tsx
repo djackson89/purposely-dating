@@ -13,6 +13,7 @@ import ReviewRequestModal from '@/components/ReviewRequestModal';
 import { useAppInitialization } from '@/hooks/useAppInitialization';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useReviewTracking } from '@/hooks/useReviewTracking';
+import { useAuth } from '@/hooks/useAuth';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -35,66 +36,15 @@ const Index = () => {
   const [activeModule, setActiveModule] = useState<'home' | 'flirtfuel' | 'concierge' | 'therapy' | 'profile'>('home');
   const [showPaywallModal, setShowPaywallModal] = useState(false);
   
-  // Initialize native app features
+  // Initialize native app features and auth
   const { isNative, isOnline } = useAppInitialization(userProfile);
+  const { user, loading: authLoading } = useAuth();
   
   // Subscription and review tracking hooks
   const { subscription, loading: subscriptionLoading, createCheckoutSession } = useSubscription();
   const { shouldShowReview, hideReviewModal, markReviewAsShown } = useReviewTracking();
 
-  // Check for existing onboarding and flow state
-  useEffect(() => {
-    // Clear all flow data to restart the flow properly
-    localStorage.removeItem('relationshipCompanionProfile');
-    localStorage.removeItem('hasSeenPaywall');
-    localStorage.removeItem('hasSeenWelcomeSlides');
-    localStorage.removeItem('hasSeenNotificationPrompt');
-    
-    const savedProfile = localStorage.getItem('relationshipCompanionProfile');
-    const savedPaywallFlag = localStorage.getItem('hasSeenPaywall');
-    const savedWelcomeFlag = localStorage.getItem('hasSeenWelcomeSlides');
-    const savedNotificationFlag = localStorage.getItem('hasSeenNotificationPrompt');
-    
-    if (savedProfile) {
-      setUserProfile(JSON.parse(savedProfile));
-      setHasCompletedOnboarding(true);
-    }
-    
-    if (savedPaywallFlag) {
-      setHasSeenPaywall(true);
-    }
-    
-    if (savedWelcomeFlag) {
-      setHasSeenWelcomeSlides(true);
-    }
-    
-    if (savedNotificationFlag) {
-      setHasSeenNotificationPrompt(true);
-    }
-    
-    // Premium users skip all onboarding automatically
-    if (!subscriptionLoading && subscription.subscribed) {
-      if (!savedProfile) {
-        // Create a default profile for premium users
-        const defaultProfile: OnboardingData = {
-          firstName: 'User',
-          profilePhoto: undefined,
-          loveLanguage: 'Words of Affirmation',
-          relationshipStatus: 'Single',
-          age: '25-30',
-          gender: 'Prefer not to say',
-          personalityType: 'Explorer'
-        };
-        setUserProfile(defaultProfile);
-        localStorage.setItem('relationshipCompanionProfile', JSON.stringify(defaultProfile));
-      }
-      setHasSeenWelcomeSlides(true);
-      setHasSeenNotificationPrompt(true);
-      setHasSeenPaywall(true);
-      setHasCompletedOnboarding(true);
-    }
-  }, [subscription.subscribed, subscriptionLoading]);
-
+  // Handler functions - Define these before they're used
   const handleOnboardingComplete = async (data: OnboardingData) => {
     setUserProfile(data);
     setHasCompletedOnboarding(true);
@@ -109,7 +59,13 @@ const Index = () => {
           .from('profiles')
           .upsert({
             id: user.id,
-            ...data,
+            full_name: data.firstName,
+            love_language: data.loveLanguage,
+            relationship_status: data.relationshipStatus,
+            age: data.age,
+            gender: data.gender,
+            personality_type: data.personalityType,
+            avatar_url: data.profilePhoto,
             timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
           });
       }
@@ -148,30 +104,6 @@ const Index = () => {
     setHasSeenNotificationPrompt(true);
     localStorage.setItem('hasSeenNotificationPrompt', 'true');
   };
-
-  // 1. Show welcome slides first (if not seen)
-  if (!subscriptionLoading && !hasSeenWelcomeSlides) {
-    return <WelcomeTour 
-      isPremium={subscription.subscribed} 
-      onComplete={handleWelcomeSlidesComplete} 
-      onSkip={handleWelcomeSlidesComplete} 
-    />;
-  }
-
-  // 2. Show notification permission after welcome slides (if not seen)
-  if (!subscriptionLoading && hasSeenWelcomeSlides && !hasSeenNotificationPrompt) {
-    return <NotificationPermissionStep onComplete={handleNotificationPromptComplete} userProfile={{}} />;
-  }
-
-  // 3. Show paywall after notification permission (if not premium and not seen)
-  if (!subscriptionLoading && !subscription.subscribed && hasSeenNotificationPrompt && !hasSeenPaywall) {
-    return <Paywall onPlanSelected={handlePlanSelected} onSkipToFree={handleSkipToFree} />;
-  }
-
-  // 4. Show onboarding quiz after paywall (if not completed)
-  if (!subscriptionLoading && hasSeenPaywall && (!hasCompletedOnboarding || !userProfile)) {
-    return <OnboardingFlow onComplete={handleOnboardingComplete} />;
-  }
 
   const handleProfileUpdate = (updatedProfile: OnboardingData) => {
     setUserProfile(updatedProfile);
@@ -213,37 +145,221 @@ const Index = () => {
       case 'profile':
         return <ProfileModule userProfile={userProfile} onProfileUpdate={handleProfileUpdate} />;
       default:
-        return <Home userProfile={userProfile} onNavigateToFlirtFuel={handleNavigateToFlirtFuel} onNavigateToAIPractice={handleNavigateToAIPractice} />;
+        return <Home userProfile={userProfile} onNavigateToFlirtFuel={handleNavigateToFlirtFuel} onNavigateToAIPractice={handleNavigateToAIPractice} onNavigateToModule={handleNavigateToModule} />;
     }
   };
 
-  return (
-    <div className="min-h-screen bg-background">
-      {renderActiveModule()}
-      <Navigation 
-        activeModule={activeModule}
-        onModuleChange={setActiveModule}
-      />
-      
-      {/* Paywall Modal for Premium Features */}
-      <Dialog open={showPaywallModal} onOpenChange={setShowPaywallModal}>
-        <DialogContent className="max-w-lg">
-          <Paywall 
-            onPlanSelected={handlePlanSelected}
-            onSkipToFree={handleSkipToFree}
-            isModal={true}
-          />
-        </DialogContent>
-      </Dialog>
+  // Check for existing onboarding and flow state
+  useEffect(() => {
+    const initializeFlowState = async () => {
+      // Don't initialize if still loading auth or subscription
+      if (authLoading || subscriptionLoading) return;
 
-      {/* Review Request Modal */}
-      <ReviewRequestModal 
-        isOpen={shouldShowReview}
-        onClose={() => {
-          hideReviewModal();
-          markReviewAsShown();
-        }}
-      />
+      const savedProfile = localStorage.getItem('relationshipCompanionProfile');
+      const savedPaywallFlag = localStorage.getItem('hasSeenPaywall');
+      const savedWelcomeFlag = localStorage.getItem('hasSeenWelcomeSlides');
+      const savedNotificationFlag = localStorage.getItem('hasSeenNotificationPrompt');
+      
+      // If user is authenticated, check if they have completed onboarding
+      if (user) {
+        console.log('User is authenticated, checking profile completion');
+        
+        // Load saved profile data
+        if (savedProfile) {
+          setUserProfile(JSON.parse(savedProfile));
+          setHasCompletedOnboarding(true);
+        } else {
+          // Try to load from Supabase for authenticated users
+          try {
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', user.id)
+              .single();
+            
+            if (profile && profile.love_language) {
+              // User has completed onboarding, create local profile
+              const profileData: OnboardingData = {
+                firstName: profile.full_name?.split(' ')[0] || 'User',
+                profilePhoto: profile.avatar_url,
+                loveLanguage: profile.love_language,
+                relationshipStatus: profile.relationship_status || 'Single',
+                age: profile.age || '25-30',
+                gender: profile.gender || 'Prefer not to say',
+                personalityType: profile.personality_type || 'Explorer'
+              };
+              setUserProfile(profileData);
+              setHasCompletedOnboarding(true);
+              localStorage.setItem('relationshipCompanionProfile', JSON.stringify(profileData));
+            }
+          } catch (error) {
+            console.error('Error loading profile from Supabase:', error);
+          }
+        }
+        
+        // For authenticated users, mark all onboarding steps as seen so they skip to the app
+        setHasSeenWelcomeSlides(true);
+        setHasSeenNotificationPrompt(true);
+        setHasSeenPaywall(true);
+        
+        return;
+      }
+      
+      // For unauthenticated users, check localStorage flags
+      if (savedPaywallFlag) {
+        setHasSeenPaywall(true);
+      }
+      
+      if (savedWelcomeFlag) {
+        setHasSeenWelcomeSlides(true);
+      }
+      
+      if (savedNotificationFlag) {
+        setHasSeenNotificationPrompt(true);
+      }
+      
+      if (savedProfile) {
+        setUserProfile(JSON.parse(savedProfile));
+        setHasCompletedOnboarding(true);
+      }
+      
+      // Premium users skip all onboarding automatically (even if not authenticated)
+      if (subscription.subscribed) {
+        if (!savedProfile) {
+          // Create a default profile for premium users
+          const defaultProfile: OnboardingData = {
+            firstName: 'User',
+            profilePhoto: undefined,
+            loveLanguage: 'Words of Affirmation',
+            relationshipStatus: 'Single',
+            age: '25-30',
+            gender: 'Prefer not to say',
+            personalityType: 'Explorer'
+          };
+          setUserProfile(defaultProfile);
+          localStorage.setItem('relationshipCompanionProfile', JSON.stringify(defaultProfile));
+        }
+        setHasSeenWelcomeSlides(true);
+        setHasSeenNotificationPrompt(true);
+        setHasSeenPaywall(true);
+        setHasCompletedOnboarding(true);
+      }
+    };
+
+    initializeFlowState();
+  }, [user, authLoading, subscription.subscribed, subscriptionLoading]);
+
+  // Show loading while auth or subscription is loading
+  if (authLoading || subscriptionLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-soft flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // For authenticated users, if they have completed onboarding, show the app
+  if (user && hasCompletedOnboarding && userProfile) {
+    // Show the main app interface
+    return (
+      <div className="min-h-screen bg-background">
+        {renderActiveModule()}
+        <Navigation 
+          activeModule={activeModule}
+          onModuleChange={setActiveModule}
+        />
+        
+        {/* Paywall Modal for Premium Features */}
+        <Dialog open={showPaywallModal} onOpenChange={setShowPaywallModal}>
+          <DialogContent className="max-w-lg">
+            <Paywall 
+              onPlanSelected={handlePlanSelected}
+              onSkipToFree={handleSkipToFree}
+              isModal={true}
+            />
+          </DialogContent>
+        </Dialog>
+
+        {/* Review Request Modal */}
+        <ReviewRequestModal 
+          isOpen={shouldShowReview}
+          onClose={() => {
+            hideReviewModal();
+            markReviewAsShown();
+          }}
+        />
+      </div>
+    );
+  }
+
+  // For unauthenticated users, show the onboarding flow
+  // 1. Show welcome slides first (for first-time visitors only)
+  if (!user && !hasSeenWelcomeSlides) {
+    return <WelcomeTour 
+      isPremium={subscription.subscribed} 
+      onComplete={handleWelcomeSlidesComplete} 
+      onSkip={handleWelcomeSlidesComplete} 
+    />;
+  }
+
+  // 2. Show notification permission after welcome slides (for first-time visitors only)
+  if (!user && hasSeenWelcomeSlides && !hasSeenNotificationPrompt) {
+    return <NotificationPermissionStep onComplete={handleNotificationPromptComplete} userProfile={{}} />;
+  }
+
+  // 3. Show paywall after notification permission (if not premium and not seen)
+  if (!user && !subscription.subscribed && hasSeenNotificationPrompt && !hasSeenPaywall) {
+    return <Paywall onPlanSelected={handlePlanSelected} onSkipToFree={handleSkipToFree} />;
+  }
+
+  // 4. Show onboarding quiz after paywall (if not completed)
+  if (!user && hasSeenPaywall && (!hasCompletedOnboarding || !userProfile)) {
+    return <OnboardingFlow onComplete={handleOnboardingComplete} />;
+  }
+
+  // 5. If user has completed onboarding but is not authenticated, show the app
+  if (!user && hasCompletedOnboarding && userProfile) {
+    return (
+      <div className="min-h-screen bg-background">
+        {renderActiveModule()}
+        <Navigation 
+          activeModule={activeModule}
+          onModuleChange={setActiveModule}
+        />
+        
+        {/* Paywall Modal for Premium Features */}
+        <Dialog open={showPaywallModal} onOpenChange={setShowPaywallModal}>
+          <DialogContent className="max-w-lg">
+            <Paywall 
+              onPlanSelected={handlePlanSelected}
+              onSkipToFree={handleSkipToFree}
+              isModal={true}
+            />
+          </DialogContent>
+        </Dialog>
+
+        {/* Review Request Modal */}
+        <ReviewRequestModal 
+          isOpen={shouldShowReview}
+          onClose={() => {
+            hideReviewModal();
+            markReviewAsShown();
+          }}
+        />
+      </div>
+    );
+  }
+
+  // Fallback - should not reach here normally
+  return (
+    <div className="min-h-screen bg-gradient-soft flex items-center justify-center">
+      <div className="text-center">
+        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+        <p className="text-muted-foreground">Initializing...</p>
+      </div>
     </div>
   );
 };
