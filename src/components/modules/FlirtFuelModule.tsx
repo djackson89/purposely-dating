@@ -411,30 +411,66 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
           ]
         },
         {
-          statement: "Your biggest bedroom confession that you'd only tell your girls:",
+          statement: "What's your post-hookup guilty pleasure?",
           options: [
-            { key: "A", text: "I fake it sometimes to end it faster" },
-            { key: "B", text: "I think about someone else during" },
-            { key: "C", text: "I've never had the Big O with a partner" },
-            { key: "D", text: "I'm way kinkier than I let on" }
+            { key: "A", text: "Stealing his hoodie" },
+            { key: "B", text: "Replaying the whole night in my head" },
+            { key: "C", text: "Posting a thirst trap" },
+            { key: "D", text: "Texting my bestie a full recap" }
           ]
         },
         {
-          statement: "The sexiest thing a man can do outside the bedroom:",
+          statement: "Where's your fantasy spot to hook up at least once?",
           options: [
-            { key: "A", text: "Cook me dinner without being asked" },
-            { key: "B", text: "Defend me when I'm not around" },
-            { key: "C", text: "Handle his business like a grown man" },
-            { key: "D", text: "Make me laugh until I cry" }
+            { key: "A", text: "In a hotel elevator" },
+            { key: "B", text: "On the beach at night" },
+            { key: "C", text: "Backseat of a car" },
+            { key: "D", text: "In his office after hours" }
           ]
         },
         {
-          statement: "What would make you instantly end a hookup?",
+          statement: "What makes you feel instantly sexy in the bedroom?",
           options: [
-            { key: "A", text: "Bad hygiene situation" },
-            { key: "B", text: "Selfish lover vibes" },
-            { key: "C", text: "Too aggressive too fast" },
-            { key: "D", text: "Weird dirty talk" }
+            { key: "A", text: "Wearing lingerie he hasn't seen" },
+            { key: "B", text: "When he's obsessed with every inch of me" },
+            { key: "C", text: "That first look before things get heated" },
+            { key: "D", text: "Knowing I'm the one in control tonight" }
+          ]
+        },
+        {
+          statement: "What's your late-night text likely to say?",
+          options: [
+            { key: "A", text: "U up?" },
+            { key: "B", text: "You better not fall asleep on me 😈" },
+            { key: "C", text: "Come over. Now." },
+            { key: "D", text: "Just a fire selfie with no caption" }
+          ]
+        },
+        {
+          statement: "Which roleplay would you secretly love to try?",
+          options: [
+            { key: "A", text: "Naughty nurse" },
+            { key: "B", text: "Strict boss" },
+            { key: "C", text: "Mysterious stranger at a bar" },
+            { key: "D", text: "Sweet girl with a hidden wild side" }
+          ]
+        },
+        {
+          statement: "What's your signature bedroom move?",
+          options: [
+            { key: "A", text: "Slow teasing until he begs" },
+            { key: "B", text: "Eye contact with a smirk" },
+            { key: "C", text: "Taking control on top" },
+            { key: "D", text: "Whispering exactly what I want" }
+          ]
+        },
+        {
+          statement: "What's a confession you've never told your girls?",
+          options: [
+            { key: "A", text: "I hooked up with someone I wasn't supposed to" },
+            { key: "B", text: "I faked it (more than once)" },
+            { key: "C", text: "I've had a dream about a friend's man" },
+            { key: "D", text: "I filmed myself doing that once" }
           ]
         }
       ]
@@ -528,6 +564,63 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
     }
   }, [questionCache, userProfile, getAIResponse]);
 
+  // Function to adjust multiple-choice questions for depth
+  const adjustMultipleChoiceDepth = React.useCallback(async (originalQuestion: { statement: string; options: { key: string; text: string; }[] }, depth: number): Promise<{ statement: string; options: { key: string; text: string; }[] }> => {
+    const cacheKey = `${originalQuestion.statement}_${depth}_mc`;
+    
+    // Check cache first
+    if (questionCache.has(cacheKey)) {
+      return questionCache.get(cacheKey);
+    }
+
+    try {
+      // For Girl's Night categories, we'll adjust tone based on depth but keep the intimate theme
+      const depthInstructions = {
+        0: "Make this statement more playful and cheeky, keeping the intimate girl-talk vibe. Adjust the options to be more lighthearted and witty.",
+        1: "Keep this statement balanced and engaging with the intimate theme. Make options relatable and fun.",
+        2: "Make this statement more bold and provocative while maintaining the girlfriend-to-girlfriend intimacy. Make options more daring and revealing."
+      };
+
+      const prompt = `Transform this multiple-choice question for depth level ${depth}: "${originalQuestion.statement}" with options: ${originalQuestion.options.map(opt => `${opt.key}. ${opt.text}`).join(', ')}
+
+${depthInstructions[depth as keyof typeof depthInstructions]}
+
+Format as: Statement? followed by A. [option] B. [option] C. [option] D. [option]`;
+      
+      const response = await getAIResponse(prompt, userProfile, 'flirt');
+      
+      // Parse the response
+      const lines = response.split('\n').filter(line => line.trim());
+      const statementLine = lines.find(line => line.includes('?') && !line.match(/^[A-D]\.?\s*/));
+      const statement = statementLine ? statementLine.replace(/^\d+\.?\s*/, '').replace(/\*\*/g, '').trim() : originalQuestion.statement;
+      
+      const options = [];
+      for (const line of lines) {
+        const optionMatch = line.trim().match(/^([A-D])\.?\s*(.+)/);
+        if (optionMatch) {
+          options.push({
+            key: optionMatch[1],
+            text: optionMatch[2].replace(/\*\*/g, '').trim()
+          });
+        }
+      }
+      
+      const result = {
+        statement,
+        options: options.length >= 4 ? options.slice(0, 4) : originalQuestion.options
+      };
+      
+      // Cache the result
+      questionCache.set(cacheKey, result);
+      
+      return result;
+      
+    } catch (error) {
+      console.error('Error adjusting multiple-choice question depth:', error);
+      return originalQuestion;
+    }
+  }, [questionCache, userProfile, getAIResponse]);
+
   // Smart initialization with lazy loading
   React.useEffect(() => {
     const initializeQuestions = () => {
@@ -587,11 +680,17 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
             if (typeof question === 'string') {
               return await adjustQuestionDepth(question, depth);
             } else {
-              const transformedStatement = await adjustQuestionDepth(question.statement, depth);
-              return {
-                statement: transformedStatement,
-                options: question.options
-              };
+              // For multiple-choice questions in Girl's Night categories, use special handling
+              if (selectedCategory === 'Pillow Talk & Tea') {
+                return await adjustMultipleChoiceDepth(question, depth);
+              } else {
+                // For other multiple-choice categories, only adjust the statement
+                const transformedStatement = await adjustQuestionDepth(question.statement, depth);
+                return {
+                  statement: transformedStatement,
+                  options: question.options
+                };
+              }
             }
           })
         );
@@ -617,7 +716,7 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
     } finally {
       setIsDepthChanging(false);
     }
-  }, [adjustQuestionDepth]);
+  }, [adjustQuestionDepth, adjustMultipleChoiceDepth, selectedCategory]);
 
   // Ultra-fast depth switching with smart fallbacks
   React.useEffect(() => {
@@ -865,6 +964,8 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
           prompt = `Generate 8 new conversation starter questions that explore personal development, self-awareness, and emotional growth within relationships. Focus on how people understand themselves, work on their issues, and show up authentically in partnerships. Address topics like attachment styles, family patterns, and individual responsibility. Make them introspective enough to promote meaningful self-discovery. Make them different from these examples: ${category.prompts.slice(0, 5).join(', ')}`;
         } else if (selectedCategory === 'Intimacy & Connection') {
           prompt = `Generate 8 new conversation starter questions that explore emotional and physical intimacy in relationships. Focus on the deeper aspects of connection, vulnerability, and authentic sharing between partners. Address topics like emotional safety, sexual communication, and intimate bonding. Make them thoughtful enough to deepen understanding of each other's intimate needs. Make them different from these examples: ${category.prompts.slice(0, 5).join(', ')}`;
+        } else if (selectedCategory === 'Pillow Talk & Tea') {
+          prompt = `Generate 8 new multiple-choice questions for a "girl's night" conversation game about bedroom confessions, spicy secrets, and flirty topics. Each question should have a statement followed by 4 suggestive, revealing options labeled A, B, C, D. The tone should be fun, intimate, cheeky, bold, and playful - like late-night girl talk with wine in hand. Focus on turn-ons, hookup stories, fantasies, bedroom moves, post-hookup thoughts, and intimate confessions that girlfriends share with each other. Make them slightly provocative but always with a vibe of friendship, laughter, and trust. Format as: "Statement?" with options A. [option] B. [option] C. [option] D. [option]. Make them different from these examples: ${category.prompts.slice(0, 2).map(p => typeof p === 'object' ? p.statement : p).join(', ')}`;
         } else {
           prompt = `Generate 8 new conversation starter questions in the style of "${selectedCategory}" category that go beyond surface-level dating questions. Make them emotionally intelligent, boundary-aware, and specific enough that someone thinks "That's such a good question, I never thought about that." Focus on relationship dynamics, emotional maturity, and authentic connection. They should be similar to these examples but completely different: ${category.prompts.slice(0, 5).join(', ')}. Make them engaging, thought-provoking, and perfect for sparking meaningful conversations about real relationship topics.`;
         }
@@ -881,6 +982,40 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
             ).map(line => 
               line.replace(/^\d+\.?\s*/, '').replace(/\*\*/g, '').replace(/[""'']/g, "'").replace(/[^\w\s\?\.\!\,\:\;\(\)\-\'\"]/g, '').trim()
             ).slice(0, 8);
+          } else if (selectedCategory === 'Pillow Talk & Tea') {
+            // Parse multiple-choice questions
+            const responseLines = response.split('\n').filter(line => line.trim());
+            const multipleChoiceQuestions = [];
+            
+            for (let i = 0; i < responseLines.length; i++) {
+              const line = responseLines[i].trim();
+              // Look for question statements (lines with ? and not starting with A, B, C, D)
+              if (line.includes('?') && !line.match(/^[A-D]\.?\s*/)) {
+                const statement = line.replace(/^\d+\.?\s*/, '').replace(/\*\*/g, '').trim();
+                const options = [];
+                
+                // Look for the next 4 lines for options A, B, C, D
+                for (let j = 1; j <= 4 && (i + j) < responseLines.length; j++) {
+                  const optionLine = responseLines[i + j].trim();
+                  const optionMatch = optionLine.match(/^([A-D])\.?\s*(.+)/);
+                  if (optionMatch) {
+                    options.push({
+                      key: optionMatch[1],
+                      text: optionMatch[2].replace(/\*\*/g, '').trim()
+                    });
+                  }
+                }
+                
+                if (options.length >= 4) {
+                  multipleChoiceQuestions.push({
+                    statement: statement,
+                    options: options.slice(0, 4)
+                  });
+                  i += 4; // Skip the option lines we just processed
+                }
+              }
+            }
+            questions = multipleChoiceQuestions.slice(0, 8);
           } else {
             // Parse regular questions
             questions = response.split('\n').filter(line => 
@@ -898,8 +1033,12 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
                 questions.map(async (question) => {
                   if (typeof question === 'string') {
                     return await adjustQuestionDepth(question, depthLevel[0]);
+                  } else if (selectedCategory === 'Pillow Talk & Tea') {
+                    // Apply depth transformation to multiple-choice questions for Pillow Talk & Tea
+                    return await adjustMultipleChoiceDepth(question, depthLevel[0]);
+                  } else {
+                    return question; // Keep other multiple choice objects as-is
                   }
-                  return question; // Keep multiple choice objects as-is
                 })
               );
               setCurrentStarters(transformedQuestions);
@@ -920,8 +1059,12 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
               shuffled.map(async (question) => {
                 if (typeof question === 'string') {
                   return await adjustQuestionDepth(question, depthLevel[0]);
+                } else if (selectedCategory === 'Pillow Talk & Tea') {
+                  // Apply depth transformation to multiple-choice questions for Pillow Talk & Tea
+                  return await adjustMultipleChoiceDepth(question, depthLevel[0]);
+                } else {
+                  return question; // Keep other multiple choice objects as-is
                 }
-                return question; // Keep multiple choice objects as-is
               })
             );
             setCurrentStarters(transformedQuestions);

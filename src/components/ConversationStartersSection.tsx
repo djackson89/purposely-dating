@@ -183,7 +183,7 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
     "Future Plans": "Discuss dreams, goals, and shared visions",
     "Personal Growth": "Explore self-improvement and development",
     "Fun & Playful": "Light-hearted questions for laughs and bonding",
-    "Pillow Talk & Tea": "Spill your secrets with a flirty twist - bedroom confessions & sexy secrets",
+    "Pillow Talk & Tea": "Spill your secrets and stir the tea with a flirty twist - bedroom confessions & spicy secrets",
     "Retrograde & Regrets": "Let the stars drag your dating life - zodiac-inspired relationship questions",
     "Vulnerable & Valid": "Safe space conversations for emotional intimacy and growth",
     "Hot Mess Express": "Unleash your chaos queen - girl-talk about dating drama"
