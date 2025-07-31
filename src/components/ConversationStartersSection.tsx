@@ -430,37 +430,76 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
                     const currentQuestion = currentStarters[currentQuestionIndex];
                     if (!currentQuestion) return null;
                     
-                     const isMultiChoice = currentQuestion && (
-                       (typeof currentQuestion === 'object' && 'options' in currentQuestion) || 
-                       isMultipleChoice(currentQuestion)
-                     );
+                    // Debug logging
+                    console.log('Current question:', currentQuestion);
+                    console.log('Type of question:', typeof currentQuestion);
+                    console.log('isMultipleChoice result:', isMultipleChoice(currentQuestion));
                     
-                    if (isMultiChoice) {
-                      // Extract question text (statement part only)
-                      let questionText = '';
-                      if (typeof currentQuestion === 'object' && 'statement' in currentQuestion) {
-                        questionText = currentQuestion.statement;
-                      } else {
-                        const fullText = getQuestionText(currentQuestion);
-                        const parts = fullText.split(/\n(?=[A-D]\.)/);
-                        questionText = parts[0]?.trim() || fullText;
-                      }
-                      
-                      // Extract options
-                      let options: Array<{key: string; text: string}> = [];
-                      if (typeof currentQuestion === 'object' && 'options' in currentQuestion) {
-                        options = (currentQuestion as any).options;
-                      } else {
-                        const fullText = getQuestionText(currentQuestion);
-                        const lines = fullText.split('\n');
-                        options = lines
-                          .filter(line => /^[A-D]\./.test(line))
-                          .map(line => {
-                            const match = line.match(/^([A-D])\.\s*(.+)/);
-                            return match ? { key: match[1], text: match[2] } : null;
-                          })
-                          .filter(Boolean) as Array<{key: string; text: string}>;
-                      }
+                     // More comprehensive multiple choice detection
+                     const questionText = getQuestionText(currentQuestion);
+                     console.log('Question text:', questionText);
+                     const hasMultiChoicePattern = /\s[A-D]\.\s/.test(questionText);
+                     console.log('Has multi-choice pattern:', hasMultiChoicePattern);
+                     console.log('Question contains A.:', questionText.includes(' A.'));
+                     
+                     const isMultiChoice = currentQuestion && (
+                        (typeof currentQuestion === 'object' && 'options' in currentQuestion) || 
+                        isMultipleChoice(currentQuestion) ||
+                        hasMultiChoicePattern ||
+                        questionText.includes(' A.')
+                      );
+                    
+                     console.log('Is multi choice:', isMultiChoice);
+                     
+                     if (isMultiChoice) {
+                       // Extract question text (statement part only)
+                       let questionText = '';
+                       if (typeof currentQuestion === 'object' && 'statement' in currentQuestion) {
+                         questionText = currentQuestion.statement;
+                       } else {
+                         const fullText = getQuestionText(currentQuestion);
+                         console.log('Full text for parsing:', fullText);
+                         
+                         // Handle inline format: "Question? A. option B. option C. option D. option"
+                         const questionMatch = fullText.match(/^(.*?)\?\s*(?=\s*[A-D]\.)/);
+                         if (questionMatch) {
+                           questionText = questionMatch[1].trim() + '?';
+                         } else {
+                           // Fallback: split by newline
+                           const parts = fullText.split(/\n(?=[A-D]\.)/);
+                           questionText = parts[0]?.trim() || fullText;
+                         }
+                         console.log('Extracted question text:', questionText);
+                       }
+                       
+                       // Extract options
+                       let options: Array<{key: string; text: string}> = [];
+                       if (typeof currentQuestion === 'object' && 'options' in currentQuestion) {
+                         options = (currentQuestion as any).options;
+                       } else {
+                         const fullText = getQuestionText(currentQuestion);
+                         
+                         // Handle inline format with regex
+                         const optionMatches = fullText.matchAll(/\s([A-D])\.\s([^A-D]*?)(?=\s[A-D]\.|$)/g);
+                         options = Array.from(optionMatches, match => ({
+                           key: match[1],
+                           text: match[2].trim()
+                         }));
+                         
+                         console.log('Extracted options:', options);
+                         
+                         // Fallback: handle line-by-line format
+                         if (options.length === 0) {
+                           const lines = fullText.split('\n');
+                           options = lines
+                             .filter(line => /^[A-D]\./.test(line))
+                             .map(line => {
+                               const match = line.match(/^([A-D])\.\s*(.+)/);
+                               return match ? { key: match[1], text: match[2] } : null;
+                             })
+                             .filter(Boolean) as Array<{key: string; text: string}>;
+                         }
+                       }
                       
                       return (
                         <div className="w-full text-center">
