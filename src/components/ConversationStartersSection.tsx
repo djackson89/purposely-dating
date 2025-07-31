@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
-import { Share, Users, Trash2, Expand, Send } from 'lucide-react';
+import { Share, Users, Trash2, Expand, Send, Lock } from 'lucide-react';
 import { InfoDialog } from '@/components/ui/info-dialog';
+import { useDevice } from '@/hooks/useDevice';
+import LockedCategoryModal from './LockedCategoryModal';
 
 interface OnboardingData {
   loveLanguage: string;
@@ -112,6 +114,33 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
   isMultipleChoice,
   getQuestionText,
 }) => {
+  const { isNative } = useDevice();
+  const [lockedModalOpen, setLockedModalOpen] = useState(false);
+  const [selectedLockedCategory, setSelectedLockedCategory] = useState<string>('');
+
+  // Categories that are locked for mobile users who haven't reviewed
+  const lockedCategories = ['Intimacy & Connection', 'Communication & Conflict', 'Customize'];
+  
+  // Check if user has left a review
+  const hasReviewedApp = React.useMemo(() => {
+    return localStorage.getItem('purposely_review_submitted') === 'true';
+  }, []);
+
+  // Check if a category is locked
+  const isCategoryLocked = React.useCallback((category: string): boolean => {
+    return isNative && lockedCategories.includes(category) && !hasReviewedApp;
+  }, [isNative, hasReviewedApp]);
+
+  // Handle category selection with lock check
+  const handleCategoryClick = React.useCallback((category: string) => {
+    if (isCategoryLocked(category)) {
+      setSelectedLockedCategory(category);
+      setLockedModalOpen(true);
+    } else {
+      selectCategory(category);
+    }
+  }, [isCategoryLocked, selectCategory]);
+
   // Memoized category emojis to prevent recreation
   const categoryEmojis = React.useMemo(() => ({
     "First Date Deep Dive": "💬",
@@ -210,24 +239,38 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
                 (starter.masterCategory || 'Date Night') === masterCategory
               )
               .map((starter) => (
-                <Card
-                  key={starter.category}
-                  className={`cursor-pointer transition-all duration-200 border-2 ${
-                    selectedCategory === starter.category
-                      ? 'border-primary bg-primary/5 shadow-md'
-                      : 'border-border hover:border-primary/50 hover:shadow-sm'
-                  }`}
-                  onClick={() => selectCategory(starter.category)}
+                 <Card
+                   key={starter.category}
+                   className={`cursor-pointer transition-all duration-200 border-2 ${
+                     isCategoryLocked(starter.category)
+                       ? 'border-muted bg-muted/5 opacity-75'
+                       : selectedCategory === starter.category
+                       ? 'border-primary bg-primary/5 shadow-md'
+                       : 'border-border hover:border-primary/50 hover:shadow-sm'
+                   }`}
+                   onClick={() => handleCategoryClick(starter.category)}
                 >
-                  <CardContent className="flex items-center p-4 space-x-4">
-                    <div className="text-2xl">
-                      {categoryEmojis[starter.category] || "💭"}
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-semibold text-foreground">
-                          {starter.category}
-                        </h3>
+                   <CardContent className="flex items-center p-4 space-x-4">
+                     <div className="text-2xl relative">
+                       {isCategoryLocked(starter.category) ? (
+                         <div className="relative">
+                           <div className="opacity-50">{categoryEmojis[starter.category] || "💭"}</div>
+                           <Lock className="w-4 h-4 absolute -top-1 -right-1 text-muted-foreground" />
+                         </div>
+                       ) : (
+                         categoryEmojis[starter.category] || "💭"
+                       )}
+                     </div>
+                     <div className="flex-1">
+                       <div className="flex items-center gap-2">
+                         <h3 className={`font-semibold ${isCategoryLocked(starter.category) ? 'text-muted-foreground' : 'text-foreground'}`}>
+                           {starter.category}
+                         </h3>
+                         {isCategoryLocked(starter.category) && (
+                           <span className="text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded-full">
+                             Premium
+                           </span>
+                         )}
                         {starter.type === 'multiple-choice' && (
                           <span className="text-xs bg-accent text-accent-foreground px-2 py-0.5 rounded-full">
                             Multiple Choice
@@ -287,16 +330,36 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
             {/* Customize Option at the bottom */}
             <Card
               className={`cursor-pointer transition-all duration-200 border-2 ${
-                selectedCategory === "Customize"
+                isCategoryLocked("Customize")
+                  ? 'border-muted bg-muted/5 opacity-75'
+                  : selectedCategory === "Customize"
                   ? 'border-primary bg-primary/5 shadow-md'
                   : 'border-border hover:border-primary/50 hover:shadow-sm'
               }`}
-              onClick={() => selectCategory("Customize")}
+              onClick={() => handleCategoryClick("Customize")}
             >
               <CardContent className="flex items-center p-4 space-x-4">
-                <div className="text-2xl">✨</div>
+                <div className="text-2xl relative">
+                  {isCategoryLocked("Customize") ? (
+                    <div className="relative">
+                      <div className="opacity-50">✨</div>
+                      <Lock className="w-4 h-4 absolute -top-1 -right-1 text-muted-foreground" />
+                    </div>
+                  ) : (
+                    "✨"
+                  )}
+                </div>
                 <div className="flex-1">
-                  <h3 className="font-semibold text-foreground mb-1">Customize</h3>
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className={`font-semibold ${isCategoryLocked("Customize") ? 'text-muted-foreground' : 'text-foreground'}`}>
+                      Customize
+                    </h3>
+                    {isCategoryLocked("Customize") && (
+                      <span className="text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded-full">
+                        Premium
+                      </span>
+                    )}
+                  </div>
                   <p className="text-sm text-muted-foreground">
                     Generate personalized conversation starters with AI
                   </p>
@@ -598,6 +661,16 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
           )}
         </div>
       )}
+
+      {/* Locked Category Modal */}
+      <LockedCategoryModal
+        isOpen={lockedModalOpen}
+        onClose={() => {
+          setLockedModalOpen(false);
+          setSelectedLockedCategory('');
+        }}
+        categoryName={selectedLockedCategory}
+      />
     </div>
   );
 });
