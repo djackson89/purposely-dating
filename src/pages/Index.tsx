@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import OnboardingFlow from '@/components/OnboardingFlow';
-import Paywall from '@/components/Paywall';
 import Navigation from '@/components/Navigation';
 import Home from '@/pages/Home';
 import FlirtFuelModule from '@/components/modules/FlirtFuelModule';
@@ -8,11 +6,12 @@ import DateConciergeModule from '@/components/modules/DateConciergeModule';
 import TherapyCompanionModule from '@/components/modules/TherapyCompanionModule';
 import ProfileModule from '@/components/modules/ProfileModule';
 import ReviewRequestModal from '@/components/ReviewRequestModal';
-import NotificationPermissionStep from '@/components/NotificationPermissionStep';
 import { useAppInitialization } from '@/hooks/useAppInitialization';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useReviewTracking } from '@/hooks/useReviewTracking';
+import { useAuth } from '@/hooks/useAuth';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 
 interface OnboardingData {
@@ -26,10 +25,7 @@ interface OnboardingData {
 }
 
 const Index = () => {
-  const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
-  const [hasSeenPaywall, setHasSeenPaywall] = useState(false);
-  const [hasSeenWelcome, setHasSeenWelcome] = useState(false);
-  const [hasCompletedNotifications, setHasCompletedNotifications] = useState(false);
+  const { signOut } = useAuth();
   const [userProfile, setUserProfile] = useState<OnboardingData | null>(null);
   const [activeModule, setActiveModule] = useState<'home' | 'flirtfuel' | 'concierge' | 'therapy' | 'profile'>('home');
   const [showPaywallModal, setShowPaywallModal] = useState(false);
@@ -41,150 +37,18 @@ const Index = () => {
   const { subscription, loading: subscriptionLoading, createCheckoutSession } = useSubscription();
   const { shouldShowReview, hideReviewModal, markReviewAsShown } = useReviewTracking();
 
-  // Check for existing onboarding and paywall data
+  // Simple profile loading
   useEffect(() => {
     const savedProfile = localStorage.getItem('relationshipCompanionProfile');
-    const savedPaywallFlag = localStorage.getItem('hasSeenPaywall');
-    const savedWelcomeFlag = localStorage.getItem('hasSeenWelcome');
-    const savedNotificationsFlag = localStorage.getItem('hasCompletedNotifications');
-    
     if (savedProfile) {
-      setUserProfile(JSON.parse(savedProfile));
-      setHasCompletedOnboarding(true);
-    }
-    
-    if (savedPaywallFlag) {
-      setHasSeenPaywall(true);
-    }
-    
-    if (savedWelcomeFlag) {
-      setHasSeenWelcome(true);
-    }
-    
-    if (savedNotificationsFlag) {
-      setHasCompletedNotifications(true);
-    }
-    
-    // Premium users skip onboarding automatically
-    if (!subscriptionLoading && subscription.subscribed) {
-      if (!savedProfile) {
-        // Create a default profile for premium users
-        const defaultProfile: OnboardingData = {
-          firstName: 'User',
-          profilePhoto: undefined,
-          loveLanguage: 'Words of Affirmation',
-          relationshipStatus: 'Single',
-          age: '25-30',
-          gender: 'Prefer not to say',
-          personalityType: 'Explorer'
-        };
-        setUserProfile(defaultProfile);
-        localStorage.setItem('relationshipCompanionProfile', JSON.stringify(defaultProfile));
+      try {
+        setUserProfile(JSON.parse(savedProfile));
+      } catch (error) {
+        console.error('Error parsing saved profile:', error);
+        localStorage.removeItem('relationshipCompanionProfile');
       }
-      setHasCompletedOnboarding(true);
-      setHasSeenPaywall(true);
-      setHasSeenWelcome(true);
-      setHasCompletedNotifications(true);
     }
-  }, [subscription.subscribed, subscriptionLoading]);
-
-  const handleOnboardingComplete = async (data: OnboardingData) => {
-    setUserProfile(data);
-    setHasCompletedOnboarding(true);
-    // Save to localStorage for persistence
-    localStorage.setItem('relationshipCompanionProfile', JSON.stringify(data));
-    
-    // Save to Supabase if user is authenticated
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        await supabase
-          .from('profiles')
-          .upsert({
-            id: user.id,
-            ...data,
-            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
-          });
-      }
-    } catch (error) {
-      console.error('Error saving profile to Supabase:', error);
-    }
-  };
-
-  const handleWelcomeComplete = () => {
-    setHasSeenWelcome(true);
-    localStorage.setItem('hasSeenWelcome', 'true');
-  };
-
-  const handleNotificationsComplete = () => {
-    setHasCompletedNotifications(true);
-    localStorage.setItem('hasCompletedNotifications', 'true');
-  };
-
-  const handlePlanSelected = async () => {
-    // Start the Stripe checkout process
-    await createCheckoutSession('yearly', true);
-    setShowPaywallModal(false);
-    setHasSeenPaywall(true);
-    localStorage.setItem('hasSeenPaywall', 'true');
-  };
-
-  const handleSkipToFree = () => {
-    console.log('User chose free version');
-    setHasSeenPaywall(true);
-    localStorage.setItem('hasSeenPaywall', 'true');
-    setShowPaywallModal(false);
-  };
-
-  const handlePremiumFeatureClick = () => {
-    setShowPaywallModal(true);
-  };
-
-  // 1. Show welcome screens first
-  if (!subscriptionLoading && !hasSeenWelcome) {
-    console.log('Rendering welcome screen');
-    return <OnboardingFlow onComplete={handleWelcomeComplete} showOnlyWelcome />;
-  }
-
-  // 2. Show notifications permission after welcome
-  if (!subscriptionLoading && hasSeenWelcome && !hasCompletedNotifications) {
-    console.log('Rendering notifications screen');
-    return <NotificationPermissionStep onComplete={handleNotificationsComplete} userProfile={null} />;
-  }
-
-  // 3. Show paywall after notifications if user doesn't have subscription
-  if (!subscriptionLoading && hasCompletedNotifications && !subscription.subscribed && !hasSeenPaywall) {
-    console.log('Rendering paywall');
-    return <Paywall onPlanSelected={handlePlanSelected} onSkipToFree={handleSkipToFree} />;
-  }
-
-  // 4. Show intake quiz if paywall has been seen but onboarding not completed and not premium
-  if (!subscriptionLoading && hasSeenPaywall && (!hasCompletedOnboarding || !userProfile)) {
-    console.log('Rendering onboarding quiz');
-    return <OnboardingFlow onComplete={handleOnboardingComplete} showOnlyQuiz />;
-  }
-
-  // Show loading state while subscription is loading
-  if (subscriptionLoading) {
-    console.log('Subscription loading...');
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-soft">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading your experience...</p>
-        </div>
-      </div>
-    );
-  }
-
-  console.log('Rendering main app with state:', {
-    subscriptionLoading,
-    hasSeenWelcome, 
-    hasCompletedNotifications,
-    hasSeenPaywall,
-    hasCompletedOnboarding,
-    userProfile: !!userProfile
-  });
+  }, []);
 
   const handleProfileUpdate = (updatedProfile: OnboardingData) => {
     setUserProfile(updatedProfile);
@@ -197,7 +61,6 @@ const Index = () => {
 
   const handleNavigateToAIPractice = (scenario?: string) => {
     setActiveModule('flirtfuel');
-    // Store the scenario for the FlirtFuelModule to use
     if (scenario) {
       localStorage.setItem('practiceScenario', scenario);
       localStorage.setItem('activePracticeSection', 'practice');
@@ -213,6 +76,24 @@ const Index = () => {
     }
   };
 
+  const handlePlanSelected = async () => {
+    await createCheckoutSession('yearly', true);
+    setShowPaywallModal(false);
+  };
+
+  const handleSkipToFree = () => {
+    setShowPaywallModal(false);
+  };
+
+  const handlePremiumFeatureClick = () => {
+    setShowPaywallModal(true);
+  };
+
+  const handleLogout = async () => {
+    await signOut();
+    localStorage.clear(); // Clear all local storage
+  };
+
   const renderActiveModule = () => {
     switch (activeModule) {
       case 'home':
@@ -226,13 +107,21 @@ const Index = () => {
       case 'profile':
         return <ProfileModule userProfile={userProfile} onProfileUpdate={handleProfileUpdate} />;
       default:
-        return <Home userProfile={userProfile} onNavigateToFlirtFuel={handleNavigateToFlirtFuel} onNavigateToAIPractice={handleNavigateToAIPractice} />;
+        return <Home userProfile={userProfile} onNavigateToFlirtFuel={handleNavigateToFlirtFuel} onNavigateToAIPractice={handleNavigateToAIPractice} onNavigateToModule={handleNavigateToModule} />;
     }
   };
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Logout button for debugging */}
+      <div className="fixed top-4 right-4 z-50">
+        <Button onClick={handleLogout} variant="outline" size="sm">
+          Logout
+        </Button>
+      </div>
+
       {renderActiveModule()}
+      
       <Navigation 
         activeModule={activeModule}
         onModuleChange={setActiveModule}
@@ -241,11 +130,14 @@ const Index = () => {
       {/* Paywall Modal for Premium Features */}
       <Dialog open={showPaywallModal} onOpenChange={setShowPaywallModal}>
         <DialogContent className="max-w-lg">
-          <Paywall 
-            onPlanSelected={handlePlanSelected}
-            onSkipToFree={handleSkipToFree}
-            isModal={true}
-          />
+          <div>
+            <h2 className="text-xl font-bold mb-4">Premium Feature</h2>
+            <p className="mb-4">This feature requires a premium subscription.</p>
+            <div className="flex gap-2">
+              <Button onClick={handlePlanSelected}>Subscribe</Button>
+              <Button onClick={handleSkipToFree} variant="outline">Skip</Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
 

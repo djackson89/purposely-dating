@@ -9,7 +9,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { cn } from '@/lib/utils';
 
 interface AuthProps {
-  onAuthSuccess: () => void;
+  onAuthSuccess?: () => void;
 }
 
 const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
@@ -24,16 +24,7 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
   });
   const { toast } = useToast();
 
-  // Check if user is already logged in
-  useEffect(() => {
-    const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        onAuthSuccess();
-      }
-    };
-    checkSession();
-  }, [onAuthSuccess]);
+  // Remove the problematic useEffect that was causing conflicts
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({
@@ -162,7 +153,7 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
             title: "Welcome!",
             description: "Your account has been created successfully.",
           });
-          onAuthSuccess();
+          // Let auth state listener handle this automatically
         } else {
           // Email confirmation is required
           toast({

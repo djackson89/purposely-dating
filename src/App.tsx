@@ -16,6 +16,7 @@ const AppContent = () => {
   const { user, loading } = useAuth();
   const { shouldShowReview, hideReviewModal, markReviewAsShown } = useReviewTracking();
 
+  // Show loading while checking auth
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-soft">
@@ -27,10 +28,12 @@ const AppContent = () => {
     );
   }
 
+  // Show auth screen if no user
   if (!user) {
-    return <Auth onAuthSuccess={() => {}} />;
+    return <Auth />;
   }
 
+  // User is authenticated, show main app
   const handleCloseReviewModal = () => {
     markReviewAsShown();
     hideReviewModal();
@@ -41,12 +44,10 @@ const AppContent = () => {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
       
-      {/* Review Request Modal */}
       <ReviewRequestModal 
         isOpen={shouldShowReview} 
         onClose={handleCloseReviewModal}
