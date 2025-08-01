@@ -194,10 +194,15 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
     try {
+      // Use the production URL for redirects to avoid localhost issues on mobile
+      const redirectUrl = window.location.hostname === 'localhost' 
+        ? 'https://a3b2c442-d1f6-40d1-a4a5-f981d6acd20c.lovableproject.com/'
+        : `${window.location.origin}/`;
+        
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/`
+          redirectTo: redirectUrl
         }
       });
 
