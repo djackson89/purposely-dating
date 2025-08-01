@@ -12,6 +12,7 @@ const queryClient = new QueryClient();
 
 // Simple app with working logout
 const MainApp = () => {
+  console.log('🔄 MainApp component rendering...');
   const { signOut } = useAuth();
 
   const handleLogout = async () => {
@@ -20,8 +21,14 @@ const MainApp = () => {
     localStorage.clear();
   };
 
+  console.log('✅ MainApp about to return JSX');
+  
   return (
-    <div className="min-h-screen bg-background p-4">
+    <div className="min-h-screen bg-background p-4" style={{ backgroundColor: '#faf7f7', color: '#2d1b1e' }}>
+      <div style={{ border: '2px solid red', padding: '10px', margin: '10px' }}>
+        <p>DEBUG: MainApp is rendering!</p>
+      </div>
+      
       {/* Header with logout */}
       <div className="flex justify-between items-center mb-8">
         <div className="flex items-center space-x-2">
