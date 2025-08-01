@@ -568,6 +568,62 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
     }
   }, [questionCache, userProfile, getAIResponse]);
 
+  // Function to adjust debate statements for depth while preserving statement format
+  const adjustDebateStatementDepth = React.useCallback(async (originalQuestion: { statement: string; options: { key: string; text: string; }[] }, depth: number): Promise<{ statement: string; options: { key: string; text: string; }[] }> => {
+    const cacheKey = `${originalQuestion.statement}_${depth}_debate`;
+    
+    // Check cache first
+    if (questionCache.has(cacheKey)) {
+      return questionCache.get(cacheKey);
+    }
+
+    try {
+      // For Date Night Debates, adjust intensity based on depth but keep as provocative statements
+      const depthInstructions = {
+        0: "Make this statement slightly softer and more discussion-friendly while keeping it thought-provoking. Adjust the options to be more diplomatic.",
+        1: "Keep this statement balanced and engaging with its controversial edge. Make options clear and relatable.",
+        2: "Make this statement more intense and provocative while maintaining its debate-worthy nature. Make options more polarizing and definitive."
+      };
+
+      const prompt = `Transform this provocative debate statement for depth level ${depth}: "${originalQuestion.statement}" with options: ${originalQuestion.options.map(opt => `${opt.key}. ${opt.text}`).join(', ')}
+
+${depthInstructions[depth as keyof typeof depthInstructions]}
+
+IMPORTANT: Format as a statement (no question mark) followed by A. [option] B. [option] C. [option] D. [option]. Keep it as a provocative statement that sparks debate, NOT a question.`;
+      
+      const response = await getAIResponse(prompt, userProfile, 'flirt');
+      
+      // Parse the response - look for statement without question mark
+      const lines = response.split('\n').filter(line => line.trim());
+      const statementLine = lines.find(line => !line.match(/^[A-D]\.?\s*/) && line.length > 10 && !line.includes('Transform') && !line.includes('IMPORTANT'));
+      const statement = statementLine ? statementLine.replace(/^\d+\.?\s*/, '').replace(/\*\*/g, '').replace(/\?$/, '').trim() : originalQuestion.statement;
+      
+      const options = [];
+      for (const line of lines) {
+        const optionMatch = line.trim().match(/^([A-D])\.?\s*(.+)/);
+        if (optionMatch) {
+          options.push({
+            key: optionMatch[1],
+            text: optionMatch[2].replace(/\*\*/g, '').trim()
+          });
+        }
+      }
+      
+      const result = {
+        statement,
+        options: options.length >= 4 ? options.slice(0, 4) : originalQuestion.options
+      };
+      
+      // Cache the result
+      questionCache.set(cacheKey, result);
+      
+      return result;
+    } catch (error) {
+      console.error('Error adjusting debate statement depth:', error);
+      return originalQuestion;
+    }
+  }, [userProfile, getAIResponse]);
+
   // Function to adjust multiple-choice questions for depth
   const adjustMultipleChoiceDepth = React.useCallback(async (originalQuestion: { statement: string; options: { key: string; text: string; }[] }, depth: number): Promise<{ statement: string; options: { key: string; text: string; }[] }> => {
     const cacheKey = `${originalQuestion.statement}_${depth}_mc`;
@@ -690,6 +746,9 @@ Format as: Statement? followed by A. [option] B. [option] C. [option] D. [option
               // For multiple-choice questions in Girl's Night categories, use special handling
               if (selectedCategory === 'Pillow Talk & Tea') {
                 return await adjustMultipleChoiceDepth(question, depth);
+              } else if (selectedCategory === 'Date Night Debates') {
+                // For Date Night Debates, preserve the provocative statement format without converting to questions
+                return await adjustDebateStatementDepth(question, depth);
               } else {
                 // For other multiple-choice categories, only adjust the statement
                 const transformedStatement = await adjustQuestionDepth(question.statement, depth);
