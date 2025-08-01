@@ -492,10 +492,15 @@ const AuthComponent = () => {
 const MainApp = () => {
   const { signOut, user } = useAuth();
   const [userProfile, setUserProfile] = useState(null);
-  const [currentView, setCurrentView] = useState('home');
+  const [currentView, setCurrentView] = useState('home'); // Always start with home
   const [loading, setLoading] = useState(true);
 
-  console.log('🏠 MainApp rendering, user:', !!user, 'view:', currentView);
+  console.log('🏠 MAIN APP: Rendering with state:', { 
+    hasUser: !!user, 
+    view: currentView, 
+    loading,
+    userProfile: !!userProfile 
+  });
 
   useEffect(() => {
     if (user) {
