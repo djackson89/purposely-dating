@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import NotFound from "./pages/NotFound";
 import OnboardingFlow from "@/components/OnboardingFlow";
 import Paywall from "@/components/Paywall";
+import Home from "@/pages/Home";
 import React from 'react';
 
 // Error Boundary Component to catch rendering errors
@@ -715,82 +716,12 @@ const MainApp = () => {
   // Show main home screen
   if (currentView === 'home' && userProfile) {
     return (
-      <div className="min-h-screen bg-background">
-        <div className="pb-8 pt-6 px-4 space-y-6 bg-gradient-soft min-h-screen">
-          {/* Header with logout */}
-          <div className="text-center space-y-4">
-            <div className="flex items-center justify-between">
-              <Button
-                onClick={handleLogout}
-                variant="ghost"
-                size="sm"
-                className="text-muted-foreground"
-              >
-                Logout
-              </Button>
-              <h1 className="text-2xl font-bold bg-gradient-romance bg-clip-text text-transparent">
-                Purposely 💕
-              </h1>
-              <div className="w-16" /> {/* Spacer */}
-            </div>
-          </div>
-
-          {/* Welcome message */}
-          <div className="max-w-2xl mx-auto text-center space-y-8">
-            <div>
-              <h2 className="text-3xl font-bold mb-4">Welcome back, {userProfile.firstName}! 💕</h2>
-              <p className="text-lg text-muted-foreground">
-                Your dating strategist, self-love coach, and wingwoman all in one.
-              </p>
-            </div>
-
-            {/* Feature cards */}
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={handleNavigateToFlirtFuel}>
-                <CardHeader>
-                  <MessageCircle className="w-8 h-8 text-primary mx-auto" />
-                  <CardTitle className="text-center">Conversation Starters</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-center text-sm text-muted-foreground">
-                    Access 10,000+ expert-crafted questions for meaningful conversations.
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => handleNavigateToAIPractice()}>
-                <CardHeader>
-                  <Sparkles className="w-8 h-8 text-primary mx-auto" />
-                  <CardTitle className="text-center">AI Practice Partner</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-center text-sm text-muted-foreground">
-                    Practice conversations and get the perfect text replies.
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => handleNavigateToModule('concierge')}>
-                <CardHeader>
-                  <Calendar className="w-8 h-8 text-primary mx-auto" />
-                  <CardTitle className="text-center">Date Planning</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-center text-sm text-muted-foreground">
-                    Curated date ideas that align with your values and love language.
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
-
-            <div className="space-y-4">
-              <p className="text-muted-foreground">
-                Click on the cards above to explore features.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <Home 
+        userProfile={userProfile}
+        onNavigateToFlirtFuel={handleNavigateToFlirtFuel}
+        onNavigateToAIPractice={handleNavigateToAIPractice}
+        onNavigateToModule={handleNavigateToModule}
+      />
     );
   }
 
