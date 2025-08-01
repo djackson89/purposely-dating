@@ -43,12 +43,6 @@ const Index = () => {
 
   // Check for existing onboarding and paywall data
   useEffect(() => {
-    // Clear onboarding data to show the onboarding flow
-    localStorage.removeItem('relationshipCompanionProfile');
-    localStorage.removeItem('hasSeenPaywall');
-    localStorage.removeItem('hasSeenWelcome');
-    localStorage.removeItem('hasCompletedNotifications');
-    
     const savedProfile = localStorage.getItem('relationshipCompanionProfile');
     const savedPaywallFlag = localStorage.getItem('hasSeenPaywall');
     const savedWelcomeFlag = localStorage.getItem('hasSeenWelcome');
