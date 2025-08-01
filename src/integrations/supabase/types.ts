@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      conversation_starters_pool: {
+        Row: {
+          category: string
+          created_at: string
+          depth_level: number
+          id: string
+          question: Json
+          used_at: string | null
+          user_id: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          depth_level?: number
+          id?: string
+          question: Json
+          used_at?: string | null
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          depth_level?: number
+          id?: string
+          question?: Json
+          used_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       conversation_usage: {
         Row: {
           category: string
@@ -402,6 +432,7 @@ export type Database = {
           created_at: string
           daily_reminders: boolean | null
           id: string
+          intake_completed: boolean
           onboarding_completed: boolean | null
           push_notifications: boolean | null
           theme_preference: string | null
@@ -413,6 +444,7 @@ export type Database = {
           created_at?: string
           daily_reminders?: boolean | null
           id?: string
+          intake_completed?: boolean
           onboarding_completed?: boolean | null
           push_notifications?: boolean | null
           theme_preference?: string | null
@@ -424,6 +456,7 @@ export type Database = {
           created_at?: string
           daily_reminders?: boolean | null
           id?: string
+          intake_completed?: boolean
           onboarding_completed?: boolean | null
           push_notifications?: boolean | null
           theme_preference?: string | null
@@ -438,6 +471,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      count_pool_questions: {
+        Args: { p_user_id: string; p_category: string; p_depth_level: number }
+        Returns: number
+      }
+      get_pool_question: {
+        Args: { p_user_id: string; p_category: string; p_depth_level: number }
+        Returns: Json
+      }
       has_role: {
         Args: {
           _user_id: string
