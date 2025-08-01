@@ -1,4 +1,19 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import OnboardingFlow from '@/components/OnboardingFlow';
+import Paywall from '@/components/Paywall';
+import Navigation from '@/components/Navigation';
+import Home from '@/pages/Home';
+import FlirtFuelModule from '@/components/modules/FlirtFuelModule';
+import DateConciergeModule from '@/components/modules/DateConciergeModule';
+import TherapyCompanionModule from '@/components/modules/TherapyCompanionModule';
+import ProfileModule from '@/components/modules/ProfileModule';
+import ReviewRequestModal from '@/components/ReviewRequestModal';
+import NotificationPermissionStep from '@/components/NotificationPermissionStep';
+import { useAppInitialization } from '@/hooks/useAppInitialization';
+import { useSubscription } from '@/hooks/useSubscription';
+import { useReviewTracking } from '@/hooks/useReviewTracking';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { supabase } from '@/integrations/supabase/client';
 
 interface OnboardingData {
   firstName: string;
@@ -6,23 +21,242 @@ interface OnboardingData {
   loveLanguage: string;
   relationshipStatus: string;
   age: string;
-  gender?: string;
+  gender: string;
   personalityType: string;
 }
 
-interface IndexProps {
-  userProfile: OnboardingData | null;
-}
+const Index = () => {
+  const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
+  const [hasSeenPaywall, setHasSeenPaywall] = useState(false);
+  const [hasSeenWelcome, setHasSeenWelcome] = useState(false);
+  const [hasCompletedNotifications, setHasCompletedNotifications] = useState(false);
+  const [userProfile, setUserProfile] = useState<OnboardingData | null>(null);
+  const [activeModule, setActiveModule] = useState<'home' | 'flirtfuel' | 'concierge' | 'therapy' | 'profile'>('home');
+  const [showPaywallModal, setShowPaywallModal] = useState(false);
+  
+  // Initialize native app features
+  const { isNative, isOnline } = useAppInitialization(userProfile);
+  
+  // Subscription and review tracking hooks
+  const { subscription, loading: subscriptionLoading, createCheckoutSession } = useSubscription();
+  const { shouldShowReview, hideReviewModal, markReviewAsShown } = useReviewTracking();
 
-const Index: React.FC<IndexProps> = ({ userProfile }) => {
-  return (
-    <div className="min-h-screen bg-background flex items-center justify-center">
-      <div className="text-center">
-        <h1 className="text-2xl font-bold mb-4">Main App</h1>
-        <p className="text-muted-foreground">
-          Welcome {userProfile?.firstName || 'User'}!
-        </p>
+  // Check for existing onboarding and paywall data
+  useEffect(() => {
+    const savedProfile = localStorage.getItem('relationshipCompanionProfile');
+    const savedPaywallFlag = localStorage.getItem('hasSeenPaywall');
+    const savedWelcomeFlag = localStorage.getItem('hasSeenWelcome');
+    const savedNotificationsFlag = localStorage.getItem('hasCompletedNotifications');
+    
+    if (savedProfile) {
+      setUserProfile(JSON.parse(savedProfile));
+      setHasCompletedOnboarding(true);
+    }
+    
+    if (savedPaywallFlag) {
+      setHasSeenPaywall(true);
+    }
+    
+    if (savedWelcomeFlag) {
+      setHasSeenWelcome(true);
+    }
+    
+    if (savedNotificationsFlag) {
+      setHasCompletedNotifications(true);
+    }
+    
+    // Premium users skip onboarding automatically
+    if (!subscriptionLoading && subscription.subscribed) {
+      if (!savedProfile) {
+        // Create a default profile for premium users
+        const defaultProfile: OnboardingData = {
+          firstName: 'User',
+          profilePhoto: undefined,
+          loveLanguage: 'Words of Affirmation',
+          relationshipStatus: 'Single',
+          age: '25-30',
+          gender: 'Prefer not to say',
+          personalityType: 'Explorer'
+        };
+        setUserProfile(defaultProfile);
+        localStorage.setItem('relationshipCompanionProfile', JSON.stringify(defaultProfile));
+      }
+      setHasCompletedOnboarding(true);
+      setHasSeenPaywall(true);
+      setHasSeenWelcome(true);
+      setHasCompletedNotifications(true);
+    }
+  }, [subscription.subscribed, subscriptionLoading]);
+
+  const handleOnboardingComplete = async (data: OnboardingData) => {
+    setUserProfile(data);
+    setHasCompletedOnboarding(true);
+    // Save to localStorage for persistence
+    localStorage.setItem('relationshipCompanionProfile', JSON.stringify(data));
+    
+    // Save to Supabase if user is authenticated
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase
+          .from('profiles')
+          .upsert({
+            id: user.id,
+            ...data,
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+          });
+      }
+    } catch (error) {
+      console.error('Error saving profile to Supabase:', error);
+    }
+  };
+
+  const handleWelcomeComplete = () => {
+    setHasSeenWelcome(true);
+    localStorage.setItem('hasSeenWelcome', 'true');
+  };
+
+  const handleNotificationsComplete = () => {
+    setHasCompletedNotifications(true);
+    localStorage.setItem('hasCompletedNotifications', 'true');
+  };
+
+  const handlePlanSelected = async () => {
+    // Start the Stripe checkout process
+    await createCheckoutSession('yearly', true);
+    setShowPaywallModal(false);
+    setHasSeenPaywall(true);
+    localStorage.setItem('hasSeenPaywall', 'true');
+  };
+
+  const handleSkipToFree = () => {
+    console.log('User chose free version');
+    setHasSeenPaywall(true);
+    localStorage.setItem('hasSeenPaywall', 'true');
+    setShowPaywallModal(false);
+  };
+
+  const handlePremiumFeatureClick = () => {
+    setShowPaywallModal(true);
+  };
+
+  // 1. Show welcome screens first
+  if (!subscriptionLoading && !hasSeenWelcome) {
+    console.log('Rendering welcome screen');
+    return <OnboardingFlow onComplete={handleWelcomeComplete} showOnlyWelcome />;
+  }
+
+  // 2. Show notifications permission after welcome
+  if (!subscriptionLoading && hasSeenWelcome && !hasCompletedNotifications) {
+    console.log('Rendering notifications screen');
+    return <NotificationPermissionStep onComplete={handleNotificationsComplete} userProfile={null} />;
+  }
+
+  // 3. Show paywall after notifications if user doesn't have subscription
+  if (!subscriptionLoading && hasCompletedNotifications && !subscription.subscribed && !hasSeenPaywall) {
+    console.log('Rendering paywall');
+    return <Paywall onPlanSelected={handlePlanSelected} onSkipToFree={handleSkipToFree} />;
+  }
+
+  // 4. Show intake quiz if paywall has been seen but onboarding not completed and not premium
+  if (!subscriptionLoading && hasSeenPaywall && (!hasCompletedOnboarding || !userProfile)) {
+    console.log('Rendering onboarding quiz');
+    return <OnboardingFlow onComplete={handleOnboardingComplete} showOnlyQuiz />;
+  }
+
+  // Show loading state while subscription is loading
+  if (subscriptionLoading) {
+    console.log('Subscription loading...');
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-soft">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading your experience...</p>
+        </div>
       </div>
+    );
+  }
+
+  console.log('Rendering main app with state:', {
+    subscriptionLoading,
+    hasSeenWelcome, 
+    hasCompletedNotifications,
+    hasSeenPaywall,
+    hasCompletedOnboarding,
+    userProfile: !!userProfile
+  });
+
+  const handleProfileUpdate = (updatedProfile: OnboardingData) => {
+    setUserProfile(updatedProfile);
+    localStorage.setItem('relationshipCompanionProfile', JSON.stringify(updatedProfile));
+  };
+
+  const handleNavigateToFlirtFuel = () => {
+    setActiveModule('flirtfuel');
+  };
+
+  const handleNavigateToAIPractice = (scenario?: string) => {
+    setActiveModule('flirtfuel');
+    // Store the scenario for the FlirtFuelModule to use
+    if (scenario) {
+      localStorage.setItem('practiceScenario', scenario);
+      localStorage.setItem('activePracticeSection', 'practice');
+    }
+  };
+
+  const handleNavigateToModule = (module: string) => {
+    const validModules = ['home', 'flirtfuel', 'concierge', 'therapy', 'profile'] as const;
+    type ValidModule = typeof validModules[number];
+    
+    if (validModules.includes(module as ValidModule)) {
+      setActiveModule(module as ValidModule);
+    }
+  };
+
+  const renderActiveModule = () => {
+    switch (activeModule) {
+      case 'home':
+        return <Home userProfile={userProfile} onNavigateToFlirtFuel={handleNavigateToFlirtFuel} onNavigateToAIPractice={handleNavigateToAIPractice} onNavigateToModule={handleNavigateToModule} />;
+      case 'flirtfuel':
+        return <FlirtFuelModule userProfile={userProfile} />;
+      case 'concierge':
+        return <DateConciergeModule userProfile={userProfile} />;
+      case 'therapy':
+        return <TherapyCompanionModule userProfile={userProfile} />;
+      case 'profile':
+        return <ProfileModule userProfile={userProfile} onProfileUpdate={handleProfileUpdate} />;
+      default:
+        return <Home userProfile={userProfile} onNavigateToFlirtFuel={handleNavigateToFlirtFuel} onNavigateToAIPractice={handleNavigateToAIPractice} />;
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-background">
+      {renderActiveModule()}
+      <Navigation 
+        activeModule={activeModule}
+        onModuleChange={setActiveModule}
+      />
+      
+      {/* Paywall Modal for Premium Features */}
+      <Dialog open={showPaywallModal} onOpenChange={setShowPaywallModal}>
+        <DialogContent className="max-w-lg">
+          <Paywall 
+            onPlanSelected={handlePlanSelected}
+            onSkipToFree={handleSkipToFree}
+            isModal={true}
+          />
+        </DialogContent>
+      </Dialog>
+
+      {/* Review Request Modal */}
+      <ReviewRequestModal 
+        isOpen={shouldShowReview}
+        onClose={() => {
+          hideReviewModal();
+          markReviewAsShown();
+        }}
+      />
     </div>
   );
 };

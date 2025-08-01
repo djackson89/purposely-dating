@@ -38,17 +38,22 @@ export const useSubscription = () => {
       
       if (error) {
         console.error('Error checking subscription:', error);
-        // Don't show toast for subscription errors, just set default state
-        setSubscription({ subscribed: false });
-        setLoading(false);
+        toast({
+          title: "Error checking subscription",
+          description: "Please try again later",
+          variant: "destructive"
+        });
         return;
       }
 
-      setSubscription(data || { subscribed: false });
+      setSubscription(data);
     } catch (error) {
       console.error('Subscription check failed:', error);
-      // Don't show toast, just set default state and continue
-      setSubscription({ subscribed: false });
+      toast({
+        title: "Subscription check failed",
+        description: "Please check your connection and try again",
+        variant: "destructive"
+      });
     } finally {
       setLoading(false);
     }
