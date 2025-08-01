@@ -576,23 +576,23 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
           )}
 
           {/* Navigation Controls */}
-          <div className="flex justify-between items-center px-2 sm:px-4">
+          <div className="flex justify-between items-center px-2 sm:px-4 gap-2">
             <Button
               onClick={previousQuestion}
               disabled={currentQuestionIndex === 0}
               variant="soft"
               size="lg"
-              className="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-4"
+              className="flex items-center space-x-1 sm:space-x-2 px-3 sm:px-4 min-w-0 flex-shrink-0"
             >
               <span>←</span>
               <span className="hidden sm:inline">Previous</span>
             </Button>
 
-            <div className="flex space-x-2">
+            <div className="flex space-x-2 flex-shrink-0 max-w-[200px] overflow-x-auto">
               {currentStarters.map((_, index) => (
                 <div
                   key={index}
-                  className={`w-2 h-2 rounded-full transition-colors ${
+                  className={`w-2 h-2 rounded-full transition-colors flex-shrink-0 ${
                     index === currentQuestionIndex
                       ? 'bg-primary'
                       : 'bg-muted-foreground/30'
@@ -606,7 +606,7 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
               disabled={isLoading}
               variant="soft"
               size="lg"
-              className="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-4"
+              className="flex items-center space-x-1 sm:space-x-2 px-3 sm:px-4 min-w-0 flex-shrink-0"
             >
               {isLoading ? (
                 <>
@@ -615,7 +615,7 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
                 </>
               ) : (
                 <>
-                  <span>Next</span>
+                  <span className="hidden xs:inline">Next</span>
                   <span>→</span>
                 </>
               )}

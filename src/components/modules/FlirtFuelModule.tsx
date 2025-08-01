@@ -640,9 +640,9 @@ Format as: Statement? followed by A. [option] B. [option] C. [option] D. [option
         if (savedQuestionIndex) {
           setCurrentQuestionIndex(parseInt(savedQuestionIndex, 10));
         } else {
-          const randomIndex = Math.floor(Math.random() * defaultCategory.prompts.length);
-          setCurrentQuestionIndex(randomIndex);
-          localStorage.setItem(`dailyQuestionIndex_${selectedCategory}_${today}`, randomIndex.toString());
+          // Start at the beginning of questions instead of random
+          setCurrentQuestionIndex(0);
+          localStorage.setItem(`dailyQuestionIndex_${selectedCategory}_${today}`, '0');
         }
 
         // Background preload current depth only (lazy loading)
@@ -674,6 +674,9 @@ Format as: Statement? followed by A. [option] B. [option] C. [option] D. [option
       const batchSize = 3;
       const transformedQuestions = [...questions]; // Start with originals
       
+      // Keep the current display intact while transforming in background
+      const currentDisplayQuestions = [...currentStarters];
+      
       for (let i = 0; i < questions.length; i += batchSize) {
         const batch = questions.slice(i, i + batchSize);
         
@@ -704,14 +707,17 @@ Format as: Statement? followed by A. [option] B. [option] C. [option] D. [option
           transformedQuestions[i + batchIndex] = result;
         });
         
-        // Update UI progressively
-        setCurrentStarters([...transformedQuestions]);
+        // Don't update UI during transformation to prevent blank screen
+        // Questions will be updated at the end
         
         // Small delay to prevent overwhelming the API
         if (i + batchSize < questions.length) {
           await new Promise(resolve => setTimeout(resolve, 200));
         }
       }
+      
+      // Update all questions at once at the end to prevent blank screen
+      setCurrentStarters(transformedQuestions);
       
       return transformedQuestions;
     } catch (error) {
@@ -738,8 +744,20 @@ Format as: Statement? followed by A. [option] B. [option] C. [option] D. [option
       
       if (baseQuestions.length === 0) return;
       
-      // Transform questions for new depth
-      await transformQuestionsForDepth(baseQuestions, depthLevel[0]);
+      // Keep the current question visible while transforming
+      const currentIndex = currentQuestionIndex;
+      
+      // Transform questions for new depth in background
+      const transformedQuestions = await transformQuestionsForDepth(baseQuestions, depthLevel[0]);
+      
+      // Update questions and preserve current index if still valid
+      if (transformedQuestions && transformedQuestions.length > 0) {
+        setCurrentStarters(transformedQuestions);
+        // Ensure current index is still valid after transformation
+        if (currentIndex >= transformedQuestions.length) {
+          setCurrentQuestionIndex(0);
+        }
+      }
     };
     
     switchDepth();
