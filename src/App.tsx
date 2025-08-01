@@ -2,11 +2,13 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Heart, MessageCircle, Calendar, Sparkles } from "lucide-react";
 import Auth from "./pages/Auth";
+import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
@@ -94,12 +96,12 @@ const MainApp = () => {
   );
 };
 
-const AppContent = () => {
+// Protected Route Component
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
 
-  console.log('AppContent render - user:', !!user, 'loading:', loading);
+  console.log('ProtectedRoute - user:', !!user, 'loading:', loading);
 
-  // Prevent flickering by using a more stable loading state
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center transition-all duration-300">
@@ -111,11 +113,53 @@ const AppContent = () => {
     );
   }
 
-  // Smooth transition between auth and main app
+  return user ? <>{children}</> : <Navigate to="/auth" replace />;
+};
+
+// Auth Route Component (redirects if already authenticated)
+const AuthRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user, loading } = useAuth();
+
+  console.log('AuthRoute - user:', !!user, 'loading:', loading);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center transition-all duration-300">
+        <div className="text-center space-y-4 animate-fade-in-up">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent mx-auto"></div>
+          <p className="text-muted-foreground">Loading Purposely...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return user ? <Navigate to="/" replace /> : <>{children}</>;
+};
+
+const AppContent = () => {
   return (
-    <div className="min-h-screen transition-all duration-300 ease-in-out">
-      {!user ? <Auth /> : <MainApp />}
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route 
+          path="/auth" 
+          element={
+            <AuthRoute>
+              <Auth />
+            </AuthRoute>
+          } 
+        />
+        <Route 
+          path="/" 
+          element={
+            <ProtectedRoute>
+              <MainApp />
+            </ProtectedRoute>
+          } 
+        />
+        <Route path="/404" element={<NotFound />} />
+        <Route path="*" element={<Navigate to="/404" replace />} />
+      </Routes>
+    </BrowserRouter>
   );
 };
 
