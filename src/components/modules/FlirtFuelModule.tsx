@@ -27,10 +27,12 @@ interface OnboardingData {
 
 interface FlirtFuelModuleProps {
   userProfile: OnboardingData;
+  sneakPeekTracking?: any;
+  onPaywallTrigger?: (trigger: 'view_limit' | 'ask_purposely' | 'next_question') => void;
 }
 
 
-const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
+const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile, sneakPeekTracking, onPaywallTrigger }) => {
   const [activeSection, setActiveSection] = useState<'starters' | 'practice' | 'textgenie'>('starters');
   const [masterCategory, setMasterCategory] = useState('Date Night');
   const [showCategorySelection, setShowCategorySelection] = useState(true);
@@ -1550,6 +1552,8 @@ Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid gen
           touchStart={touchStart}
           touchEnd={touchEnd}
           showCategorySelection={showCategorySelection}
+          sneakPeekTracking={sneakPeekTracking}
+          onPaywallTrigger={onPaywallTrigger}
           setMasterCategory={setMasterCategory}
           setShowCategorySelection={setShowCategorySelection}
           setSelectedCategory={setSelectedCategory}

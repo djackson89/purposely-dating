@@ -29,6 +29,8 @@ interface HomeProps {
   onNavigateToFlirtFuel: () => void;
   onNavigateToAIPractice: (scenario?: string) => void;
   onNavigateToModule?: (module: string) => void;
+  sneakPeekTracking?: any;
+  onPaywallTrigger?: (trigger: 'view_limit' | 'ask_purposely' | 'next_question') => void;
 }
 
 // Module navigation mapping
@@ -38,7 +40,7 @@ const moduleNavigationMap = {
   'concierge': 'concierge'
 };
 
-const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavigateToAIPractice, onNavigateToModule }) => {
+const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavigateToAIPractice, onNavigateToModule, sneakPeekTracking, onPaywallTrigger }) => {
   const [dailyQuestion, setDailyQuestion] = useState('');
   const [showQuestionInput, setShowQuestionInput] = useState(false);
   const [userQuestion, setUserQuestion] = useState('');
@@ -272,12 +274,24 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
   };
 
   const handleAskYourQuestion = () => {
+    // Check if sneak peek user should see paywall
+    if (sneakPeekTracking?.shouldShowPaywallForAskPurposely()) {
+      onPaywallTrigger?.('ask_purposely');
+      return;
+    }
+    
     setShowQuestionInput(true);
     setPurposelyResponse('');
     setUserQuestion('');
   };
 
   const handleSubmitQuestion = async () => {
+    // Check if sneak peek user should see paywall
+    if (sneakPeekTracking?.shouldShowPaywallForAskPurposely()) {
+      onPaywallTrigger?.('ask_purposely');
+      return;
+    }
+
     if (!userQuestion.trim()) {
       toast({
         title: "Please enter a question",

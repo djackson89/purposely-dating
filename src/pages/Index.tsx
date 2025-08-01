@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import OnboardingFlow from '@/components/OnboardingFlow';
 import Paywall from '@/components/Paywall';
+import PaywallPopup from '@/components/PaywallPopup';
 import Navigation from '@/components/Navigation';
 import Home from '@/pages/Home';
 import FlirtFuelModule from '@/components/modules/FlirtFuelModule';
@@ -12,6 +13,7 @@ import NotificationPermissionStep from '@/components/NotificationPermissionStep'
 import { useAppInitialization } from '@/hooks/useAppInitialization';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useReviewTracking } from '@/hooks/useReviewTracking';
+import { useSneakPeekTracking } from '@/hooks/useSneakPeekTracking';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -33,6 +35,8 @@ const Index = () => {
   const [userProfile, setUserProfile] = useState<OnboardingData | null>(null);
   const [activeModule, setActiveModule] = useState<'home' | 'flirtfuel' | 'concierge' | 'therapy' | 'profile'>('home');
   const [showPaywallModal, setShowPaywallModal] = useState(false);
+  const [showPaywallPopup, setShowPaywallPopup] = useState(false);
+  const [paywallTrigger, setPaywallTrigger] = useState<'view_limit' | 'ask_purposely' | 'next_question'>('view_limit');
   
   // Initialize native app features
   const { isNative, isOnline } = useAppInitialization(userProfile);
@@ -40,6 +44,7 @@ const Index = () => {
   // Subscription and review tracking hooks
   const { subscription, loading: subscriptionLoading, createCheckoutSession } = useSubscription();
   const { shouldShowReview, hideReviewModal, markReviewAsShown } = useReviewTracking();
+  const sneakPeekTracking = useSneakPeekTracking();
 
   // Check for existing onboarding and paywall data
   useEffect(() => {
@@ -125,19 +130,36 @@ const Index = () => {
     // Start the Stripe checkout process
     await createCheckoutSession('yearly', true);
     setShowPaywallModal(false);
+    setShowPaywallPopup(false);
     setHasSeenPaywall(true);
     localStorage.setItem('hasSeenPaywall', 'true');
+    // Set as free trial user
+    sneakPeekTracking.setAsFreeTrial();
   };
 
   const handleSkipToFree = () => {
-    console.log('User chose free version');
+    console.log('User chose sneak peek version');
     setHasSeenPaywall(true);
     localStorage.setItem('hasSeenPaywall', 'true');
     setShowPaywallModal(false);
+    // Set as sneak peek user
+    sneakPeekTracking.setAsSneakPeek();
   };
 
   const handlePremiumFeatureClick = () => {
     setShowPaywallModal(true);
+  };
+
+  // Handle paywall popup triggers for sneak peek users
+  const handlePaywallTrigger = (trigger: 'view_limit' | 'ask_purposely' | 'next_question') => {
+    setPaywallTrigger(trigger);
+    setShowPaywallPopup(true);
+  };
+
+  const handlePaywallPopupUpgrade = async () => {
+    await createCheckoutSession('yearly', true);
+    setShowPaywallPopup(false);
+    sneakPeekTracking.setAsFreeTrial();
   };
 
   // 1. Show welcome screens first
@@ -214,19 +236,38 @@ const Index = () => {
   };
 
   const renderActiveModule = () => {
+    const moduleProps = {
+      userProfile,
+      sneakPeekTracking,
+      onPaywallTrigger: handlePaywallTrigger
+    };
+
     switch (activeModule) {
       case 'home':
-        return <Home userProfile={userProfile} onNavigateToFlirtFuel={handleNavigateToFlirtFuel} onNavigateToAIPractice={handleNavigateToAIPractice} onNavigateToModule={handleNavigateToModule} />;
+        return <Home 
+          userProfile={userProfile} 
+          onNavigateToFlirtFuel={handleNavigateToFlirtFuel} 
+          onNavigateToAIPractice={handleNavigateToAIPractice} 
+          onNavigateToModule={handleNavigateToModule}
+          sneakPeekTracking={sneakPeekTracking}
+          onPaywallTrigger={handlePaywallTrigger}
+        />;
       case 'flirtfuel':
-        return <FlirtFuelModule userProfile={userProfile} />;
+        return <FlirtFuelModule {...moduleProps} />;
       case 'concierge':
-        return <DateConciergeModule userProfile={userProfile} />;
+        return <DateConciergeModule {...moduleProps} />;
       case 'therapy':
-        return <TherapyCompanionModule userProfile={userProfile} />;
+        return <TherapyCompanionModule {...moduleProps} />;
       case 'profile':
         return <ProfileModule userProfile={userProfile} onProfileUpdate={handleProfileUpdate} />;
       default:
-        return <Home userProfile={userProfile} onNavigateToFlirtFuel={handleNavigateToFlirtFuel} onNavigateToAIPractice={handleNavigateToAIPractice} />;
+        return <Home 
+          userProfile={userProfile} 
+          onNavigateToFlirtFuel={handleNavigateToFlirtFuel} 
+          onNavigateToAIPractice={handleNavigateToAIPractice} 
+          sneakPeekTracking={sneakPeekTracking}
+          onPaywallTrigger={handlePaywallTrigger}
+        />;
     }
   };
 
@@ -248,6 +289,14 @@ const Index = () => {
           />
         </DialogContent>
       </Dialog>
+
+      {/* Paywall Popup for Sneak Peek Users */}
+      <PaywallPopup
+        isOpen={showPaywallPopup}
+        onClose={() => setShowPaywallPopup(false)}
+        onUpgrade={handlePaywallPopupUpgrade}
+        trigger={paywallTrigger}
+      />
 
       {/* Review Request Modal */}
       <ReviewRequestModal 

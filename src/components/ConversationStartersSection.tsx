@@ -44,6 +44,8 @@ interface ConversationStartersSectionProps {
   touchStart: { x: number; y: number };
   touchEnd: { x: number; y: number };
   showCategorySelection: boolean;
+  sneakPeekTracking?: any;
+  onPaywallTrigger?: (trigger: 'view_limit' | 'ask_purposely' | 'next_question') => void;
   setMasterCategory: (category: string) => void;
   setShowCategorySelection: (show: boolean) => void;
   setSelectedCategory: (category: string) => void;
@@ -89,6 +91,8 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
   touchStart,
   touchEnd,
   showCategorySelection,
+  sneakPeekTracking,
+  onPaywallTrigger,
   setMasterCategory,
   setShowCategorySelection,
   setSelectedCategory,
@@ -138,8 +142,15 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
       setLockedModalOpen(true);
     } else {
       selectCategory(category);
+      // Track question view for sneak peek users when entering a category
+      if (sneakPeekTracking?.isSneakPeek) {
+        const shouldTriggerPaywall = sneakPeekTracking.trackQuestionViewed();
+        if (shouldTriggerPaywall) {
+          onPaywallTrigger?.('view_limit');
+        }
+      }
     }
-  }, [isCategoryLocked, selectCategory]);
+  }, [isCategoryLocked, selectCategory, sneakPeekTracking, onPaywallTrigger]);
 
   // Memoized category emojis to prevent recreation
   const categoryEmojis = React.useMemo(() => ({
@@ -612,7 +623,24 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
             </div>
 
             <Button
-              onClick={nextQuestion}
+              onClick={() => {
+                // Check if sneak peek user should see paywall before going to next question
+                if (sneakPeekTracking?.shouldShowPaywallForNext()) {
+                  onPaywallTrigger?.('next_question');
+                  return;
+                }
+                
+                // Track question view for sneak peek users
+                if (sneakPeekTracking?.isSneakPeek) {
+                  const shouldTriggerPaywall = sneakPeekTracking.trackQuestionViewed();
+                  if (shouldTriggerPaywall) {
+                    onPaywallTrigger?.('view_limit');
+                    return;
+                  }
+                }
+                
+                nextQuestion();
+              }}
               disabled={isLoading}
               variant="soft"
               size="lg"

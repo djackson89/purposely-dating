@@ -96,9 +96,11 @@ const flagMetrics = [
 
 interface DateConciergeModuleProps {
   userProfile: OnboardingData;
+  sneakPeekTracking?: any;
+  onPaywallTrigger?: (trigger: 'view_limit' | 'ask_purposely' | 'next_question') => void;
 }
 
-const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }) => {
+const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile, sneakPeekTracking, onPaywallTrigger }) => {
   const { user } = useAuth();
   const [activeSection, setActiveSection] = useState<'prospects' | 'suggestions' | 'local' | 'planning'>('prospects');
   

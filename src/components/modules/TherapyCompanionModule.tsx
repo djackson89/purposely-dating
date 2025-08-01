@@ -20,9 +20,11 @@ interface OnboardingData {
 
 interface TherapyCompanionModuleProps {
   userProfile: OnboardingData;
+  sneakPeekTracking?: any;
+  onPaywallTrigger?: (trigger: 'view_limit' | 'ask_purposely' | 'next_question') => void;
 }
 
-const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userProfile }) => {
+const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userProfile, sneakPeekTracking, onPaywallTrigger }) => {
   const [activeSection, setActiveSection] = useState<'reflection' | 'journal' | 'insights'>('reflection');
   
   // Initial setup state
@@ -288,6 +290,12 @@ const TherapyCompanionModule: React.FC<TherapyCompanionModuleProps> = ({ userPro
   };
 
   const handleAskPurposely = async (index: number, input: string, isPreTherapy: boolean = true) => {
+    // Check if sneak peek user should see paywall
+    if (sneakPeekTracking?.shouldShowPaywallForAskPurposely()) {
+      onPaywallTrigger?.('ask_purposely');
+      return;
+    }
+
     if (!input.trim()) {
       toast({
         title: "Input Required",
