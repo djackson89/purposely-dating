@@ -532,14 +532,18 @@ const MainApp = () => {
         }
 
         // Determine what step the user should see
-        if (!settings || !settings.onboarding_completed) {
+        const hasCompletedOnboarding = settings?.onboarding_completed || false;
+        const hasCompletedIntake = settings?.intake_completed || false;
+        const isSubscribed = subscription?.data?.subscribed || false;
+
+        if (!hasCompletedOnboarding) {
           console.log('🎯 FLOW: Starting welcome onboarding');
           setCurrentView('onboarding');
           setOnboardingStep('welcome');
-        } else if (!subscription?.data?.subscribed) {
+        } else if (!isSubscribed) {
           console.log('🎯 FLOW: Showing paywall');
           setCurrentView('paywall');
-        } else if (!settings?.intake_completed) {
+        } else if (!hasCompletedIntake) {
           console.log('🎯 FLOW: Showing intake quiz');
           setCurrentView('onboarding');
           setOnboardingStep('quiz');
@@ -702,8 +706,8 @@ const MainApp = () => {
   if (currentView === 'paywall') {
     return (
       <Paywall 
-        onSubscribe={handlePaywallComplete}
-        onSkip={handlePaywallSkip}
+        onPlanSelected={handlePaywallComplete}
+        onSkipToFree={handlePaywallSkip}
       />
     );
   }

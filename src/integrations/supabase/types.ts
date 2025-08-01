@@ -432,6 +432,7 @@ export type Database = {
           created_at: string
           daily_reminders: boolean | null
           id: string
+          intake_completed: boolean
           onboarding_completed: boolean | null
           push_notifications: boolean | null
           theme_preference: string | null
@@ -443,6 +444,7 @@ export type Database = {
           created_at?: string
           daily_reminders?: boolean | null
           id?: string
+          intake_completed?: boolean
           onboarding_completed?: boolean | null
           push_notifications?: boolean | null
           theme_preference?: string | null
@@ -454,6 +456,7 @@ export type Database = {
           created_at?: string
           daily_reminders?: boolean | null
           id?: string
+          intake_completed?: boolean
           onboarding_completed?: boolean | null
           push_notifications?: boolean | null
           theme_preference?: string | null
