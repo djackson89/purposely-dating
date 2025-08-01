@@ -121,7 +121,8 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
           description: "You've been successfully logged in.",
         });
 
-        onAuthSuccess();
+        // Let the auth state listener in useAuth handle the state change
+        // onAuthSuccess() will be triggered automatically when useAuth detects the user
       } else {
         // Sign up
         const { error } = await supabase.auth.signUp({

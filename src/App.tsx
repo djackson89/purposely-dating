@@ -28,7 +28,7 @@ const AppContent = () => {
   }
 
   if (!user) {
-    return <Auth onAuthSuccess={() => window.location.reload()} />;
+    return <Auth onAuthSuccess={() => {}} />;
   }
 
   const handleCloseReviewModal = () => {
