@@ -73,6 +73,10 @@ const QuickStartModule: React.FC<QuickStartProps> = ({ onNavigateToModule }) => 
   const [current, setCurrent] = useState(0);
   const [count, setCount] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
+  
+  // Touch tracking for swipe vs click detection
+  const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -101,6 +105,35 @@ const QuickStartModule: React.FC<QuickStartProps> = ({ onNavigateToModule }) => 
       setCurrent(Math.floor(api.selectedScrollSnap() / (isMobile ? itemsPerView : 1)) + 1);
     });
   }, [api, isMobile]);
+
+  const handleTouchStart = (e: React.TouchEvent, item: typeof quickStartItems[0]) => {
+    const touch = e.touches[0];
+    setTouchStart({ x: touch.clientX, y: touch.clientY });
+    setIsDragging(false);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!touchStart) return;
+    
+    const touch = e.touches[0];
+    const deltaX = Math.abs(touch.clientX - touchStart.x);
+    const deltaY = Math.abs(touch.clientY - touchStart.y);
+    
+    // If movement exceeds threshold, consider it a drag/swipe
+    if (deltaX > 10 || deltaY > 10) {
+      setIsDragging(true);
+    }
+  };
+
+  const handleTouchEnd = (item: typeof quickStartItems[0]) => {
+    // Only trigger click if it wasn't a drag/swipe
+    if (!isDragging && touchStart) {
+      handleCardClick(item);
+    }
+    
+    setTouchStart(null);
+    setIsDragging(false);
+  };
 
   const handleCardClick = (item: typeof quickStartItems[0]) => {
     // Store the specific sub-section for modules that have multiple features
@@ -158,6 +191,9 @@ const QuickStartModule: React.FC<QuickStartProps> = ({ onNavigateToModule }) => 
               <Card 
                 className="cursor-pointer transition-all duration-300 hover:scale-105 border-0 overflow-hidden h-48 sm:h-44 shadow-2xl hover:shadow-3xl"
                 onClick={() => handleCardClick(item)}
+                onTouchStart={(e) => handleTouchStart(e, item)}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={() => handleTouchEnd(item)}
               >
                 <CardContent className="p-0 h-full relative">
                   <div className={`h-full bg-gradient-to-br ${item.gradient} p-4 sm:p-6 flex flex-col justify-between text-white relative overflow-hidden shadow-inner`}>
