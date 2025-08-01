@@ -12,40 +12,101 @@ import { Input } from "@/components/ui/input";
 import { Heart, MessageCircle, Calendar, Sparkles, Eye, EyeOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import NotFound from "./pages/NotFound";
+import React from 'react';
+
+// Error Boundary Component to catch rendering errors
+class ErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { hasError: boolean; error?: Error }
+> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    console.error('🚨 ERROR BOUNDARY: Caught error:', error);
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error('🚨 ERROR BOUNDARY: Error details:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen bg-background flex items-center justify-center p-4">
+          <div className="text-center space-y-4">
+            <h2 className="text-2xl font-bold text-destructive">Something went wrong</h2>
+            <p className="text-muted-foreground">
+              {this.state.error?.message || 'An unexpected error occurred'}
+            </p>
+            <Button 
+              onClick={() => {
+                this.setState({ hasError: false });
+                window.location.reload();
+              }}
+              variant="outline"
+            >
+              Reload App
+            </Button>
+          </div>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
 
 const queryClient = new QueryClient();
 
-// Custom Auth Hook - Built from scratch
+// Custom Auth Hook - Built from scratch with extensive debugging
 const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    console.log('🔐 Auth hook initializing...');
+    console.log('🔥 AUTH HOOK: Initializing...');
     
     // Get initial session
     const getInitialSession = async () => {
       try {
+        console.log('🔥 AUTH HOOK: Getting initial session...');
         const { data: { session }, error } = await supabase.auth.getSession();
+        
+        console.log('🔥 AUTH HOOK: Initial session result:', {
+          hasSession: !!session,
+          userId: session?.user?.id,
+          error: error?.message
+        });
+        
         if (error) {
-          console.error('Error getting session:', error);
+          console.error('🔥 AUTH HOOK: Error getting session:', error);
         } else {
-          console.log('🔐 Initial session:', !!session);
+          console.log('🔥 AUTH HOOK: Setting initial session state');
           setSession(session);
           setUser(session?.user ?? null);
         }
       } catch (error) {
-        console.error('Session fetch error:', error);
+        console.error('🔥 AUTH HOOK: Session fetch error:', error);
       } finally {
+        console.log('🔥 AUTH HOOK: Setting loading to false');
         setLoading(false);
       }
     };
 
     // Set up auth listener
+    console.log('🔥 AUTH HOOK: Setting up auth state listener...');
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('🔐 Auth state change:', event, !!session);
+        console.log('🔥 AUTH HOOK: Auth state change:', {
+          event,
+          hasSession: !!session,
+          userId: session?.user?.id
+        });
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
@@ -55,20 +116,27 @@ const useAuth = () => {
     getInitialSession();
 
     return () => {
-      console.log('🔐 Cleaning up auth listener');
+      console.log('🔥 AUTH HOOK: Cleaning up auth listener');
       subscription.unsubscribe();
     };
   }, []);
 
   const signOut = async () => {
-    console.log('🔐 Signing out...');
+    console.log('🔥 AUTH HOOK: Signing out...');
     const { error } = await supabase.auth.signOut();
     if (error) {
-      console.error('Sign out error:', error);
+      console.error('🔥 AUTH HOOK: Sign out error:', error);
       return { error };
     }
+    console.log('🔥 AUTH HOOK: Sign out successful');
     return { error: null };
   };
+
+  console.log('🔥 AUTH HOOK: Rendering with state:', {
+    hasUser: !!user,
+    loading,
+    isAuthenticated: !!user
+  });
 
   return {
     user,
@@ -617,30 +685,54 @@ const LoadingScreen = () => (
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
 
-  console.log('🔐 ProtectedRoute - user:', !!user, 'loading:', loading);
+  console.log('🛡️ PROTECTED ROUTE: Rendering with state:', {
+    hasUser: !!user,
+    loading,
+    userId: user?.id
+  });
 
   if (loading) {
+    console.log('🛡️ PROTECTED ROUTE: Showing loading screen');
     return <LoadingScreen />;
   }
 
-  return user ? <>{children}</> : <Navigate to="/auth" replace />;
+  if (!user) {
+    console.log('🛡️ PROTECTED ROUTE: No user, redirecting to /auth');
+    return <Navigate to="/auth" replace />;
+  }
+
+  console.log('🛡️ PROTECTED ROUTE: User authenticated, rendering children');
+  return <>{children}</>;
 };
 
 // Auth Route Component
 const AuthRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
 
-  console.log('🔐 AuthRoute - user:', !!user, 'loading:', loading);
+  console.log('🔓 AUTH ROUTE: Rendering with state:', {
+    hasUser: !!user,
+    loading,
+    userId: user?.id
+  });
 
   if (loading) {
+    console.log('🔓 AUTH ROUTE: Showing loading screen');
     return <LoadingScreen />;
   }
 
-  return user ? <Navigate to="/" replace /> : <>{children}</>;
+  if (user) {
+    console.log('🔓 AUTH ROUTE: User authenticated, redirecting to /');
+    return <Navigate to="/" replace />;
+  }
+
+  console.log('🔓 AUTH ROUTE: No user, rendering auth component');
+  return <>{children}</>;
 };
 
 // App Content with Routing
 const AppContent = () => {
+  console.log('🌍 APP CONTENT: Rendering...');
+  
   return (
     <BrowserRouter>
       <Routes>
@@ -669,14 +761,18 @@ const AppContent = () => {
 
 // Main App Component
 const App = () => {
-  console.log('🚀 App rendering...');
+  console.log('🚀 APP: Starting app render...');
   
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <AppContent />
-        <Toaster />
-        <Sonner />
+        <ErrorBoundary>
+          <div className="app-wrapper">
+            <AppContent />
+            <Toaster />
+            <Sonner />
+          </div>
+        </ErrorBoundary>
       </TooltipProvider>
     </QueryClientProvider>
   );
