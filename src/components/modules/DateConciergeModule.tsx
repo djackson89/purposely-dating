@@ -160,9 +160,13 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
   }, [user]);
 
   // Check if user needs dating onboarding when switching to suggestions
+  // Allow suggestions to work with profile data even without dating preferences
   useEffect(() => {
-    if (activeSection === 'suggestions' && !datingPreferences) {
+    // Only show onboarding if explicitly requesting preferences setup
+    // Suggestions can work with profile data (age, personality, love language)
+    if (activeSection === 'suggestions' && !datingPreferences && localStorage.getItem('forceShowDatingOnboarding') === 'true') {
       setShowDatingOnboarding(true);
+      localStorage.removeItem('forceShowDatingOnboarding');
     }
   }, [activeSection, datingPreferences]);
 
@@ -886,9 +890,68 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
       }
     ];
 
-    // Improved matching algorithm that prioritizes user preferences
+    // Enhanced matching algorithm that works with or without dating preferences
+    // If no dating preferences, use profile data (age, personality type, love language)
     if (!datingPreferences) {
-      return allDateIdeas.slice(0, visibleSuggestions);
+      // Score date ideas based on profile data when no dating preferences exist
+      const scoredIdeas = allDateIdeas.map(idea => {
+        let score = 0;
+        
+        // Love language matching gets high priority
+        if (idea.loveLanguageMatch.includes(userProfile.loveLanguage)) {
+          score += 8;
+        }
+        
+        // Age-appropriate suggestions (rough matching)
+        const ageNum = parseInt(userProfile.age) || 25;
+        if (ageNum < 25) {
+          // Younger crowd - prefer social, fun, energetic activities
+          if (idea.mood.some(mood => ['Energetic', 'Social', 'Fun', 'Interactive'].includes(mood))) {
+            score += 5;
+          }
+          if (idea.categories.some(cat => ['concert', 'arcade', 'karaoke', 'dancing', 'party'].includes(cat))) {
+            score += 4;
+          }
+        } else if (ageNum > 35) {
+          // More mature - prefer sophisticated, cultural, relaxed activities
+          if (idea.mood.some(mood => ['Sophisticated', 'Cultural', 'Romantic', 'Intimate'].includes(mood))) {
+            score += 5;
+          }
+          if (idea.categories.some(cat => ['wine', 'art', 'culture', 'spa', 'cooking'].includes(cat))) {
+            score += 4;
+          }
+        } else {
+          // Mid-range - balanced preferences
+          score += 2; // Small bonus for being in the middle range
+        }
+        
+        // Personality type matching
+        if (userProfile.personalityType) {
+          const personality = userProfile.personalityType.toLowerCase();
+          // Extrovert types prefer social activities
+          if (personality.includes('e') && idea.mood.some(mood => ['Social', 'Energetic', 'Interactive'].includes(mood))) {
+            score += 3;
+          }
+          // Introvert types prefer intimate, quiet activities
+          if (personality.includes('i') && idea.mood.some(mood => ['Intimate', 'Peaceful', 'Relaxed'].includes(mood))) {
+            score += 3;
+          }
+          // Thinking types might enjoy intellectual activities
+          if (personality.includes('t') && idea.mood.some(mood => ['Intellectual', 'Learning'].includes(mood))) {
+            score += 2;
+          }
+          // Feeling types might enjoy emotional/romantic activities
+          if (personality.includes('f') && idea.mood.some(mood => ['Romantic', 'Intimate'].includes(mood))) {
+            score += 2;
+          }
+        }
+        
+        return { ...idea, score };
+      });
+      
+      // Sort by score and return top suggestions
+      const sortedIdeas = scoredIdeas.sort((a, b) => b.score - a.score);
+      return sortedIdeas.slice(0, visibleSuggestions);
     }
 
     const userLikes = [...datingPreferences.likedActivities, ...datingPreferences.customLikes];
@@ -957,6 +1020,7 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
   // Reset preferences functionality
   const resetPreferences = () => {
     setDatingPreferences(null);
+    localStorage.setItem('forceShowDatingOnboarding', 'true');
     setShowDatingOnboarding(true);
     setShowFavorites(false);
     setVisibleSuggestions(3);
@@ -1206,9 +1270,53 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
       }
     ];
 
-    // Score events based on user preferences if available
+    // Enhanced local events matching - works with or without dating preferences
+    // Shows nationwide events by default when no preferences are set
     if (!datingPreferences) {
-      return allLocalEvents.slice(0, count);
+      // Score events based on profile data when no dating preferences exist
+      const scoredEvents = allLocalEvents.map(event => {
+        let score = 0;
+        
+        // Age-appropriate event matching
+        const ageNum = parseInt(userProfile.age) || 25;
+        if (ageNum < 25) {
+          // Younger crowd - prefer nightlife, social, energetic
+          if (event.mood.some(mood => ['Energetic', 'Social', 'Party', 'Fun'].includes(mood))) {
+            score += 5;
+          }
+          if (event.categories.some(cat => ['nightclub', 'bar', 'music', 'arcade', 'karaoke'].includes(cat))) {
+            score += 4;
+          }
+        } else if (ageNum > 35) {
+          // More mature - prefer cultural, sophisticated, wellness
+          if (event.mood.some(mood => ['Sophisticated', 'Cultural', 'Relaxing', 'Romantic'].includes(mood))) {
+            score += 5;
+          }
+          if (event.categories.some(cat => ['wine', 'art', 'spa', 'culture', 'fine dining'].includes(cat))) {
+            score += 4;
+          }
+        } else {
+          // Mid-range - balanced mix
+          score += 2;
+        }
+        
+        // Personality type matching
+        if (userProfile.personalityType) {
+          const personality = userProfile.personalityType.toLowerCase();
+          if (personality.includes('e') && event.mood.some(mood => ['Social', 'Energetic', 'Party'].includes(mood))) {
+            score += 3;
+          }
+          if (personality.includes('i') && event.mood.some(mood => ['Intimate', 'Peaceful', 'Cultural'].includes(mood))) {
+            score += 3;
+          }
+        }
+        
+        return { ...event, score };
+      });
+      
+      // Sort by score and return top events
+      const sortedEvents = scoredEvents.sort((a, b) => b.score - a.score);
+      return sortedEvents.slice(0, count);
     }
 
     const scoredEvents = allLocalEvents.map(event => {
@@ -1583,12 +1691,12 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
                 size="sm"
                 className="text-muted-foreground hover:text-primary text-sm"
               >
-                Edit Preferences
+                {datingPreferences ? 'Edit Preferences' : 'Set Date Preferences'}
               </Button>
               
               <div className="text-center">
-                {/* Show user's liked preferences as bubbles */}
-                {datingPreferences && (
+                {/* Show user's preferences or profile-based matching info */}
+                {datingPreferences ? (
                   <div className="space-y-3">
                     <div>
                       <p className="text-xs font-medium text-muted-foreground mb-2">Your favorite activities:</p>
@@ -1605,6 +1713,30 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile }
                         ))}
                       </div>
                     </div>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <p className="text-xs font-medium text-muted-foreground">Suggestions based on your profile:</p>
+                    <div className="flex flex-wrap gap-2 justify-center">
+                      {userProfile.loveLanguage && (
+                        <Badge variant="outline" className="text-xs">
+                          Love Language: {userProfile.loveLanguage}
+                        </Badge>
+                      )}
+                      {userProfile.age && (
+                        <Badge variant="outline" className="text-xs">
+                          Age: {userProfile.age}
+                        </Badge>
+                      )}
+                      {userProfile.personalityType && (
+                        <Badge variant="outline" className="text-xs">
+                          {userProfile.personalityType}
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Want more personalized suggestions? Set your date preferences above!
+                    </p>
                   </div>
                 )}
               </div>
