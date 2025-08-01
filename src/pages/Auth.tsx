@@ -360,7 +360,7 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
                 )}
               </Button>
 
-              {/* Google Sign-In Button */}
+              {/* Google Sign-In Button - Temporarily disabled 
               {isLogin && (
                 <div className="relative">
                   <div className="absolute inset-0 flex items-center">
@@ -389,6 +389,7 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
                   Continue with Google
                 </Button>
               )}
+              */}
 
               {/* Switch Mode */}
               <div className="text-center pt-4">
