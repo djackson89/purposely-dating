@@ -420,9 +420,32 @@ const AuthComponent = () => {
   );
 };
 
-// Main App Component
+// Main App Component that handles user state and navigation
 const MainApp = () => {
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
+  const [userProfile, setUserProfile] = useState(null);
+  const [currentView, setCurrentView] = useState('home');
+  const [loading, setLoading] = useState(true);
+
+  console.log('🏠 MainApp rendering, user:', !!user, 'view:', currentView);
+
+  useEffect(() => {
+    if (user) {
+      // Create a minimal user profile for now
+      const profile = {
+        firstName: user.user_metadata?.full_name || 'User',
+        full_name: user.user_metadata?.full_name || 'User',
+        first_name: user.user_metadata?.full_name || 'User',
+        loveLanguage: 'Words of Affirmation',
+        relationshipStatus: 'Single & Looking',
+        age: '25-34',
+        gender: 'Female',
+        personalityType: 'Balanced Mix of Both'
+      };
+      setUserProfile(profile);
+      setLoading(false);
+    }
+  }, [user]);
 
   const handleLogout = async () => {
     console.log('🔐 Logout requested');
@@ -430,75 +453,151 @@ const MainApp = () => {
     localStorage.clear();
   };
 
-  return (
-    <div className="min-h-screen bg-background p-4 animate-fade-in-up">
-      {/* Header with logout */}
-      <div className="flex justify-between items-center mb-8">
-        <div className="flex items-center space-x-2">
-          <Heart className="w-8 h-8 text-primary" />
-          <h1 className="text-2xl font-bold text-primary">Purposely</h1>
+  const handleNavigateToFlirtFuel = () => {
+    console.log('🎯 Navigate to FlirtFuel');
+    setCurrentView('flirtfuel');
+  };
+
+  const handleNavigateToAIPractice = (scenario?: string) => {
+    console.log('🤖 Navigate to AI Practice:', scenario);
+    setCurrentView('aipractice');
+  };
+
+  const handleNavigateToModule = (module: string) => {
+    console.log('📱 Navigate to module:', module);
+    setCurrentView(module);
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center space-y-4 animate-fade-in-up">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent mx-auto"></div>
+          <p className="text-muted-foreground">Loading your profile...</p>
         </div>
+      </div>
+    );
+  }
+
+  // Render different views based on currentView state
+  if (currentView === 'home' && userProfile) {
+    return (
+      <div className="min-h-screen bg-background">
+        {/* Import and use the actual Home component */}
+        <div className="pb-8 pt-6 px-4 space-y-6 bg-gradient-soft min-h-screen">
+          {/* Header with logout */}
+          <div className="text-center space-y-4">
+            <div className="flex items-center justify-between">
+              <Button
+                onClick={handleLogout}
+                variant="ghost"
+                size="sm"
+                className="text-muted-foreground"
+              >
+                Logout
+              </Button>
+              <h1 className="text-2xl font-bold bg-gradient-romance bg-clip-text text-transparent">
+                Purposely 💕
+              </h1>
+              <div className="w-16" /> {/* Spacer */}
+            </div>
+          </div>
+
+          {/* Welcome message */}
+          <div className="max-w-2xl mx-auto text-center space-y-8">
+            <div>
+              <h2 className="text-3xl font-bold mb-4">Welcome back, {userProfile.firstName}! 💕</h2>
+              <p className="text-lg text-muted-foreground">
+                Your dating strategist, self-love coach, and wingwoman all in one.
+              </p>
+            </div>
+
+            {/* Feature cards */}
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={handleNavigateToFlirtFuel}>
+                <CardHeader>
+                  <MessageCircle className="w-8 h-8 text-primary mx-auto" />
+                  <CardTitle className="text-center">Conversation Starters</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-center text-sm text-muted-foreground">
+                    Access 10,000+ expert-crafted questions for meaningful conversations.
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => handleNavigateToAIPractice()}>
+                <CardHeader>
+                  <Sparkles className="w-8 h-8 text-primary mx-auto" />
+                  <CardTitle className="text-center">AI Practice Partner</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-center text-sm text-muted-foreground">
+                    Practice conversations and get the perfect text replies.
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => handleNavigateToModule('concierge')}>
+                <CardHeader>
+                  <Calendar className="w-8 h-8 text-primary mx-auto" />
+                  <CardTitle className="text-center">Date Planning</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-center text-sm text-muted-foreground">
+                    Curated date ideas that align with your values and love language.
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="space-y-4">
+              <p className="text-muted-foreground">
+                App is working! Click on the cards above to explore features.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show simple feature placeholders for other views
+  return (
+    <div className="min-h-screen bg-background p-4">
+      <div className="flex items-center justify-between mb-8">
+        <Button
+          onClick={() => setCurrentView('home')}
+          variant="ghost"
+          className="text-primary"
+        >
+          ← Back to Home
+        </Button>
         <Button onClick={handleLogout} variant="outline" size="sm">
           Logout
         </Button>
       </div>
-
-      {/* Welcome message */}
+      
       <div className="max-w-2xl mx-auto text-center space-y-8">
         <div>
-          <h2 className="text-3xl font-bold mb-4">Welcome to Purposely! 💕</h2>
+          <h2 className="text-3xl font-bold mb-4">
+            {currentView === 'flirtfuel' && 'Conversation Starters 💬'}
+            {currentView === 'aipractice' && 'AI Practice Partner 🤖'}
+            {currentView === 'concierge' && 'Date Planning 📅'}
+            {currentView === 'therapy' && 'Therapy Companion 💝'}
+          </h2>
           <p className="text-lg text-muted-foreground">
-            Your dating strategist, self-love coach, and wingwoman all in one.
+            This feature is coming soon! The full app will be restored once we complete the setup.
           </p>
         </div>
-
-        {/* Feature cards */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          <Card>
-            <CardHeader>
-              <MessageCircle className="w-8 h-8 text-primary mx-auto" />
-              <CardTitle className="text-center">Conversation Starters</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-center text-sm text-muted-foreground">
-                Access 10,000+ expert-crafted questions for meaningful conversations.
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <Sparkles className="w-8 h-8 text-primary mx-auto" />
-              <CardTitle className="text-center">AI Practice Partner</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-center text-sm text-muted-foreground">
-                Practice conversations and get the perfect text replies.
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <Calendar className="w-8 h-8 text-primary mx-auto" />
-              <CardTitle className="text-center">Date Planning</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-center text-sm text-muted-foreground">
-                Curated date ideas that align with your values and love language.
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="space-y-4">
-          <p className="text-muted-foreground">
-            App is working! The full features will be restored once we complete the setup.
-          </p>
-          <Button size="lg" className="bg-primary text-white">
-            Get Started
-          </Button>
-        </div>
+        
+        <Button 
+          onClick={() => setCurrentView('home')}
+          size="lg" 
+          className="bg-primary text-white"
+        >
+          Return to Home
+        </Button>
       </div>
     </div>
   );
