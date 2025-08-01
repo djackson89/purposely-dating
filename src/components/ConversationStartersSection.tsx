@@ -118,7 +118,7 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
   const [lockedModalOpen, setLockedModalOpen] = useState(false);
   const [selectedLockedCategory, setSelectedLockedCategory] = useState<string>('');
 
-  // Categories that are locked for mobile users who haven't reviewed
+  // Categories that are locked for users who haven't reviewed
   const lockedCategories = ['Intimacy & Connection', 'Communication & Conflict', 'Customize'];
   
   // Check if user has left a review
@@ -128,8 +128,8 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
 
   // Check if a category is locked
   const isCategoryLocked = React.useCallback((category: string): boolean => {
-    return isNative && lockedCategories.includes(category) && !hasReviewedApp;
-  }, [isNative, hasReviewedApp]);
+    return lockedCategories.includes(category) && !hasReviewedApp;
+  }, [hasReviewedApp]);
 
   // Handle category selection with lock check
   const handleCategoryClick = React.useCallback((category: string) => {
