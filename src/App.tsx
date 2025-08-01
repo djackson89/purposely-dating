@@ -12,22 +12,15 @@ const queryClient = new QueryClient();
 
 // Simple app with working logout
 const MainApp = () => {
-  console.log('🔄 MainApp component rendering...');
   const { signOut } = useAuth();
 
   const handleLogout = async () => {
-    console.log('Logging out...');
     await signOut();
     localStorage.clear();
   };
 
-  console.log('✅ MainApp about to return JSX');
-  
   return (
-    <div className="min-h-screen bg-background p-4" style={{ backgroundColor: '#faf7f7', color: '#2d1b1e' }}>
-      <div style={{ border: '2px solid red', padding: '10px', margin: '10px' }}>
-        <p>DEBUG: MainApp is rendering!</p>
-      </div>
+    <div className="min-h-screen bg-background p-4 animate-fade-in-up">
       
       {/* Header with logout */}
       <div className="flex justify-between items-center mb-8">
@@ -104,13 +97,11 @@ const MainApp = () => {
 const AppContent = () => {
   const { user, loading } = useAuth();
 
-  console.log('App state:', { user: !!user, loading });
-
+  // Prevent flickering by using a more stable loading state
   if (loading) {
-    console.log('Showing loading...');
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center space-y-4">
+      <div className="min-h-screen bg-background flex items-center justify-center transition-all duration-300">
+        <div className="text-center space-y-4 animate-fade-in-up">
           <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent mx-auto"></div>
           <p className="text-muted-foreground">Loading Purposely...</p>
         </div>
@@ -118,13 +109,12 @@ const AppContent = () => {
     );
   }
 
-  if (!user) {
-    console.log('No user, showing auth...');
-    return <Auth />;
-  }
-
-  console.log('User authenticated, showing main app...');
-  return <MainApp />;
+  // Smooth transition between auth and main app
+  return (
+    <div className="min-h-screen transition-all duration-300 ease-in-out">
+      {!user ? <Auth /> : <MainApp />}
+    </div>
+  );
 };
 
 const App = () => {

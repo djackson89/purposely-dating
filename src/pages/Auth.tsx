@@ -228,8 +228,8 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-soft p-4 safe-area-pt safe-area-pb">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-soft p-4 safe-area-pt safe-area-pb animate-fade-in-up">
+      <div className="w-full max-w-md transition-all duration-300">
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
