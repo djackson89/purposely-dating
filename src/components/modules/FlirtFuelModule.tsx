@@ -1781,40 +1781,108 @@ Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid gen
                 {/* Single gradient background for both question and answers */}
                 <div className="relative">
                   <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-black/60 rounded-2xl backdrop-blur-sm"></div>
-                  <div className="relative px-6 py-6">
-                    {isMultipleChoice(currentStarters[currentQuestionIndex]) ? (
-                      <div className="w-full">
-                        {/* Question */}
-                        <p className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-white leading-tight mb-8">
-                          {currentStarters[currentQuestionIndex].statement}
-                        </p>
-                        
-                        {/* Answer choices */}
-                        <div className="space-y-4 sm:space-y-6 text-left max-w-5xl mx-auto">
-                          {currentStarters[currentQuestionIndex].options.map((option) => (
-                            <div key={option.key} className="text-white/90">
-                              <span className="font-bold text-xl sm:text-2xl md:text-3xl mr-4">{option.key}.</span>
-                              <span className="text-lg sm:text-xl md:text-2xl leading-relaxed break-words">
-                                {option.text}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    ) : (
-                      // Single question with line break support for formatted text
-                      <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl 2xl:text-7xl font-bold text-white leading-tight max-w-5xl mx-auto">
-                        {getQuestionText(currentStarters[currentQuestionIndex])?.replace(/\*\*/g, '').replace(/[""'']/g, '').replace(/[^\w\s\?\.\!\,\:\;\(\)\-']/g, '').trim().split('\n').map((line, index) => (
-                          <div key={index} className={
-                            index === 0 ? "mb-6" : 
-                            line.match(/^[A-D]\.\s/) ? "text-left text-lg sm:text-xl md:text-2xl font-bold mb-3 max-w-4xl mx-auto" : 
-                            "text-left text-xl sm:text-2xl md:text-3xl mb-2 max-w-4xl mx-auto"
-                          }>
-                            {line}
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                   <div className="relative px-6 py-6">
+                     {(() => {
+                       const currentQuestion = currentStarters[currentQuestionIndex];
+                       if (!currentQuestion) return null;
+                       
+                       // More comprehensive multiple choice detection (same as regular view)
+                       const questionText = getQuestionText(currentQuestion);
+                       const hasMultiChoicePattern = /\s[A-D]\.\s/.test(questionText);
+                       
+                       const isMultiChoice = currentQuestion && (
+                         (typeof currentQuestion === 'object' && 'options' in currentQuestion) || 
+                         isMultipleChoice(currentQuestion) ||
+                         hasMultiChoicePattern ||
+                         questionText.includes(' A.')
+                       );
+                       
+                       if (isMultiChoice) {
+                         // Extract question text (statement part only)
+                         let cleanQuestionText = '';
+                         let fullText = '';
+                         
+                         if (typeof currentQuestion === 'object' && 'statement' in currentQuestion) {
+                           fullText = currentQuestion.statement;
+                         } else {
+                           fullText = getQuestionText(currentQuestion);
+                         }
+                         
+                         // Clean the text - extract just the question part
+                         const questionMatch = fullText.match(/^(.*?)\?\s*(?=\s*[A-D]\.)/);
+                         if (questionMatch) {
+                           cleanQuestionText = questionMatch[1].trim() + '?';
+                         } else {
+                           const beforeOptions = fullText.split(/\s*[A-D]\./)[0];
+                           cleanQuestionText = beforeOptions.trim();
+                         }
+                         
+                         // Extract options
+                         let options: Array<{key: string; text: string}> = [];
+                         if (typeof currentQuestion === 'object' && 'options' in currentQuestion) {
+                           options = (currentQuestion as any).options;
+                         } else {
+                           const fullText = getQuestionText(currentQuestion);
+                           
+                           // Handle inline format with regex
+                           const optionMatches = fullText.matchAll(/\s([A-D])\.\s([^A-D]*?)(?=\s[A-D]\.|$)/g);
+                           options = Array.from(optionMatches, match => ({
+                             key: match[1],
+                             text: match[2].trim()
+                           }));
+                           
+                           // Fallback: handle line-by-line format
+                           if (options.length === 0) {
+                             const lines = fullText.split('\n');
+                             options = lines
+                               .filter(line => /^[A-D]\./.test(line))
+                               .map(line => {
+                                 const match = line.match(/^([A-D])\.\s*(.+)/);
+                                 return match ? { key: match[1], text: match[2] } : null;
+                               })
+                               .filter(Boolean) as Array<{key: string; text: string}>;
+                           }
+                         }
+                         
+                         return (
+                           <div 
+                             key={`fullscreen-multi-${currentQuestionIndex}`}
+                             className="w-full animate-fade-in-up"
+                           >
+                             {/* Question */}
+                             <p className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-white leading-tight mb-8">
+                               {cleanQuestionText}
+                             </p>
+                             
+                             {/* Answer choices */}
+                             <div className="space-y-4 sm:space-y-6 text-left max-w-5xl mx-auto">
+                               {options.map((option, index) => (
+                                 <div 
+                                   key={option.key} 
+                                   className="text-white/90 animate-fade-in-up"
+                                   style={{ animationDelay: `${index * 100}ms` }}
+                                 >
+                                   <span className="font-bold text-xl sm:text-2xl md:text-3xl mr-4">{option.key}.</span>
+                                   <span className="text-lg sm:text-xl md:text-2xl leading-relaxed break-words">
+                                     {option.text}
+                                   </span>
+                                 </div>
+                               ))}
+                             </div>
+                           </div>
+                         );
+                       } else {
+                         // Single question
+                         return (
+                           <div 
+                             key={`fullscreen-simple-${currentQuestionIndex}`}
+                             className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl 2xl:text-7xl font-bold text-white leading-tight max-w-5xl mx-auto animate-fade-in-up"
+                           >
+                             {getQuestionText(currentQuestion)?.replace(/\*\*/g, '').replace(/[""'']/g, '').replace(/[^\w\s\?\.\!\,\:\;\(\)\-']/g, '').trim()}
+                           </div>
+                         );
+                       }
+                     })()}
                   </div>
                 </div>
               </div>
