@@ -13,6 +13,7 @@ import { HeartIcon } from '@/components/ui/heart-icon';
 import { InfoDialog } from '@/components/ui/info-dialog';
 import { Share as CapacitorShare } from '@capacitor/share';
 import { useRelationshipAI } from '@/hooks/useRelationshipAI';
+import { useQuestionPoolInitialization } from '@/hooks/useQuestionPoolInitialization';
 import TextGenie from '@/components/TextGenie';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
@@ -67,6 +68,9 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile }) => {
   
   
   const { getFlirtSuggestion, getAIResponse, isLoading } = useRelationshipAI();
+  
+  // Initialize question pool for new users
+  useQuestionPoolInitialization(userProfile);
 
   // Helper function to check if current question is multiple choice
   const isMultipleChoice = (question: string | { statement: string; options: { key: string; text: string; }[] }): question is { statement: string; options: { key: string; text: string; }[] } => {
@@ -794,7 +798,7 @@ Format as: Statement? followed by A. [option] B. [option] C. [option] D. [option
         (line.includes('?') || line.match(/^\d+\.?/))
       ).map(line => 
         line.replace(/^\d+\.?\s*/, '').replace(/\*\*/g, '').replace(/[""'']/g, "'").replace(/[^\w\s\?\.\!\,\:\;\(\)\-\'\"]/g, '').trim()
-      ).slice(0, 8);
+      ).slice(0, 25);
       
       // Generate unique custom category name
       const customIndex = Object.keys(customCategories).length + 1;
@@ -907,7 +911,7 @@ Format as: Statement? followed by A. [option] B. [option] C. [option] D. [option
           (line.includes('?') || line.match(/^\d+\.?/))
         ).map(line => 
           line.replace(/^\d+\.?\s*/, '').replace(/\*\*/g, '').replace(/[""'']/g, "'").replace(/[^\w\s\?\.\!\,\:\;\(\)\-\'\"]/g, '').trim()
-        ).slice(0, 8);
+        ).slice(0, 25);
         
         if (questions.length > 0) {
           // Apply depth adjustment to custom category questions
@@ -963,11 +967,11 @@ Format as: Statement? followed by A. [option] B. [option] C. [option] D. [option
         } else if (selectedCategory === 'Self-Awareness & Growth') {
           prompt = `Generate 25 new conversation starter questions that explore personal development, self-awareness, and emotional growth within relationships. Focus on how people understand themselves, work on their issues, and show up authentically in partnerships. Address topics like attachment styles, family patterns, and individual responsibility. Make them introspective enough to promote meaningful self-discovery. Make them different from these examples: ${category.prompts.slice(0, 5).join(', ')}`;
         } else if (selectedCategory === 'Intimacy & Connection') {
-          prompt = `Generate 8 new conversation starter questions that explore emotional and physical intimacy in relationships. Focus on the deeper aspects of connection, vulnerability, and authentic sharing between partners. Address topics like emotional safety, sexual communication, and intimate bonding. Make them thoughtful enough to deepen understanding of each other's intimate needs. Make them different from these examples: ${category.prompts.slice(0, 5).join(', ')}`;
+          prompt = `Generate 25 new conversation starter questions that explore emotional and physical intimacy in relationships. Focus on the deeper aspects of connection, vulnerability, and authentic sharing between partners. Address topics like emotional safety, sexual communication, and intimate bonding. Make them thoughtful enough to deepen understanding of each other's intimate needs. Make them different from these examples: ${category.prompts.slice(0, 5).join(', ')}`;
         } else if (selectedCategory === 'Pillow Talk & Tea') {
-          prompt = `Generate 8 new multiple-choice questions for a "girl's night" conversation game about bedroom confessions, spicy secrets, and flirty topics. Each question should have a statement followed by 4 suggestive, revealing options labeled A, B, C, D. The tone should be fun, intimate, cheeky, bold, and playful - like late-night girl talk with wine in hand. Focus on turn-ons, hookup stories, fantasies, bedroom moves, post-hookup thoughts, and intimate confessions that girlfriends share with each other. Make them slightly provocative but always with a vibe of friendship, laughter, and trust. Format as: "Statement?" with options A. [option] B. [option] C. [option] D. [option]. Make them different from these examples: ${category.prompts.slice(0, 2).map(p => typeof p === 'object' ? p.statement : p).join(', ')}`;
+          prompt = `Generate 25 new multiple-choice questions for a "girl's night" conversation game about bedroom confessions, spicy secrets, and flirty topics. Each question should have a statement followed by 4 suggestive, revealing options labeled A, B, C, D. The tone should be fun, intimate, cheeky, bold, and playful - like late-night girl talk with wine in hand. Focus on turn-ons, hookup stories, fantasies, bedroom moves, post-hookup thoughts, and intimate confessions that girlfriends share with each other. Make them slightly provocative but always with a vibe of friendship, laughter, and trust. Format as: "Statement?" with options A. [option] B. [option] C. [option] D. [option]. Make them different from these examples: ${category.prompts.slice(0, 2).map(p => typeof p === 'object' ? p.statement : p).join(', ')}`;
         } else {
-          prompt = `Generate 8 new conversation starter questions in the style of "${selectedCategory}" category that go beyond surface-level dating questions. Make them emotionally intelligent, boundary-aware, and specific enough that someone thinks "That's such a good question, I never thought about that." Focus on relationship dynamics, emotional maturity, and authentic connection. They should be similar to these examples but completely different: ${category.prompts.slice(0, 5).join(', ')}. Make them engaging, thought-provoking, and perfect for sparking meaningful conversations about real relationship topics.`;
+          prompt = `Generate 25 new conversation starter questions in the style of "${selectedCategory}" category that go beyond surface-level dating questions. Make them emotionally intelligent, boundary-aware, and specific enough that someone thinks "That's such a good question, I never thought about that." Focus on relationship dynamics, emotional maturity, and authentic connection. They should be similar to these examples but completely different: ${category.prompts.slice(0, 5).join(', ')}. Make them engaging, thought-provoking, and perfect for sparking meaningful conversations about real relationship topics.`;
         }
         
         try {
@@ -981,7 +985,7 @@ Format as: Statement? followed by A. [option] B. [option] C. [option] D. [option
               line.trim() && line.toLowerCase().includes('true or false')
             ).map(line => 
               line.replace(/^\d+\.?\s*/, '').replace(/\*\*/g, '').replace(/[""'']/g, "'").replace(/[^\w\s\?\.\!\,\:\;\(\)\-\'\"]/g, '').trim()
-            ).slice(0, 8);
+            ).slice(0, 25);
           } else if (selectedCategory === 'Pillow Talk & Tea') {
             // Parse multiple-choice questions
             const responseLines = response.split('\n').filter(line => line.trim());
@@ -1015,7 +1019,7 @@ Format as: Statement? followed by A. [option] B. [option] C. [option] D. [option
                 }
               }
             }
-            questions = multipleChoiceQuestions.slice(0, 8);
+            questions = multipleChoiceQuestions.slice(0, 25);
           } else {
             // Parse regular questions
             questions = response.split('\n').filter(line => 
@@ -1023,7 +1027,7 @@ Format as: Statement? followed by A. [option] B. [option] C. [option] D. [option
               (line.includes('?') || line.match(/^\d+\.?/))
             ).map(line => 
               line.replace(/^\d+\.?\s*/, '').replace(/\*\*/g, '').replace(/[""'']/g, "'").replace(/[^\w\s\?\.\!\,\:\;\(\)\-\'\"]/g, '').trim()
-            ).slice(0, 8);
+            ).slice(0, 25);
           }
           
           if (questions.length > 0) {
