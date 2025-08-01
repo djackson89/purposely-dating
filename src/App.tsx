@@ -12,6 +12,8 @@ import { Input } from "@/components/ui/input";
 import { Heart, MessageCircle, Calendar, Sparkles, Eye, EyeOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import NotFound from "./pages/NotFound";
+import OnboardingFlow from "@/components/OnboardingFlow";
+import Paywall from "@/components/Paywall";
 import React from 'react';
 
 // Error Boundary Component to catch rendering errors
@@ -492,38 +494,163 @@ const AuthComponent = () => {
 const MainApp = () => {
   const { signOut, user } = useAuth();
   const [userProfile, setUserProfile] = useState(null);
-  const [currentView, setCurrentView] = useState('home'); // Always start with home
+  const [currentView, setCurrentView] = useState('loading'); // Start with loading
+  const [onboardingStep, setOnboardingStep] = useState('welcome'); // welcome, paywall, quiz, completed
   const [loading, setLoading] = useState(true);
 
   console.log('🏠 MAIN APP: Rendering with state:', { 
     hasUser: !!user, 
     view: currentView, 
+    onboardingStep,
     loading,
     userProfile: !!userProfile 
   });
 
+  // Check user's onboarding status and subscription
   useEffect(() => {
-    if (user) {
-      // Create a minimal user profile for now
-      const profile = {
-        firstName: user.user_metadata?.full_name || 'User',
-        full_name: user.user_metadata?.full_name || 'User',
-        first_name: user.user_metadata?.full_name || 'User',
-        loveLanguage: 'Words of Affirmation',
-        relationshipStatus: 'Single & Looking',
-        age: '25-34',
-        gender: 'Female',
-        personalityType: 'Balanced Mix of Both'
-      };
-      setUserProfile(profile);
-      setLoading(false);
-    }
+    const checkUserStatus = async () => {
+      if (!user) return;
+
+      try {
+        console.log('🔍 CHECKING: User onboarding status...');
+        
+        // Check if user has completed onboarding
+        const { data: settings, error: settingsError } = await supabase
+          .from('user_settings')
+          .select('onboarding_completed, intake_completed')
+          .eq('user_id', user.id)
+          .single();
+
+        console.log('🔍 SETTINGS:', { settings, settingsError });
+
+        // Check subscription status
+        const { data: subscription, error: subError } = await supabase.functions.invoke('check-subscription');
+        console.log('🔍 SUBSCRIPTION:', { subscription, subError });
+
+        if (settingsError && settingsError.code !== 'PGRST116') {
+          console.error('Error checking settings:', settingsError);
+        }
+
+        // Determine what step the user should see
+        if (!settings || !settings.onboarding_completed) {
+          console.log('🎯 FLOW: Starting welcome onboarding');
+          setCurrentView('onboarding');
+          setOnboardingStep('welcome');
+        } else if (!subscription?.data?.subscribed) {
+          console.log('🎯 FLOW: Showing paywall');
+          setCurrentView('paywall');
+        } else if (!settings?.intake_completed) {
+          console.log('🎯 FLOW: Showing intake quiz');
+          setCurrentView('onboarding');
+          setOnboardingStep('quiz');
+        } else {
+          console.log('🎯 FLOW: User fully onboarded, showing home');
+          // Create user profile from stored data or defaults
+          const profile = {
+            firstName: user.user_metadata?.full_name?.split(' ')[0] || user.user_metadata?.first_name || 'User',
+            full_name: user.user_metadata?.full_name || 'User',
+            first_name: user.user_metadata?.first_name || user.user_metadata?.full_name?.split(' ')[0] || 'User',
+            loveLanguage: 'Words of Affirmation',
+            relationshipStatus: 'Single & Looking',
+            age: '25-34',
+            gender: 'Female',
+            personalityType: 'Balanced Mix of Both'
+          };
+          setUserProfile(profile);
+          setCurrentView('home');
+        }
+      } catch (error) {
+        console.error('Error checking user status:', error);
+        // Default to welcome if error
+        setCurrentView('onboarding');
+        setOnboardingStep('welcome');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkUserStatus();
   }, [user]);
 
   const handleLogout = async () => {
     console.log('🔐 Logout requested');
     await signOut();
     localStorage.clear();
+  };
+
+  // Handle welcome onboarding completion
+  const handleWelcomeComplete = async () => {
+    console.log('✅ ONBOARDING: Welcome completed');
+    
+    try {
+      // Mark welcome onboarding as completed
+      await supabase
+        .from('user_settings')
+        .upsert(
+          {
+            user_id: user.id,
+            onboarding_completed: true,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: 'user_id' }
+        );
+      
+      // Check subscription status to determine next step
+      const { data: subscription } = await supabase.functions.invoke('check-subscription');
+      
+      if (!subscription?.data?.subscribed) {
+        setCurrentView('paywall');
+      } else {
+        setCurrentView('onboarding');
+        setOnboardingStep('quiz');
+      }
+    } catch (error) {
+      console.error('Error updating onboarding status:', error);
+    }
+  };
+
+  // Handle paywall completion (subscription)
+  const handlePaywallComplete = async () => {
+    console.log('✅ PAYWALL: Subscription completed');
+    setCurrentView('onboarding');
+    setOnboardingStep('quiz');
+  };
+
+  // Handle paywall skip
+  const handlePaywallSkip = async () => {
+    console.log('⏭️ PAYWALL: Skipped');
+    setCurrentView('onboarding');
+    setOnboardingStep('quiz');
+  };
+
+  // Handle intake quiz completion
+  const handleQuizComplete = async (data) => {
+    console.log('✅ QUIZ: Intake completed', data);
+    
+    try {
+      // Store the intake data and mark as completed
+      await supabase
+        .from('user_settings')
+        .upsert(
+          {
+            user_id: user.id,
+            onboarding_completed: true,
+            intake_completed: true,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: 'user_id' }
+        );
+
+      // Set user profile and go to home
+      setUserProfile({
+        ...data,
+        first_name: data.firstName,
+        full_name: data.firstName
+      });
+      setCurrentView('home');
+    } catch (error) {
+      console.error('Error saving intake data:', error);
+    }
   };
 
   const handleNavigateToFlirtFuel = () => {
@@ -546,17 +673,45 @@ const MainApp = () => {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center space-y-4 animate-fade-in-up">
           <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent mx-auto"></div>
-          <p className="text-muted-foreground">Loading your profile...</p>
+          <p className="text-muted-foreground">Setting up your experience...</p>
         </div>
       </div>
     );
   }
 
-  // Render different views based on currentView state
+  // Show welcome onboarding flow
+  if (currentView === 'onboarding') {
+    if (onboardingStep === 'welcome') {
+      return (
+        <OnboardingFlow 
+          onComplete={handleWelcomeComplete}
+          showOnlyWelcome={true}
+        />
+      );
+    } else if (onboardingStep === 'quiz') {
+      return (
+        <OnboardingFlow 
+          onComplete={handleQuizComplete}
+          showOnlyQuiz={true}
+        />
+      );
+    }
+  }
+
+  // Show paywall
+  if (currentView === 'paywall') {
+    return (
+      <Paywall 
+        onSubscribe={handlePaywallComplete}
+        onSkip={handlePaywallSkip}
+      />
+    );
+  }
+
+  // Show main home screen
   if (currentView === 'home' && userProfile) {
     return (
       <div className="min-h-screen bg-background">
-        {/* Import and use the actual Home component */}
         <div className="pb-8 pt-6 px-4 space-y-6 bg-gradient-soft min-h-screen">
           {/* Header with logout */}
           <div className="text-center space-y-4">
@@ -626,7 +781,7 @@ const MainApp = () => {
 
             <div className="space-y-4">
               <p className="text-muted-foreground">
-                App is working! Click on the cards above to explore features.
+                Click on the cards above to explore features.
               </p>
             </div>
           </div>
@@ -635,7 +790,7 @@ const MainApp = () => {
     );
   }
 
-  // Show simple feature placeholders for other views
+  // Show feature placeholder screens
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="flex items-center justify-between mb-8">
