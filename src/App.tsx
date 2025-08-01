@@ -97,6 +97,8 @@ const MainApp = () => {
 const AppContent = () => {
   const { user, loading } = useAuth();
 
+  console.log('AppContent render - user:', !!user, 'loading:', loading);
+
   // Prevent flickering by using a more stable loading state
   if (loading) {
     return (
