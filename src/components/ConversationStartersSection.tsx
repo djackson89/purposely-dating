@@ -506,13 +506,20 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
                        }
                       
                       return (
-                        <div className="w-full text-center">
+                        <div 
+                          key={`multi-choice-${currentQuestionIndex}`}
+                          className="w-full text-center animate-fade-in-up"
+                        >
                           <p className="text-lg sm:text-xl font-bold text-white leading-tight mb-6">
                             {questionText}
                           </p>
                           <div className="space-y-2 text-left">
-                            {options.map((option) => (
-                              <div key={option.key} className="text-white/90">
+                            {options.map((option, index) => (
+                              <div 
+                                key={option.key} 
+                                className="text-white/90 animate-fade-in-up"
+                                style={{ animationDelay: `${index * 100}ms` }}
+                              >
                                 <span className="font-bold text-sm">{option.key}. </span>
                                 <span className="text-sm font-bold leading-tight break-words">
                                   {option.text}
@@ -524,7 +531,10 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
                       );
                     } else {
                       return (
-                        <div className="text-xl sm:text-2xl font-bold text-white leading-relaxed text-center px-4">
+                        <div 
+                          key={`simple-question-${currentQuestionIndex}`}
+                          className="text-xl sm:text-2xl font-bold text-white leading-relaxed text-center px-4 animate-fade-in-up"
+                        >
                           {getQuestionText(currentQuestion)}
                         </div>
                       );
