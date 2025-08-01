@@ -268,11 +268,11 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
                          <h3 className={`font-semibold ${isCategoryLocked(starter.category) ? 'text-red-900 dark:text-red-300' : 'text-foreground'}`}>
                            {starter.category}
                          </h3>
-                         {isCategoryLocked(starter.category) && (
-                           <span className="text-xs bg-red-900 text-white px-2 py-0.5 rounded-full font-medium">
-                             Premium
-                           </span>
-                         )}
+                          {isCategoryLocked(starter.category) && (
+                            <span className="text-xs bg-red-900 text-white px-2 py-0.5 rounded-full font-medium">
+                              Unlock
+                            </span>
+                          )}
                         {starter.type === 'multiple-choice' && (
                           <span className="text-xs bg-accent text-accent-foreground px-2 py-0.5 rounded-full">
                             Multiple Choice
@@ -358,11 +358,11 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
                     <h3 className={`font-semibold ${isCategoryLocked("Customize") ? 'text-red-900 dark:text-red-300' : 'text-foreground'}`}>
                       Customize
                     </h3>
-                    {isCategoryLocked("Customize") && (
-                      <span className="text-xs bg-red-900 text-white px-2 py-0.5 rounded-full font-medium">
-                        Premium
-                      </span>
-                    )}
+                     {isCategoryLocked("Customize") && (
+                       <span className="text-xs bg-red-900 text-white px-2 py-0.5 rounded-full font-medium">
+                         Unlock
+                       </span>
+                     )}
                   </div>
                   <p className="text-sm text-muted-foreground">
                     Generate personalized conversation starters with AI

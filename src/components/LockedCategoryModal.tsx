@@ -141,12 +141,12 @@ const LockedCategoryModal: React.FC<LockedCategoryModalProps> = ({
               <CardContent className="pt-6 text-center space-y-4">
                 <div className="flex items-center justify-center space-x-2 text-primary">
                   <Sparkles className="w-5 h-5" />
-                  <span className="font-medium">Premium Feature</span>
+                  <span className="font-medium">Unlock Feature</span>
                   <Sparkles className="w-5 h-5" />
                 </div>
                 
                 <p className="text-sm text-muted-foreground">
-                  Support Purposely by leaving a review{isNative ? ' in the app store' : ''}! 
+                  Unlock more categories by leaving a review{isNative ? ' in the app store' : ''}! 
                   Your feedback helps us create better relationship tools.
                 </p>
 
