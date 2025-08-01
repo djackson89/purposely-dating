@@ -142,23 +142,49 @@ const Index = () => {
 
   // 1. Show welcome screens first
   if (!subscriptionLoading && !hasSeenWelcome) {
+    console.log('Rendering welcome screen');
     return <OnboardingFlow onComplete={handleWelcomeComplete} showOnlyWelcome />;
   }
 
   // 2. Show notifications permission after welcome
   if (!subscriptionLoading && hasSeenWelcome && !hasCompletedNotifications) {
+    console.log('Rendering notifications screen');
     return <NotificationPermissionStep onComplete={handleNotificationsComplete} userProfile={null} />;
   }
 
   // 3. Show paywall after notifications if user doesn't have subscription
   if (!subscriptionLoading && hasCompletedNotifications && !subscription.subscribed && !hasSeenPaywall) {
+    console.log('Rendering paywall');
     return <Paywall onPlanSelected={handlePlanSelected} onSkipToFree={handleSkipToFree} />;
   }
 
   // 4. Show intake quiz if paywall has been seen but onboarding not completed and not premium
   if (!subscriptionLoading && hasSeenPaywall && (!hasCompletedOnboarding || !userProfile)) {
+    console.log('Rendering onboarding quiz');
     return <OnboardingFlow onComplete={handleOnboardingComplete} showOnlyQuiz />;
   }
+
+  // Show loading state while subscription is loading
+  if (subscriptionLoading) {
+    console.log('Subscription loading...');
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-soft">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading your experience...</p>
+        </div>
+      </div>
+    );
+  }
+
+  console.log('Rendering main app with state:', {
+    subscriptionLoading,
+    hasSeenWelcome, 
+    hasCompletedNotifications,
+    hasSeenPaywall,
+    hasCompletedOnboarding,
+    userProfile: !!userProfile
+  });
 
   const handleProfileUpdate = (updatedProfile: OnboardingData) => {
     setUserProfile(updatedProfile);
