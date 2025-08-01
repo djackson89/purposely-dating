@@ -4,17 +4,51 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { useReviewTracking } from "@/hooks/useReviewTracking";
-import ReviewRequestModal from "@/components/ReviewRequestModal";
+import { useState, useEffect } from "react";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
+import SimpleOnboarding from "./components/SimpleOnboarding";
 
 const queryClient = new QueryClient();
 
+interface OnboardingData {
+  firstName: string;
+  profilePhoto?: string;
+  loveLanguage: string;
+  relationshipStatus: string;
+  age: string;
+  gender: string;
+  personalityType: string;
+}
+
 const AppContent = () => {
   const { user, loading } = useAuth();
-  const { shouldShowReview, hideReviewModal, markReviewAsShown } = useReviewTracking();
+  const [userProfile, setUserProfile] = useState<OnboardingData | null>(null);
+  const [needsOnboarding, setNeedsOnboarding] = useState(false);
+
+  // Check for existing profile on auth change
+  useEffect(() => {
+    if (user) {
+      const savedProfile = localStorage.getItem('relationshipCompanionProfile');
+      if (savedProfile) {
+        try {
+          const profile = JSON.parse(savedProfile);
+          setUserProfile(profile);
+          setNeedsOnboarding(false);
+        } catch (error) {
+          console.error('Error parsing saved profile:', error);
+          localStorage.removeItem('relationshipCompanionProfile');
+          setNeedsOnboarding(true);
+        }
+      } else {
+        setNeedsOnboarding(true);
+      }
+    } else {
+      setUserProfile(null);
+      setNeedsOnboarding(false);
+    }
+  }, [user]);
 
   // Show loading while checking auth
   if (loading) {
@@ -33,26 +67,27 @@ const AppContent = () => {
     return <Auth />;
   }
 
-  // User is authenticated, show main app
-  const handleCloseReviewModal = () => {
-    markReviewAsShown();
-    hideReviewModal();
-  };
-
-  return (
-    <>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-      
-      <ReviewRequestModal 
-        isOpen={shouldShowReview} 
-        onClose={handleCloseReviewModal}
+  // Show onboarding if needed
+  if (needsOnboarding) {
+    return (
+      <SimpleOnboarding 
+        onComplete={(data) => {
+          setUserProfile(data);
+          setNeedsOnboarding(false);
+          localStorage.setItem('relationshipCompanionProfile', JSON.stringify(data));
+        }}
       />
-    </>
+    );
+  }
+
+  // User is authenticated and has profile, show main app
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Index userProfile={userProfile} />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </BrowserRouter>
   );
 };
 

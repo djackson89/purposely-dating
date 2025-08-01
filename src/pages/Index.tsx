@@ -24,9 +24,13 @@ interface OnboardingData {
   personalityType: string;
 }
 
-const Index = () => {
+interface IndexProps {
+  userProfile: OnboardingData | null;
+}
+
+const Index: React.FC<IndexProps> = ({ userProfile: initialUserProfile }) => {
   const { signOut } = useAuth();
-  const [userProfile, setUserProfile] = useState<OnboardingData | null>(null);
+  const [userProfile, setUserProfile] = useState<OnboardingData | null>(initialUserProfile);
   const [activeModule, setActiveModule] = useState<'home' | 'flirtfuel' | 'concierge' | 'therapy' | 'profile'>('home');
   const [showPaywallModal, setShowPaywallModal] = useState(false);
   
@@ -37,18 +41,10 @@ const Index = () => {
   const { subscription, loading: subscriptionLoading, createCheckoutSession } = useSubscription();
   const { shouldShowReview, hideReviewModal, markReviewAsShown } = useReviewTracking();
 
-  // Simple profile loading
+  // Update profile when prop changes
   useEffect(() => {
-    const savedProfile = localStorage.getItem('relationshipCompanionProfile');
-    if (savedProfile) {
-      try {
-        setUserProfile(JSON.parse(savedProfile));
-      } catch (error) {
-        console.error('Error parsing saved profile:', error);
-        localStorage.removeItem('relationshipCompanionProfile');
-      }
-    }
-  }, []);
+    setUserProfile(initialUserProfile);
+  }, [initialUserProfile]);
 
   const handleProfileUpdate = (updatedProfile: OnboardingData) => {
     setUserProfile(updatedProfile);
