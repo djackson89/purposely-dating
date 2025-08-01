@@ -822,6 +822,11 @@ Format as: Statement? followed by A. [option] B. [option] C. [option] D. [option
       const customIndex = Object.keys(customCategories).length + 1;
       const categoryName = `Custom${customIndex}`;
       
+      // For Girl's Night master category customized questions, default to Light depth
+      if (masterCategory === "Girl's Night") {
+        setDepthLevel([0]); // Set to Light depth
+      }
+      
       // Save to custom categories
       setCustomCategories(prev => ({
         ...prev,
@@ -1109,6 +1114,12 @@ Format as: Statement? followed by A. [option] B. [option] C. [option] D. [option
       setCustomKeywords('');
       setShowCategorySelection(true); // Stay on category selection for customize
       return;
+    }
+    
+    // Set default depth for Girl's Night categories (except Vulnerable & Valid)
+    const category = conversationStarters.find(cat => cat.category === categoryName);
+    if (category && category.masterCategory === "Girl's Night" && categoryName !== "Vulnerable & Valid") {
+      setDepthLevel([0]); // Set to Light depth
     }
     
     setSelectedCategory(categoryName);
