@@ -152,19 +152,32 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
           return;
         }
 
-        toast({
-          title: "Account Created!",
-          description: "Please check your email to verify your account, then you can log in.",
-        });
+        // Check if email confirmation is required
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session) {
+          // User is immediately signed in (email confirmation disabled)
+          toast({
+            title: "Welcome!",
+            description: "Your account has been created successfully.",
+          });
+          onAuthSuccess();
+        } else {
+          // Email confirmation is required
+          toast({
+            title: "Account Created!",
+            description: "Please check your email to verify your account, then you can log in.",
+          });
 
-        // Switch to login mode after successful signup
-        setIsLogin(true);
-        setFormData({
-          email: formData.email,
-          password: '',
-          fullName: '',
-          confirmPassword: ''
-        });
+          // Switch to login mode after successful signup
+          setIsLogin(true);
+          setFormData({
+            email: formData.email,
+            password: '',
+            fullName: '',
+            confirmPassword: ''
+          });
+        }
       }
     } catch (error) {
       console.error('Auth error:', error);
