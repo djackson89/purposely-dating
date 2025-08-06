@@ -12,24 +12,49 @@ export const useAppInitialization = (userProfile?: any) => {
 
   useEffect(() => {
     const initializeApp = async () => {
-      console.log('🚀 Initializing Purposely Dating App...');
+      try {
+        console.log('🚀 Initializing Purposely Dating App...');
+        console.log('📊 Device Info:', {
+          isNative,
+          isOnline,
+          userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'Unknown',
+          platform: typeof navigator !== 'undefined' ? navigator.platform : 'Unknown'
+        });
 
-      // Set status bar for native apps
-      if (isNative) {
-        console.log('📱 Native platform detected');
-        
-        // Light status bar for the romance theme
-        await setStatusBarStyle('Light' as any);
-        
-        // Check push notification permissions
-        if (pushSupported) {
-          await checkPermissions();
+        // Set status bar for native apps with iPad-specific handling
+        if (isNative) {
+          console.log('📱 Native platform detected');
+          
+          try {
+            // Light status bar for the romance theme
+            await setStatusBarStyle('Light' as any);
+            console.log('✅ Status bar style set successfully');
+          } catch (error) {
+            console.warn('⚠️ Status bar setup failed:', error);
+          }
+          
+          // Check push notification permissions with error handling
+          if (pushSupported) {
+            try {
+              await checkPermissions();
+              console.log('✅ Push notification permissions checked');
+            } catch (error) {
+              console.warn('⚠️ Push notification setup failed:', error);
+            }
+          }
+          
+          // Welcome haptic feedback with error handling
+          try {
+            setTimeout(() => {
+              success();
+            }, 500);
+          } catch (error) {
+            console.warn('⚠️ Haptic feedback failed:', error);
+          }
         }
-        
-        // Welcome haptic feedback
-        setTimeout(() => {
-          success();
-        }, 500);
+      } catch (error) {
+        console.error('❌ App initialization error:', error);
+        // Continue initialization even if some parts fail
       }
 
       // Set user properties for analytics

@@ -128,26 +128,55 @@ All colors MUST be HSL. Romance palette with warm pinks, corals, and creams.
 
   body {
     @apply bg-background text-foreground;
+    /* iPad-specific fixes */
+    -webkit-text-size-adjust: 100%;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* Prevent zoom on iPad */
+    -ms-text-size-adjust: 100%;
+    /* Improve touch performance on iPad */
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
   }
 }
 
 /* Mobile-First Responsive Utilities */
 @layer utilities {
-  /* Safe area utilities for mobile devices with notches */
+  /* Safe area utilities for mobile devices with notches and iPads */
   .safe-area-pt {
-    padding-top: env(safe-area-inset-top);
+    padding-top: max(env(safe-area-inset-top), 20px);
   }
   
   .safe-area-pb {
-    padding-bottom: env(safe-area-inset-bottom);
+    padding-bottom: max(env(safe-area-inset-bottom), 20px);
   }
   
   .safe-area-pl {
-    padding-left: env(safe-area-inset-left);
+    padding-left: max(env(safe-area-inset-left), 16px);
   }
   
   .safe-area-pr {
-    padding-right: env(safe-area-inset-right);
+    padding-right: max(env(safe-area-inset-right), 16px);
+  }
+
+  /* iPad specific safe area handling */
+  @media (min-width: 768px) and (max-width: 1024px) {
+    .safe-area-pt {
+      padding-top: max(env(safe-area-inset-top), 40px);
+    }
+    
+    .safe-area-pb {
+      padding-bottom: max(env(safe-area-inset-bottom), 40px);
+    }
+    
+    .safe-area-pl {
+      padding-left: max(env(safe-area-inset-left), 32px);
+    }
+    
+    .safe-area-pr {
+      padding-right: max(env(safe-area-inset-right), 32px);
+    }
   }
 
   /* Touch-friendly utilities */
@@ -175,6 +204,26 @@ All colors MUST be HSL. Romance palette with warm pinks, corals, and creams.
   /* Smooth scroll for better mobile experience */
   .scroll-smooth {
     scroll-behavior: smooth;
+  }
+
+  /* iPad-specific optimizations */
+  @media (min-width: 768px) and (max-width: 1024px) {
+    /* Ensure proper scaling on iPad */
+    .min-h-screen {
+      min-height: 100vh;
+      min-height: -webkit-fill-available;
+    }
+    
+    /* Better touch targets for iPad */
+    button, .button, [role="button"] {
+      min-height: 44px;
+      min-width: 44px;
+    }
+    
+    /* Prevent overscroll on iPad */
+    body {
+      overscroll-behavior: none;
+    }
   }
 
   /* Mobile-optimized animations */

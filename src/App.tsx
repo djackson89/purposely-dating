@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useReviewTracking } from "@/hooks/useReviewTracking";
 import ReviewRequestModal from "@/components/ReviewRequestModal";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
@@ -16,12 +17,14 @@ const AppContent = () => {
   const { user, loading } = useAuth();
   const { shouldShowReview, hideReviewModal, markReviewAsShown } = useReviewTracking();
 
+  // Enhanced loading state with error handling for iPad
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-soft">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading Purposely...</p>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-soft safe-area-pt safe-area-pb">
+        <div className="text-center px-4 max-w-sm mx-auto">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-6"></div>
+          <h2 className="text-xl font-semibold text-foreground mb-2">Loading Purposely...</h2>
+          <p className="text-muted-foreground text-sm">Setting up your dating assistant</p>
         </div>
       </div>
     );
@@ -57,13 +60,15 @@ const AppContent = () => {
 };
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <AppContent />
-    </TooltipProvider>
-  </QueryClientProvider>
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <AppContent />
+      </TooltipProvider>
+    </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;

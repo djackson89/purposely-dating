@@ -14,12 +14,19 @@ export const useDevice = () => {
   useEffect(() => {
     const initializeDevice = async () => {
       if (isNative) {
-        // Set status bar style
+        // Set status bar style with iPad-specific handling
         try {
           await StatusBar.setStyle({ style: Style.Light });
+          // Use a more compatible color for iPad
           await StatusBar.setBackgroundColor({ color: '#FF6B9D' }); // Primary color
+          
+          // iPad-specific: Set overlay to true for better compatibility
+          if (Capacitor.getPlatform() === 'ios') {
+            await StatusBar.setOverlaysWebView({ overlay: true });
+          }
         } catch (error) {
           console.warn('Status bar setup failed:', error);
+          // Fallback: Continue without status bar customization
         }
 
         // Network monitoring

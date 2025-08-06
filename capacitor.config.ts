@@ -19,7 +19,13 @@ const config: CapacitorConfig = {
       NSLocationWhenInUseUsageDescription: 'This app uses your location to show you potential matches nearby and help you connect with people in your area.',
       NSMicrophoneUsageDescription: 'This app uses your microphone to record voice messages for relationship advice and profile enhancement.',
       CFBundleDisplayName: 'Purposely',
-      CFBundleName: 'Purposely'
+      CFBundleName: 'Purposely',
+      // iPad-specific configurations
+      UIRequiresFullScreen: false,
+      UISupportedInterfaceOrientations: ['UIInterfaceOrientationPortrait', 'UIInterfaceOrientationLandscapeLeft', 'UIInterfaceOrientationLandscapeRight'],
+      'UISupportedInterfaceOrientations~ipad': ['UIInterfaceOrientationPortrait', 'UIInterfaceOrientationPortraitUpsideDown', 'UIInterfaceOrientationLandscapeLeft', 'UIInterfaceOrientationLandscapeRight'],
+      UIStatusBarHidden: false,
+      UIViewControllerBasedStatusBarAppearance: true
     }
   }
 };
