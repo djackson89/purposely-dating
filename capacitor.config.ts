@@ -20,10 +20,10 @@ const config: CapacitorConfig = {
       NSMicrophoneUsageDescription: 'This app uses your microphone to record voice messages for relationship advice and profile enhancement.',
       CFBundleDisplayName: 'Purposely',
       CFBundleName: 'Purposely',
-      // iPad-specific configurations
-      UIRequiresFullScreen: false,
-      UISupportedInterfaceOrientations: ['UIInterfaceOrientationPortrait', 'UIInterfaceOrientationLandscapeLeft', 'UIInterfaceOrientationLandscapeRight'],
-      'UISupportedInterfaceOrientations~ipad': ['UIInterfaceOrientationPortrait', 'UIInterfaceOrientationPortraitUpsideDown', 'UIInterfaceOrientationLandscapeLeft', 'UIInterfaceOrientationLandscapeRight'],
+      // iPhone-only configuration (no iPad support)
+      UIRequiresFullScreen: true,
+      UISupportedInterfaceOrientations: ['UIInterfaceOrientationPortrait'],
+      LSRequiresIPhoneOS: true,
       UIStatusBarHidden: false,
       UIViewControllerBasedStatusBarAppearance: true
     }
