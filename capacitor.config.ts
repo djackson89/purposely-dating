@@ -35,6 +35,7 @@ const config: CapacitorConfig = {
       CFBundleDisplayName: 'Purposely',
       CFBundleName: 'Purposely',
       // iPhone-only configuration (no iPad support)
+      UIDeviceFamily: [1], // 1 = iPhone only, 2 = iPad, [1,2] = Universal
       UIRequiresFullScreen: true,
       UISupportedInterfaceOrientations: ['UIInterfaceOrientationPortrait'],
       LSRequiresIPhoneOS: true,
