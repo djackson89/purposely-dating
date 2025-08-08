@@ -230,9 +230,9 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
       {/* Master Category Selection */}
       {showCategorySelection && (
         <div className="space-y-3">
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
             <Label className="text-sm font-medium">Choose Category:</Label>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <Button
                 variant={masterCategory === 'Date Night' ? 'default' : 'outline'}
                 size="sm"
