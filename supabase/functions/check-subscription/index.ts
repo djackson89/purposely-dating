@@ -97,13 +97,13 @@ serve(async (req) => {
           }
         }
 
-        // Detect add-on by scanning items for $2.99/month
+        // Detect add-on by scanning items for $2.99/week
         const subHasAddon = sub.items.data.some((item) => {
           const price = item.price;
           return (
             price?.unit_amount === 299 &&
             price?.currency === 'usd' &&
-            price?.recurring?.interval === 'month'
+            price?.recurring?.interval === 'week'
           );
         });
         if (subHasAddon) hasIntimacyAddon = true;

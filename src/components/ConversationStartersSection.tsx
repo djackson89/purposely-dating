@@ -851,7 +851,7 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
               <div className="text-3xl">🔥</div>
               <h3 className="text-xl font-semibold">Unlock 18+ Intimacy</h3>
               <p className="text-sm text-muted-foreground">Access spicy conversation starters designed for consenting adults.</p>
-              <p className="text-sm font-medium">$2.99/month • No trial • Cancel anytime</p>
+              <p className="text-sm font-medium">$2.99/week • No trial • Cancel anytime</p>
             </div>
             <Button
               onClick={() => {
@@ -860,7 +860,7 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
               }}
               className="w-full bg-gradient-romance text-white"
             >
-              Unlock for $2.99/mo
+              Unlock for $2.99/week
             </Button>
             <Button variant="ghost" className="w-full" onClick={() => setShowIntimacyAddonModal(false)}>Maybe Later</Button>
           </div>

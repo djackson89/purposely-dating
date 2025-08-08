@@ -53,7 +53,7 @@ serve(async (req) => {
       throw new Error("No active Premium subscription. Please subscribe to Premium first.");
     }
 
-    // Create a checkout session for the $2.99/month add-on, no trial
+    // Create a checkout session for the $2.99/week add-on, no trial
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
@@ -63,7 +63,7 @@ serve(async (req) => {
             currency: "usd",
             product_data: { name: "18+ Intimacy Add-on" },
             unit_amount: 299,
-            recurring: { interval: "month" },
+            recurring: { interval: "week" },
           },
           quantity: 1,
         },
