@@ -128,6 +128,12 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
 
   // Categories that are locked for users who haven't reviewed
   const lockedCategories = ['Intimacy & Connection', 'Communication & Conflict', 'Customize'];
+
+  // Free categories (accessible without Premium)
+  const freeCategories = React.useMemo(() => new Set<string>([
+    'First Date Deep Dive',
+    'Pillow Talk & Tea',
+  ]), []);
   
   // Check if user has left a review
   const hasReviewedApp = React.useMemo(() => {
@@ -139,22 +145,45 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
     return lockedCategories.includes(category) && !hasReviewedApp;
   }, [hasReviewedApp]);
 
-  // Handle category selection with lock check
+  // Determine if category is part of the 18+ Intimacy master category
+  const isIntimacyCategory = React.useCallback((category: string): boolean => {
+    const starter = conversationStarters.find(s => s.category === category);
+    return ((starter?.masterCategory) || 'Date Night') === '18+ Intimacy';
+  }, [conversationStarters]);
+
+  // Handle category selection with Premium/Add-on gating + review lock check
   const handleCategoryClick = React.useCallback((category: string) => {
+    // 1) Premium gate: everything except explicitly free categories
+    if (!freeCategories.has(category)) {
+      if (!subscription.subscribed) {
+        onPaywallTrigger?.('view_limit');
+        return;
+      }
+      // 18+ add-on requirement
+      if (isIntimacyCategory(category) && !subscription.has_intimacy_addon) {
+        setShowIntimacyAddonModal(true);
+        return;
+      }
+    }
+
+    // 2) Review lock check (secondary)
     if (isCategoryLocked(category)) {
       setSelectedLockedCategory(category);
       setLockedModalOpen(true);
-    } else {
-      selectCategory(category);
-      // Track question view for sneak peek users when entering a category
-      if (sneakPeekTracking?.isSneakPeek) {
-        const shouldTriggerPaywall = sneakPeekTracking.trackQuestionViewed();
-        if (shouldTriggerPaywall) {
-          onPaywallTrigger?.('view_limit');
-        }
+      return;
+    }
+
+    // 3) Proceed to select category
+    selectCategory(category);
+
+    // Track question view for sneak peek users when entering a category
+    if (sneakPeekTracking?.isSneakPeek) {
+      const shouldTriggerPaywall = sneakPeekTracking.trackQuestionViewed();
+      if (shouldTriggerPaywall) {
+        onPaywallTrigger?.('view_limit');
       }
     }
-  }, [isCategoryLocked, selectCategory, sneakPeekTracking, onPaywallTrigger]);
+  }, [freeCategories, subscription, isIntimacyCategory, isCategoryLocked, selectCategory, sneakPeekTracking, onPaywallTrigger]);
 
   // Memoized category emojis to prevent recreation
   const categoryEmojis = React.useMemo(() => ({
