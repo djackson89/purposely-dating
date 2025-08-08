@@ -294,7 +294,7 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile, sneakPee
     },
     {
       category: "Intimacy & Connection",
-      masterCategory: "Date Night",
+      masterCategory: "18+ Intimacy",
       prompts: [
         "How do you differentiate between physical chemistry and deeper emotional intimacy?",
         "What does it mean to you when someone makes you feel emotionally safe during vulnerable moments?",
@@ -308,6 +308,54 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile, sneakPee
         "What's the difference between performing for a partner versus authentically sharing yourself?",
         "How do you communicate boundaries around intimacy without creating distance?",
         "What role does anticipation and emotional buildup play in your ideal intimate experiences?"
+      ]
+    },
+    {
+      category: "Sensory Dares",
+      masterCategory: "18+ Intimacy",
+      prompts: [
+        "Would you be open to a 60-second touch game: eyes closed, one of us leads with gentle instructions?",
+        "What type of slow, intentional touch instantly helps you relax and feel present?",
+        "If we tried a 'no-words' connection experiment for two minutes, what would you want to explore?",
+        "Which sense—scent, sound, sight, taste, or touch—gets you into a romantic mood fastest?",
+        "What boundary around physical play actually makes you feel safer and more turned-on?",
+        "Would you like to try a 'guided breath and touch' exercise together sometime?"
+      ]
+    },
+    {
+      category: "Scenario Sparks",
+      masterCategory: "18+ Intimacy",
+      prompts: [
+        "Imagine it's a rainy night in—what cozy, flirty scene are we creating together?",
+        "We're planning a private date at home; what's the vibe from music to lighting?",
+        "Roleplay idea: strangers at a hotel bar. What's your character's energy and secret?",
+        "What 'slow-burn' scenario turns you on more than something instant?",
+        "If tonight had a theme—tease, tenderness, or tension—what would you choose and why?",
+        "Pick one: spontaneous kiss in the kitchen, slow dance in the living room, or quiet cuddle under a blanket?"
+      ]
+    },
+    {
+      category: "Truth Pulse",
+      masterCategory: "18+ Intimacy",
+      prompts: [
+        "What helps you feel fully desired—not just attractive, but deeply wanted?",
+        "What’s one small, intimate gesture that always makes you melt?",
+        "When do you feel most confident in your body and energy?",
+        "What turns nervousness into excitement for you before intimacy?",
+        "What’s a boundary you appreciate having respected—and why does it matter?",
+        "What does aftercare look like for you when you’ve been really vulnerable?"
+      ]
+    },
+    {
+      category: "Open-Ended Invitations",
+      masterCategory: "18+ Intimacy",
+      prompts: [
+        "Would you be open to exploring a 'no-pressure curiosity' date where we try something new slowly?",
+        "If I planned a night focused entirely on your pleasure and comfort, what would it include?",
+        "Want to create a private 'yes/maybe/no' list together to guide exploration?",
+        "If we built a 'safe words' system—playful and clear—what would our words be?",
+        "How would you feel about setting aside time for slow intimacy with zero goals—just connection?",
+        "If I asked you to teach me the way you like to be touched, how would we start?"
       ]
     },
     {
@@ -1843,7 +1891,11 @@ Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid gen
                           "Self-Awareness & Growth": "🌱",
                           "Relationship Talk": "💭",
                           "Intimacy": "💗",
-                          "Customize": "⚙️"
+                          "Customize": "⚙️",
+                          "Sensory Dares": "🔥",
+                          "Scenario Sparks": "🎇",
+                          "Truth Pulse": "💓",
+                          "Open-Ended Invitations": "💌"
                         };
                         return categoryEmojis[selectedCategory] || "💭";
                       })()}

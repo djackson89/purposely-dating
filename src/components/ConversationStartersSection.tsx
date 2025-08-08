@@ -173,7 +173,11 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
     "Pillow Talk & Tea": "🛏️",
     "Retrograde & Regrets": "🌙",
     "Vulnerable & Valid": "💕",
-    "Hot Mess Express": "🚂"
+    "Hot Mess Express": "🚂",
+    "Sensory Dares": "🔥",
+    "Scenario Sparks": "🎇",
+    "Truth Pulse": "💓",
+    "Open-Ended Invitations": "💌"
   }), []);
 
   // Memoized descriptions to prevent recreation
@@ -197,7 +201,11 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
     "Pillow Talk & Tea": "Spill your secrets and stir the tea with a flirty twist - bedroom confessions & spicy secrets",
     "Retrograde & Regrets": "Let the stars drag your dating life - zodiac-inspired relationship questions",
     "Vulnerable & Valid": "Safe space conversations for emotional intimacy and growth",
-    "Hot Mess Express": "Unleash your chaos queen - girl-talk about dating drama"
+    "Hot Mess Express": "Unleash your chaos queen - girl-talk about dating drama",
+    "Sensory Dares": "Playful, consent-first prompts to explore touch and sensation",
+    "Scenario Sparks": "Roleplay-style what-would-you-do scenes to heat things up",
+    "Truth Pulse": "Intimate truth questions to deepen trust and chemistry",
+    "Open-Ended Invitations": "Gentle invites that encourage shared desire and exploration"
   }), []);
 
   const getDescription = React.useCallback((category: string): string => {
@@ -240,6 +248,14 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
                 className="rounded-full px-4 py-1 text-xs"
               >
                 👯‍♀️ Girl's Night
+              </Button>
+              <Button
+                variant={masterCategory === '18+ Intimacy' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setMasterCategory('18+ Intimacy')}
+                className="rounded-full px-4 py-1 text-xs"
+              >
+                🔥 18+ Intimacy
               </Button>
             </div>
           </div>
