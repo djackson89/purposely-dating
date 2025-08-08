@@ -71,32 +71,44 @@ serve(async (req) => {
     const subscriptions = await stripe.subscriptions.list({
       customer: customerId,
       status: "active",
-      limit: 1,
+      limit: 10,
+      expand: ["data.items.data.price"],
     });
-    const hasActiveSub = subscriptions.data.length > 0;
+    const hasAnyActive = subscriptions.data.length > 0;
     let subscriptionTier = null;
     let subscriptionEnd = null;
+    let hasIntimacyAddon = false;
+    let hasPremium = false;
 
-    if (hasActiveSub) {
-      const subscription = subscriptions.data[0];
-      subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
-      logStep("Active subscription found", { subscriptionId: subscription.id, endDate: subscriptionEnd });
-      
-      // Determine subscription tier from price
-      const priceId = subscription.items.data[0].price.id;
-      const price = await stripe.prices.retrieve(priceId);
-      const amount = price.unit_amount || 0;
-      const interval = price.recurring?.interval;
-      
-      if (interval === 'week') {
-        subscriptionTier = "Weekly";
-      } else if (interval === 'year') {
-        subscriptionTier = "Yearly";
-      } else {
-        subscriptionTier = "Premium";
+    if (hasAnyActive) {
+      // Evaluate across all active subscriptions
+      for (const sub of subscriptions.data) {
+        // track the most distant end date
+        const end = new Date(sub.current_period_end * 1000).toISOString();
+        if (!subscriptionEnd || end > subscriptionEnd) subscriptionEnd = end;
+
+        // Determine if this sub is premium by interval week/year
+        const firstItem = sub.items.data[0];
+        const interval = firstItem.price?.recurring?.interval;
+        if (interval === 'week' || interval === 'year') {
+          hasPremium = true;
+          if (!subscriptionTier) {
+            subscriptionTier = interval === 'week' ? 'Weekly' : 'Yearly';
+          }
+        }
+
+        // Detect add-on by scanning items for $2.99/month
+        const subHasAddon = sub.items.data.some((item) => {
+          const price = item.price;
+          return (
+            price?.unit_amount === 299 &&
+            price?.currency === 'usd' &&
+            price?.recurring?.interval === 'month'
+          );
+        });
+        if (subHasAddon) hasIntimacyAddon = true;
       }
-      
-      logStep("Determined subscription tier", { priceId, amount, interval, subscriptionTier });
+      logStep("Computed subscription flags", { hasPremium, hasIntimacyAddon, subscriptionEnd, subscriptionTier });
     } else {
       logStep("No active subscription found");
     }
@@ -105,17 +117,19 @@ serve(async (req) => {
       email: user.email,
       user_id: user.id,
       stripe_customer_id: customerId,
-      subscribed: hasActiveSub,
+      subscribed: hasPremium,
       subscription_tier: subscriptionTier,
       subscription_end: subscriptionEnd,
+      has_intimacy_addon: hasIntimacyAddon,
       updated_at: new Date().toISOString(),
     }, { onConflict: 'email' });
 
-    logStep("Updated database with subscription info", { subscribed: hasActiveSub, subscriptionTier });
+    logStep("Updated database with subscription info", { subscribed: hasPremium, subscriptionTier, hasIntimacyAddon });
     return new Response(JSON.stringify({
-      subscribed: hasActiveSub,
+      subscribed: hasPremium,
       subscription_tier: subscriptionTier,
-      subscription_end: subscriptionEnd
+      subscription_end: subscriptionEnd,
+      has_intimacy_addon: hasIntimacyAddon
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,

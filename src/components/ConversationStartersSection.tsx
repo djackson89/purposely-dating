@@ -8,6 +8,8 @@ import { Share, Users, Trash2, Expand, Send, Lock } from 'lucide-react';
 import { InfoDialog } from '@/components/ui/info-dialog';
 import { useDevice } from '@/hooks/useDevice';
 import LockedCategoryModal from './LockedCategoryModal';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { useSubscription } from '@/hooks/useSubscription';
 
 interface OnboardingData {
   loveLanguage: string;
@@ -121,6 +123,8 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
   const { isNative } = useDevice();
   const [lockedModalOpen, setLockedModalOpen] = useState(false);
   const [selectedLockedCategory, setSelectedLockedCategory] = useState<string>('');
+  const { subscription, createIntimacyAddonCheckout, checkSubscription } = useSubscription();
+  const [showIntimacyAddonModal, setShowIntimacyAddonModal] = useState(false);
 
   // Categories that are locked for users who haven't reviewed
   const lockedCategories = ['Intimacy & Connection', 'Communication & Conflict', 'Customize'];
@@ -252,7 +256,20 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
               <Button
                 variant={masterCategory === '18+ Intimacy' ? 'default' : 'outline'}
                 size="sm"
-                onClick={() => setMasterCategory('18+ Intimacy')}
+                onClick={async () => {
+                  // Require Premium + 18+ add-on
+                  if (!subscription.subscribed) {
+                    onPaywallTrigger?.('view_limit');
+                    return;
+                  }
+                  // Refresh subscription status just in case
+                  await checkSubscription();
+                  if (!subscription.has_intimacy_addon) {
+                    setShowIntimacyAddonModal(true);
+                    return;
+                  }
+                  setMasterCategory('18+ Intimacy');
+                }}
                 className="rounded-full px-4 py-1 text-xs"
               >
                 🔥 18+ Intimacy
@@ -796,6 +813,30 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
           )}
         </div>
       )}
+
+      {/* 18+ Add-on Modal */}
+      <Dialog open={showIntimacyAddonModal} onOpenChange={setShowIntimacyAddonModal}>
+        <DialogContent className="sm:max-w-md">
+          <div className="space-y-4">
+            <div className="text-center space-y-2">
+              <div className="text-3xl">🔥</div>
+              <h3 className="text-xl font-semibold">Unlock 18+ Intimacy</h3>
+              <p className="text-sm text-muted-foreground">Access spicy conversation starters designed for consenting adults.</p>
+              <p className="text-sm font-medium">$2.99/month • No trial • Cancel anytime</p>
+            </div>
+            <Button
+              onClick={() => {
+                createIntimacyAddonCheckout();
+                setShowIntimacyAddonModal(false);
+              }}
+              className="w-full bg-gradient-romance text-white"
+            >
+              Unlock for $2.99/mo
+            </Button>
+            <Button variant="ghost" className="w-full" onClick={() => setShowIntimacyAddonModal(false)}>Maybe Later</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Locked Category Modal */}
       <LockedCategoryModal

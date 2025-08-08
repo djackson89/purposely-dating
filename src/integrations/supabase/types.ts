@@ -330,6 +330,7 @@ export type Database = {
         Row: {
           created_at: string
           email: string
+          has_intimacy_addon: boolean
           id: string
           stripe_customer_id: string | null
           subscribed: boolean
@@ -341,6 +342,7 @@ export type Database = {
         Insert: {
           created_at?: string
           email: string
+          has_intimacy_addon?: boolean
           id?: string
           stripe_customer_id?: string | null
           subscribed?: boolean
@@ -352,6 +354,7 @@ export type Database = {
         Update: {
           created_at?: string
           email?: string
+          has_intimacy_addon?: boolean
           id?: string
           stripe_customer_id?: string | null
           subscribed?: boolean

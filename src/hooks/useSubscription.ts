@@ -7,6 +7,7 @@ interface SubscriptionData {
   subscribed: boolean;
   subscription_tier?: string;
   subscription_end?: string;
+  has_intimacy_addon?: boolean;
 }
 
 export const useSubscription = () => {
@@ -98,6 +99,31 @@ export const useSubscription = () => {
     }
   };
 
+  const createIntimacyAddonCheckout = async () => {
+    if (!user) {
+      toast({
+        title: "Please log in",
+        description: "You need to be logged in to purchase the add-on",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase.functions.invoke('create-intimacy-addon');
+      if (error) {
+        console.error('Error creating add-on session:', error);
+        toast({ title: "Add-on purchase failed", description: error.message || "Please try again later", variant: "destructive" });
+        return;
+      }
+      if (data?.url) {
+        window.open(data.url, '_blank');
+      }
+    } catch (error) {
+      console.error('Add-on session creation failed:', error);
+      toast({ title: "Add-on purchase failed", description: "Please try again later", variant: "destructive" });
+    }
+  };
   const openCustomerPortal = async () => {
     if (!user) {
       toast({
@@ -144,6 +170,7 @@ export const useSubscription = () => {
     loading,
     checkSubscription,
     createCheckoutSession,
+    createIntimacyAddonCheckout,
     openCustomerPortal,
   };
 };
