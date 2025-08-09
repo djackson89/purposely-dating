@@ -1844,7 +1844,6 @@ Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid gen
         </Card>
       )}
       </div>
-      )}
 
       {/* Full Screen Question Modal */}
       <Dialog open={isFullScreen} onOpenChange={setIsFullScreen}>
