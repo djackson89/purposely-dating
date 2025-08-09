@@ -209,6 +209,7 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
     "Hot Mess Express": "🚂",
     "Sensory Dares": "🔥",
     "Scenario Sparks": "🎇",
+    "Scenario Choices": "🎭",
     "Truth Pulse": "💓",
     "Open-Ended Invitations": "💌"
   }), []);
@@ -237,6 +238,7 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
     "Hot Mess Express": "Unleash your chaos queen - girl-talk about dating drama",
     "Sensory Dares": "Playful, consent-first prompts to explore touch and sensation",
     "Scenario Sparks": "Roleplay-style what-would-you-do scenes to heat things up",
+    "Scenario Choices": "Vivid choose-your-reaction scenes with flirty A–D options",
     "Truth Pulse": "Intimate truth questions to deepen trust and chemistry",
     "Open-Ended Invitations": "Gentle invites that encourage shared desire and exploration"
   }), []);

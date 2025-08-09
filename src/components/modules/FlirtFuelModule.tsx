@@ -357,6 +357,30 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile, sneakPee
       ]
     },
     {
+      category: "Scenario Choices",
+      masterCategory: "18+ Intimacy",
+      prompts: [
+        {
+          statement: "You walk into the bedroom to dim lights, soft music, and me waiting with a sly smile. You…",
+          options: [
+            { key: "A", text: "Walk straight over, pull me close, and kiss me deeply" },
+            { key: "B", text: "Sit across from me and ask me to describe what I have planned" },
+            { key: "C", text: "Slowly circle the room, teasing me by keeping your distance" },
+            { key: "D", text: "Whisper something that makes my cheeks flush" }
+          ]
+        },
+        {
+          statement: "We're at a crowded party, and I lean in close to tell you a secret, my lips brushing your ear. You…",
+          options: [
+            { key: "A", text: "Pull me somewhere private immediately" },
+            { key: "B", text: "Smile and ask me to say it again—slower" },
+            { key: "C", text: "Tease me back with a whisper of your own" },
+            { key: "D", text: "Pretend nothing happened and make me chase your attention" }
+          ]
+        }
+      ]
+    },
+    {
       category: "Communication & Conflict",
       masterCategory: "Date Night",
       prompts: [
@@ -1109,6 +1133,14 @@ Format as: Statement? followed by A. [option] B. [option] C. [option] D. [option
           prompt = `Generate 25 consent-focused sensory dares for adult couples. Match the tone, rhythm, and structure of these examples without repeating them: "Close your eyes while I trace something soft along your skin. Guess what it is?", "Stand still while I whisper three things I want to do to you, but I won't touch you yet.", "Let me feed you something sweet… but you have to keep your hands behind your back." Use sensual, evocative language (warmth, breath, fingertips, slow movements, closeness, goosebumps, lips) and imply desire without explicit acts. Vary patterns: imperative + condition, whisper/eyes closed/anticipation, food/temperature/texture, breath/movement/timing. Each line must be a single question ending with a question mark, may optionally begin with "Dare:", avoid crude terms, and avoid repeating the same opening three words across lines.`;
         } else if (selectedCategory === 'Scenario Sparks') {
           prompt = `Write 25 short, vivid roleplay-style scenario starters for adult couples. Match the tonality, rhythm, and structure of these examples without repeating them: "We've just checked into a luxury hotel. There's champagne chilling, the curtains are drawn… what happens next?", "You come home late, and I'm already in bed—but I'm not asleep. What do you do?", "We're dancing somewhere dark and crowded. My lips are almost at your ear… what do I whisper?", "We get locked inside an elevator for 10 minutes. How do we pass the time?" Use second-person invitations and present-tense setups with sensory cues (dim lights, fabric, shadows, breath, footsteps, rain, elevator hum). Keep it suggestive—not explicit—and lean on implication over description. Vary settings (hotel, living room, hallway, balcony, car at night, kitchen at midnight, elevator, rooftop in the rain) and dynamics (reunion, interruption, near-miss, temptation). Each line must be exactly one sentence, end with a question mark, avoid crude terms, avoid numbering, and avoid repeating the same opening three words across items.`;
+        } else if (selectedCategory === 'Scenario Choices') {
+          prompt = `Create 25 short, vivid, suggestive hypothetical scenarios for adult couples, each followed by four multiple-choice options labeled A., B., C., D. Tone: sensual, playful, a little daring, but tasteful and non-explicit. Scenario length: 1–3 sentences to set mood quickly. Options must include: one bold/adventurous choice, one soft/romantic choice, one teasing/playful choice, and optionally one mysterious or unexpected choice. Use settings that mix cozy/private with thrilling/public-edge moments (still non-explicit). Output format strictly:
+Scenario?
+A. [bold/adventurous]
+B. [soft/romantic]
+C. [teasing/playful]
+D. [mysterious/unexpected]
+Ensure options spark follow-up conversation and curiosity. Do not number scenarios; write 25 in a row.`;
         } else if (selectedCategory === 'Truth Pulse') {
           prompt = `Create 25 intimate, adult truth questions for couples. Match the tone and structure of these examples without repeating them: "What’s one fantasy you’ve never told me about?", "When was the first time you realized you were attracted to me?", "If you could plan our perfect intimate night from start to finish, what would it include?", "What’s one thing you wish I would do more often in bed?" Keep it sensual, emotionally revealing, and non-explicit. Use vivid but tasteful wording, invite vulnerability and desire, and vary patterns (when/first time, what/which, describe, wish, favorite, memory, curiosity). Each line must be exactly one sentence, be a single question ending with a question mark, avoid crude terms, avoid numbering, and avoid repeating the same opening three words across items.`;
         } else if (selectedCategory === 'Open-Ended Invitations') {
@@ -1131,7 +1163,7 @@ Format as: Statement? followed by A. [option] B. [option] C. [option] D. [option
             ).map(line => 
               line.replace(/^\d+\.?\s*/, '').replace(/\*\*/g, '').replace(/[""'']/g, "'").replace(/[^\w\s\?\.\!\,\:\;\(\)\-\'\"]/g, '').trim()
             ).slice(0, 25);
-          } else if (selectedCategory === 'Pillow Talk & Tea') {
+          } else if (selectedCategory === 'Pillow Talk & Tea' || selectedCategory === 'Scenario Choices') {
             // Parse multiple-choice questions
             const responseLines = response.split('\n').filter(line => line.trim());
             const multipleChoiceQuestions = [];
@@ -1903,6 +1935,7 @@ Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid gen
                           "Customize": "⚙️",
                           "Sensory Dares": "🔥",
                           "Scenario Sparks": "🎇",
+                          "Scenario Choices": "🎭",
                           "Truth Pulse": "💓",
                           "Open-Ended Invitations": "💌"
                         };
