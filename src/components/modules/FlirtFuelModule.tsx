@@ -915,8 +915,13 @@ Format as: Statement? followed by A. [option] B. [option] C. [option] D. [option
     if (!customKeywords.trim()) return;
     
     try {
-      const prompt = `Generate 25 emotionally intelligent conversation starter questions based on these keywords: ${customKeywords}. The questions should go beyond surface-level topics and explore relationship boundaries, emotional dynamics, and authentic connection. Make them specific enough that someone thinks "Wow, I never thought to ask that before." Focus on topics that reveal character, values, and emotional maturity while incorporating the mood/themes of the keywords provided.`;
-      const aiType = selectedCategory === 'Intimacy' ? 'intimacy' : 'flirt';
+      // Build a customized prompt; use intimacy style when in 18+ category
+      const isIntimacy = masterCategory === '18+ Intimacy';
+      const spice = depthLevel[0] === 0 ? 'soft, romantic' : depthLevel[0] === 1 ? 'flirtatious, teasing' : 'bold, high-tension (still non-explicit)';
+      const prompt = isIntimacy
+        ? `Based on these preferences/keywords: ${customKeywords}, generate 25 personalized conversation pieces for couples. Blend conversation starters, sensory-style dares, scenario sparks, intimate truths, and open-ended invitations. Keep language seductive but non-explicit and consent-forward. Calibrate spice to a ${spice} tone. Each item must be a single-line question ending with a question mark. You may optionally prefix items with labels like "Dare:", "Scenario:", "Truth:", or "Invite:". Avoid crude terms and graphic detail.`
+        : `Generate 25 emotionally intelligent conversation starter questions based on these keywords: ${customKeywords}. The questions should go beyond surface-level topics and explore relationship boundaries, emotional dynamics, and authentic connection. Make them specific enough that someone thinks "Wow, I never thought to ask that before." Focus on topics that reveal character, values, and emotional maturity while incorporating the mood/themes of the keywords provided.`;
+      const aiType = isIntimacy ? 'intimacy' : 'flirt';
       const response = await getAIResponse(prompt, userProfile, aiType);
       
       // Parse the response into an array of questions
@@ -1099,7 +1104,17 @@ Format as: Statement? followed by A. [option] B. [option] C. [option] D. [option
         } else if (selectedCategory === 'Self-Awareness & Growth') {
           prompt = `Generate 25 new conversation starter questions that explore personal development, self-awareness, and emotional growth within relationships. Focus on how people understand themselves, work on their issues, and show up authentically in partnerships. Address topics like attachment styles, family patterns, and individual responsibility. Make them introspective enough to promote meaningful self-discovery. Make them different from these examples: ${category.prompts.slice(0, 5).join(', ')}`;
         } else if (selectedCategory === 'Intimacy & Connection') {
-          prompt = `Generate 25 new conversation starter questions that explore emotional and physical intimacy in relationships. Focus on the deeper aspects of connection, vulnerability, and authentic sharing between partners. Address topics like emotional safety, sexual communication, and intimate bonding. Make them thoughtful enough to deepen understanding of each other's intimate needs. Make them different from these examples: ${category.prompts.slice(0, 5).join(', ')}`;
+          // 18+ Intimacy: suggestive, emotionally charged, non-explicit
+          prompt = `Create 25 conversation starters that help couples explore and deepen both their emotional and physical connection. Blend heartfelt vulnerability with sensual undertones—questions that spark trust, longing, and romantic curiosity. Keep it suggestive rather than graphic, using intimate, emotionally charged language that hints at desire without explicit detail. Each item must be a single-line question ending with a question mark. Do not number the list. Make them different from these examples: ${category.prompts.slice(0, 5).join(', ')}`;
+        } else if (selectedCategory === 'Sensory Dares') {
+          // Consent-forward sensory dares, phrased as questions to fit parser
+          prompt = `Generate 25 playful, consent-focused sensory dares that encourage couples to explore touch, sensation, and anticipation. Use sensual language—warmth, breath, fingertips, slow movements—without detailing explicit acts. The goal is to tease through mystery and suggestion so the dare feels sexy and irresistible. Format each as a single-line question ending with a question mark, optionally prefixed with "Dare:" (e.g., "Dare: Close your eyes while I trace something soft along your skin—are you in?"). Avoid crude terms and graphic detail.`;
+        } else if (selectedCategory === 'Scenario Sparks') {
+          prompt = `Write 25 short, vivid roleplay-style scenario starters that place couples in steamy, high-tension situations. Invite a "what would you do" response that blends flirtation, attraction, and playful seduction. Keep them immersive and charged with desire, but avoid explicit anatomical descriptions—let implication do the work. Each item must be 1 sentence and end with a question mark (e.g., "We’ve just checked into a luxury hotel… what happens next?"). Do not number the list.`;
+        } else if (selectedCategory === 'Truth Pulse') {
+          prompt = `Create 25 intimate truth-based questions that blend emotional vulnerability with sexual curiosity. Encourage partners to share hidden desires, turn-ons, or fantasy-tinged memories in a way that feels daring but safe. Avoid crude terms—use artful, enticing wording that stays sensual and emotionally revealing. Each item must be a single-line question ending with a question mark.`;
+        } else if (selectedCategory === 'Open-Ended Invitations') {
+          prompt = `Develop 25 gentle yet suggestive invitations that encourage partners to explore new experiences together. They should feel like tempting offers—an open door to play, romance, or sensual discovery—without being overtly graphic. Keep the tone warm, alluring, and full of possibility. Each item must be phrased as a single-line question and end with a question mark.`;
         } else if (selectedCategory === 'Pillow Talk & Tea') {
           prompt = `Generate 25 new multiple-choice questions for a "girl's night" conversation game about bedroom confessions, spicy secrets, and flirty topics. Each question should have a statement followed by 4 suggestive, revealing options labeled A, B, C, D. The tone should be fun, intimate, cheeky, bold, and playful - like late-night girl talk with wine in hand. Focus on turn-ons, hookup stories, fantasies, bedroom moves, post-hookup thoughts, and intimate confessions that girlfriends share with each other. Make them slightly provocative but always with a vibe of friendship, laughter, and trust. Format as: "Statement?" with options A. [option] B. [option] C. [option] D. [option]. Make them different from these examples: ${category.prompts.slice(0, 2).map(p => typeof p === 'object' ? p.statement : p).join(', ')}`;
         } else {
@@ -1107,7 +1122,7 @@ Format as: Statement? followed by A. [option] B. [option] C. [option] D. [option
         }
         
         try {
-          const aiType = selectedCategory === 'Intimacy' ? 'intimacy' : 'flirt';
+          const aiType = (category.masterCategory === '18+ Intimacy') ? 'intimacy' : 'flirt';
           const response = await getAIResponse(prompt, userProfile, aiType);
           let questions = [];
           
