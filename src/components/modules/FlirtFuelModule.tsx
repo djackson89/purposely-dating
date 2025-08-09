@@ -852,7 +852,7 @@ Format as: Statement? followed by A. [option] B. [option] C. [option] D. [option
               return await adjustQuestionDepth(question, depth);
             } else {
               // For multiple-choice questions in Girl's Night categories, use special handling
-              if (selectedCategory === 'Pillow Talk & Tea') {
+              if (selectedCategory === 'Pillow Talk & Tea' || selectedCategory === 'Heat of the Moment') {
                 return await adjustMultipleChoiceDepth(question, depth);
               } else if (selectedCategory === 'Date Night Debates') {
                 // For Date Night Debates, preserve the provocative statement format without converting to questions
@@ -1238,16 +1238,16 @@ D. [mysterious/unexpected]`;
             for (let i = 0; i < responseLines.length; i++) {
               const line = responseLines[i].trim();
               // Consider any non-option line as a potential statement if followed by A-D options
-              if (!/^[A-D]\.?\s*/.test(line)) {
+              if (!/^[A-Da-d][\.\)\:\-–]\s*/.test(line)) {
                 const options: { key: string; text: string }[] = [];
                 
-                // Look for the next 4 lines for options A, B, C, D
+                // Look for the next 4 lines for options A, B, C, D (supports A., A), A:, A-)
                 for (let j = 1; j <= 4 && (i + j) < responseLines.length; j++) {
                   const optionLine = responseLines[i + j].trim();
-                  const optionMatch = optionLine.match(/^([A-D])\.?\s*(.+)/);
+                  const optionMatch = optionLine.match(/^([A-Da-d])[\.\)\:\-–]\s*(.+)/);
                   if (optionMatch) {
                     options.push({
-                      key: optionMatch[1],
+                      key: optionMatch[1].toUpperCase(),
                       text: optionMatch[2].replace(/\*\*/g, '').trim(),
                     });
                   }
@@ -1284,8 +1284,8 @@ D. [mysterious/unexpected]`;
                 questions.map(async (question) => {
                   if (typeof question === 'string') {
                     return await adjustQuestionDepth(question, depthLevel[0]);
-                  } else if (selectedCategory === 'Pillow Talk & Tea') {
-                    // Apply depth transformation to multiple-choice questions for Pillow Talk & Tea
+                  } else if (selectedCategory === 'Pillow Talk & Tea' || selectedCategory === 'Heat of the Moment') {
+                    // Apply depth transformation to multiple-choice questions for Pillow Talk & Tea and Heat of the Moment
                     return await adjustMultipleChoiceDepth(question, depthLevel[0]);
                   } else {
                     return question; // Keep other multiple choice objects as-is
@@ -1310,8 +1310,8 @@ D. [mysterious/unexpected]`;
               shuffled.map(async (question) => {
                 if (typeof question === 'string') {
                   return await adjustQuestionDepth(question, depthLevel[0]);
-                } else if (selectedCategory === 'Pillow Talk & Tea') {
-                  // Apply depth transformation to multiple-choice questions for Pillow Talk & Tea
+                } else if (selectedCategory === 'Pillow Talk & Tea' || selectedCategory === 'Heat of the Moment') {
+                  // Apply depth transformation to multiple-choice questions for Pillow Talk & Tea and Heat of the Moment
                   return await adjustMultipleChoiceDepth(question, depthLevel[0]);
                 } else {
                   return question; // Keep other multiple choice objects as-is
