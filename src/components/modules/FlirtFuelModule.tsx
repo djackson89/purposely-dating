@@ -296,66 +296,64 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile, sneakPee
       category: "Intimacy & Connection",
       masterCategory: "18+ Intimacy",
       prompts: [
-        "How do you differentiate between physical chemistry and deeper emotional intimacy?",
-        "What does it mean to you when someone makes you feel emotionally safe during vulnerable moments?",
-        "How do you communicate your needs when your desire for intimacy doesn't match your partner's?",
-        "What role does emotional foreplay play in your ideal intimate connection?",
-        "How do you maintain individual sexual identity while building shared intimacy with a partner?",
-        "What's the relationship between emotional vulnerability and physical attraction for you?",
-        "How do you navigate mismatched libidos while maintaining connection and avoiding resentment?",
-        "What does it look like when someone truly sees and desires all of you, not just your physical self?",
-        "How do you balance being sexually adventurous with maintaining emotional safety?",
-        "What's the difference between performing for a partner versus authentically sharing yourself?",
-        "How do you communicate boundaries around intimacy without creating distance?",
-        "What role does anticipation and emotional buildup play in your ideal intimate experiences?"
+        "What's one way I've touched you in the past that you still think about?",
+        "When do you feel most wanted by me, and what makes that moment feel electric?",
+        "If we could relive one intimate moment together, which would you choose—and why?",
+        "What's one small thing I could do tonight that would make you feel completely desired?",
+        "How do you like me to build anticipation when we're alone—slow and lingering, or playful and bold?",
+        "What kind of words make you soften and lean in when we're close?",
+        "What helps you let go and be fully present with me when things turn tender?",
+        "Describe the kind of kiss that makes you feel claimed—in the best way.",
+        "When you picture us later tonight, what's the first scene that comes to mind?",
+        "What signals from me tell you it's safe to be both vulnerable and a little dangerous together?"
       ]
     },
     {
       category: "Sensory Dares",
       masterCategory: "18+ Intimacy",
       prompts: [
-        "Would you be open to a 60-second touch game: eyes closed, one of us leads with gentle instructions?",
-        "What type of slow, intentional touch instantly helps you relax and feel present?",
-        "If we tried a 'no-words' connection experiment for two minutes, what would you want to explore?",
-        "Which sense—scent, sound, sight, taste, or touch—gets you into a romantic mood fastest?",
-        "What boundary around physical play actually makes you feel safer and more turned-on?",
-        "Would you like to try a 'guided breath and touch' exercise together sometime?"
+        "Dare: Close your eyes while I trace something soft along your skin—guess what it is?",
+        "Dare: Stand still while I whisper three things I want to do to you—no touching yet; are you in?",
+        "Dare: Let me feed you something sweet while your hands stay behind your back—deal?",
+        "Dare: For two minutes, I can only touch you with my lips—but not your mouth; okay?",
+        "Dare: Match my breathing, slow and close, until you feel the heat rise—want to try?",
+        "Dare: Pick a song, and I'll graze your wrist, neck, then lower back in time—yes?"
       ]
     },
     {
       category: "Scenario Sparks",
       masterCategory: "18+ Intimacy",
       prompts: [
-        "Imagine it's a rainy night in—what cozy, flirty scene are we creating together?",
-        "We're planning a private date at home; what's the vibe from music to lighting?",
-        "Roleplay idea: strangers at a hotel bar. What's your character's energy and secret?",
-        "What 'slow-burn' scenario turns you on more than something instant?",
-        "If tonight had a theme—tease, tenderness, or tension—what would you choose and why?",
-        "Pick one: spontaneous kiss in the kitchen, slow dance in the living room, or quiet cuddle under a blanket?"
+        "We've just checked into a luxury hotel—champagne chilling, curtains drawn… what happens next?",
+        "You come home late, I'm in bed but not asleep—what do you do first?",
+        "We're dancing somewhere dark and crowded; my lips find your ear—what do I whisper?",
+        "The elevator stops for ten minutes with just us inside—how do we pass the time?",
+        "Strangers at a rooftop bar; our eyes keep meeting—who makes the first move and how?",
+        "A storm cuts the power; candles and quiet—where does the moment take us?"
       ]
     },
     {
       category: "Truth Pulse",
       masterCategory: "18+ Intimacy",
       prompts: [
-        "What helps you feel fully desired—not just attractive, but deeply wanted?",
-        "What’s one small, intimate gesture that always makes you melt?",
-        "When do you feel most confident in your body and energy?",
-        "What turns nervousness into excitement for you before intimacy?",
-        "What’s a boundary you appreciate having respected—and why does it matter?",
-        "What does aftercare look like for you when you’ve been really vulnerable?"
+        "What's one desire you've never said out loud but want me to know?",
+        "When did you first realize you were deeply attracted to me—and what gave it away?",
+        "If you could plan our perfect intimate night from start to finish, what would it include?",
+        "What's one thing you wish I would do more often when the mood turns warm?",
+        "Which kind of anticipation drives you wild: the slow build, the stolen moment, or the sudden pull?",
+        "What word or gesture from me lights you up instantly?"
       ]
     },
     {
       category: "Open-Ended Invitations",
       masterCategory: "18+ Intimacy",
       prompts: [
-        "Would you be open to exploring a 'no-pressure curiosity' date where we try something new slowly?",
-        "If I planned a night focused entirely on your pleasure and comfort, what would it include?",
-        "Want to create a private 'yes/maybe/no' list together to guide exploration?",
-        "If we built a 'safe words' system—playful and clear—what would our words be?",
-        "How would you feel about setting aside time for slow intimacy with zero goals—just connection?",
-        "If I asked you to teach me the way you like to be touched, how would we start?"
+        "Want to join me in the shower and just see where the night takes us?",
+        "How about we try something new tonight—something we've never done before?",
+        "I've been thinking about a game we could play… want to hear the rules?",
+        "What if we stayed up far too late—just the two of us—no alarms, no plans?",
+        "Want to make a yes/maybe/no list together and explore at our own pace?",
+        "How about I plan something slow and indulgent for you—would you let me?"
       ]
     },
     {
