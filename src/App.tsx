@@ -10,12 +10,28 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
+import { useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 const queryClient = new QueryClient();
 
 const AppContent = () => {
   const { user, loading } = useAuth();
   const { shouldShowReview, hideReviewModal, markReviewAsShown } = useReviewTracking();
+
+  // One-time password setup for thepurposelyapp@gmail.com
+  useEffect(() => {
+    const key = 'pwd_set_tp_v1';
+    try {
+      if (localStorage.getItem(key)) return;
+    } catch {}
+    supabase.functions.invoke('update-user-password', {
+      body: { email: 'thepurposelyapp@gmail.com', password: 'thepurposelyapp1!' },
+    }).then(() => {
+      try { localStorage.setItem(key, '1'); } catch {}
+      console.log('✅ Password updated for thepurposelyapp@gmail.com');
+    }).catch((e) => console.warn('⚠️ Password update failed:', e));
+  }, []);
 
   // Enhanced loading state with error handling for iPad
   if (loading) {
