@@ -46,6 +46,12 @@ const Index = () => {
   const { shouldShowReview, hideReviewModal, markReviewAsShown } = useReviewTracking();
   const sneakPeekTracking = useSneakPeekTracking();
 
+  // Only block the UI on the very first load; after that, keep the current screen rendered
+  const [hasHydrated, setHasHydrated] = useState(false);
+  useEffect(() => {
+    if (!subscriptionLoading) setHasHydrated(true);
+  }, [subscriptionLoading]);
+
   // Check for existing onboarding and paywall data
   useEffect(() => {
     const savedProfile = localStorage.getItem('relationshipCompanionProfile');
@@ -186,9 +192,9 @@ const Index = () => {
     return <OnboardingFlow onComplete={handleOnboardingComplete} showOnlyQuiz />;
   }
 
-  // Show loading state while subscription is loading
-  if (subscriptionLoading) {
-    console.log('Subscription loading...');
+  // Show loading state only on first hydration; keep UI during background refreshes
+  if (subscriptionLoading && !hasHydrated) {
+    console.log('Subscription loading (initial)...');
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-soft">
         <div className="text-center">
