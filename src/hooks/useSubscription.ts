@@ -10,12 +10,17 @@ interface SubscriptionData {
   has_intimacy_addon?: boolean;
 }
 
+// Simple module-level cache to avoid duplicate calls across components
+let subscriptionCache: SubscriptionData | null = null;
+let subscriptionCacheAt = 0;
+let subscriptionInFlight: Promise<SubscriptionData | null> | null = null;
+
 export const useSubscription = () => {
   const { user } = useAuth();
   const [subscription, setSubscription] = useState<SubscriptionData>({ subscribed: false });
   const [loading, setLoading] = useState(true);
 
-  const checkSubscription = async () => {
+  const checkSubscription = async (force = false) => {
     if (!user) {
       setSubscription({ subscribed: false });
       setLoading(false);
@@ -23,39 +28,59 @@ export const useSubscription = () => {
     }
 
     // Check for admin email first
-    if (user.email === 'thepurposleyapp@gmail.com') {
+    if (user.email === 'thepurposelyapp@gmail.com') {
       setSubscription({ 
         subscribed: true, 
         subscription_tier: 'Premium',
-        subscription_end: '2025-12-31T23:59:59.000Z'
+        subscription_end: '2025-12-31T23:59:59.000Z',
+        has_intimacy_addon: true,
       });
       setLoading(false);
       return;
     }
 
-    try {
-      setLoading(true);
-      const { data, error } = await supabase.functions.invoke('check-subscription');
-      
-      if (error) {
-        console.error('Error checking subscription:', error);
-        toast({
-          title: "Error checking subscription",
-          description: "Please try again later",
-          variant: "destructive"
-        });
-        return;
-      }
+    const now = Date.now();
+    if (!force && subscriptionCache && now - subscriptionCacheAt < 60_000) {
+      setSubscription(subscriptionCache);
+      setLoading(false);
+      return;
+    }
 
-      setSubscription(data);
-    } catch (error) {
-      console.error('Subscription check failed:', error);
-      toast({
-        title: "Subscription check failed",
-        description: "Please check your connection and try again",
-        variant: "destructive"
-      });
+    if (subscriptionInFlight) {
+      setLoading(true);
+      try {
+        const result = await subscriptionInFlight;
+        if (result) setSubscription(result);
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
+    setLoading(true);
+    subscriptionInFlight = (async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('check-subscription');
+        if (error) {
+          console.warn('check-subscription error:', error);
+          return null;
+        }
+        return data as SubscriptionData;
+      } catch (e) {
+        console.warn('Subscription check failed:', e);
+        return null;
+      }
+    })();
+
+    try {
+      const result = await subscriptionInFlight;
+      if (result) {
+        subscriptionCache = result;
+        subscriptionCacheAt = Date.now();
+        setSubscription(result);
+      }
     } finally {
+      subscriptionInFlight = null;
       setLoading(false);
     }
   };
