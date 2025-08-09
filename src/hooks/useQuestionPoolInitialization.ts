@@ -20,6 +20,12 @@ export const useQuestionPoolInitialization = (userProfile: UserProfile) => {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
+        const cacheKey = `qp_init_${user.id}`;
+        if (localStorage.getItem(cacheKey) === 'true') {
+          console.log('Question pool already initialized (cached) — skipping');
+          return;
+        }
+
         console.log('Initializing question pool for new user...');
 
         // Call the populate-question-pool edge function
@@ -35,8 +41,10 @@ export const useQuestionPoolInitialization = (userProfile: UserProfile) => {
           return;
         }
 
-        if (data.success) {
+        if (data?.success) {
           console.log('Question pool initialized successfully:', data.questionsGenerated, 'questions generated');
+          // Mark as initialized to avoid re-triggering on tab switches/remounts
+          localStorage.setItem(cacheKey, 'true');
           toast({
             title: "Welcome!",
             description: "Your personalized conversation starters are ready.",

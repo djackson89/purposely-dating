@@ -1579,7 +1579,7 @@ Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid gen
 
 
       {/* Conversation Starters */}
-      {activeSection === 'starters' && (
+      <div className={activeSection === 'starters' ? '' : 'hidden'}>
         <ConversationStartersSection
           userProfile={userProfile}
           conversationStarters={conversationStarters}
@@ -1627,226 +1627,223 @@ Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid gen
           isMultipleChoice={isMultipleChoice}
           getQuestionText={getQuestionText}
         />
-      )}
+      </div>
 
 
       {/* Text Genie */}
-      {activeSection === 'textgenie' && (
-        <div className="animate-fade-in-up">
-          {/* Section Heading */}
-          <div className="flex items-center justify-center space-x-2 mb-6">
-            <h2 className="text-xl font-semibold text-primary">Text Genie</h2>
-            <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center cursor-pointer hover:bg-primary/20 transition-colors">
-              <InfoDialog
-                title="Text Genie"
-                description="Get AI-powered help crafting the perfect text message replies. Share context through text, photos, or voice recordings, and receive personalized response suggestions with different tones and explanations."
-              />
-            </div>
+      <div className={activeSection === 'textgenie' ? 'animate-fade-in-up' : 'hidden'}>
+        {/* Section Heading */}
+        <div className="flex items-center justify-center space-x-2 mb-6">
+          <h2 className="text-xl font-semibold text-primary">Text Genie</h2>
+          <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center cursor-pointer hover:bg-primary/20 transition-colors">
+            <InfoDialog
+              title="Text Genie"
+              description="Get AI-powered help crafting the perfect text message replies. Share context through text, photos, or voice recordings, and receive personalized response suggestions with different tones and explanations."
+            />
           </div>
-          <TextGenie userProfile={userProfile} />
         </div>
-      )}
+        <TextGenie userProfile={userProfile} />
+      </div>
 
       {/* AI Practice */}
-      {activeSection === 'practice' && (
-        <div className="space-y-4 animate-fade-in-up">
-          {/* Section Heading */}
-          <div className="flex items-center justify-center space-x-2">
-            <h2 className="text-xl font-semibold text-primary">AI Practice</h2>
-            <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center cursor-pointer hover:bg-primary/20 transition-colors">
-              <InfoDialog
-                title="AI Practice"
-                description="Practice conversations with AI partners in a safe, judgment-free space. Build confidence and improve your communication skills before real dates."
-              />
-            </div>
+      <div className={activeSection === 'practice' ? 'space-y-4 animate-fade-in-up' : 'hidden'}>
+        {/* Section Heading */}
+        <div className="flex items-center justify-center space-x-2">
+          <h2 className="text-xl font-semibold text-primary">AI Practice</h2>
+          <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center cursor-pointer hover:bg-primary/20 transition-colors">
+            <InfoDialog
+              title="AI Practice"
+              description="Practice conversations with AI partners in a safe, judgment-free space. Build confidence and improve your communication skills before real dates."
+            />
           </div>
-        {!practicePartnerActive ? (
-          <Card className="shadow-romance border-primary/20">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Users className="w-5 h-5 text-primary animate-heart-pulse" />
-                <span>AI Practice Partner</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-3">
-                <Label htmlFor="scenario-select" className="text-sm font-medium">Choose Practice Scenario:</Label>
-                <Select value={practiceScenario} onValueChange={setPracticeScenario}>
-                  <SelectTrigger className="w-full bg-card">
-                    <SelectValue placeholder="Select a scenario" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-card border border-border shadow-lg">
-                    {practiceScenarios.map((scenario) => (
-                      <SelectItem 
-                        key={scenario.id} 
-                        value={scenario.id}
-                        className="bg-card hover:bg-muted cursor-pointer"
-                      >
-                        {scenario.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-muted-foreground">
-                  {practiceScenarios.find(s => s.id === practiceScenario)?.description}
-                </p>
-              </div>
-              
-              <Button 
-                onClick={startPracticeSession}
-                disabled={isLoading}
-                variant="romance" 
-                className="w-full"
-              >
-                {isLoading ? 'Starting...' : 'Start Practice Session ✨'}
-              </Button>
-            </CardContent>
-          </Card>
-        ) : (
-          <Card className="shadow-romance border-primary/20">
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="flex items-center space-x-2">
-                <Users className="w-5 h-5 text-primary animate-heart-pulse" />
-                <span>Practice Session</span>
-              </CardTitle>
-              <Button 
-                onClick={endPracticeSession}
-                variant="outline"
-                size="sm"
-              >
-                End Session
-              </Button>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Chat Messages */}
-              <div className="space-y-3 max-h-96 overflow-y-auto p-4 bg-muted/20 rounded-lg border">
-                {practiceMessages.map((message, index) => (
+        </div>
+      {!practicePartnerActive ? (
+        <Card className="shadow-romance border-primary/20">
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <Users className="w-5 h-5 text-primary animate-heart-pulse" />
+              <span>AI Practice Partner</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-3">
+              <Label htmlFor="scenario-select" className="text-sm font-medium">Choose Practice Scenario:</Label>
+              <Select value={practiceScenario} onValueChange={setPracticeScenario}>
+                <SelectTrigger className="w-full bg-card">
+                  <SelectValue placeholder="Select a scenario" />
+                </SelectTrigger>
+                <SelectContent className="bg-card border border-border shadow-lg">
+                  {practiceScenarios.map((scenario) => (
+                    <SelectItem 
+                      key={scenario.id} 
+                      value={scenario.id}
+                      className="bg-card hover:bg-muted cursor-pointer"
+                    >
+                      {scenario.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                {practiceScenarios.find(s => s.id === practiceScenario)?.description}
+              </p>
+            </div>
+            
+            <Button 
+              onClick={startPracticeSession}
+              disabled={isLoading}
+              variant="romance" 
+              className="w-full"
+            >
+              {isLoading ? 'Starting...' : 'Start Practice Session ✨'}
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card className="shadow-romance border-primary/20">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="flex items-center space-x-2">
+              <Users className="w-5 h-5 text-primary animate-heart-pulse" />
+              <span>Practice Session</span>
+            </CardTitle>
+            <Button 
+              onClick={endPracticeSession}
+              variant="outline"
+              size="sm"
+            >
+              End Session
+            </Button>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Chat Messages */}
+            <div className="space-y-3 max-h-96 overflow-y-auto p-4 bg-muted/20 rounded-lg border">
+              {practiceMessages.map((message, index) => (
+                <div
+                  key={index}
+                  className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
                   <div
-                    key={index}
-                    className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                    className={`max-w-[80%] p-3 rounded-lg ${
+                      message.role === 'user'
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-card border border-border'
+                    }`}
                   >
-                    <div
-                      className={`max-w-[80%] p-3 rounded-lg ${
-                        message.role === 'user'
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-card border border-border'
-                      }`}
-                    >
-                      <p className="text-lg">{message.message}</p>
-                    </div>
+                    <p className="text-lg">{message.message}</p>
                   </div>
-                ))}
-                {isLoading && (
-                  <div className="flex justify-start">
-                    <div className="bg-card border border-border p-3 rounded-lg">
-                      <p className="text-sm text-muted-foreground">Practice partner is typing...</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-              
-              {/* Initial Scenario Buttons */}
-              {!showPracticeInput && practiceMessages.length === 1 && (
-                <div className="flex flex-col gap-3">
-                  <div className="flex gap-2">
-                    <Button
-                      onClick={handleReplyToScenario}
-                      variant="romance"
-                      className="flex-1"
-                    >
-                      Reply
-                    </Button>
-                    <Button
-                      onClick={tryDifferentScenario}
-                      disabled={isLoading}
-                      variant="outline"
-                      className="flex-1"
-                    >
-                      {isLoading ? 'Loading...' : 'Try a Different Scenario'}
-                    </Button>
+                </div>
+              ))}
+              {isLoading && (
+                <div className="flex justify-start">
+                  <div className="bg-card border border-border p-3 rounded-lg">
+                    <p className="text-sm text-muted-foreground">Practice partner is typing...</p>
                   </div>
                 </div>
               )}
-              
-              {/* Message Input - Only show after Reply is clicked or during conversation */}
-              {showPracticeInput && (
-                <div className="space-y-3">
-                  <div className="flex gap-2">
-                    <Textarea
-                      value={currentPracticeMessage}
-                      onChange={(e) => setCurrentPracticeMessage(e.target.value)}
-                      placeholder="Type your message..."
-                      className="flex-1 min-h-[60px] resize-none"
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                          e.preventDefault();
-                          sendPracticeMessage();
-                        }
-                      }}
-                    />
-                    <Button
-                      onClick={sendPracticeMessage}
-                      disabled={isLoading || !currentPracticeMessage.trim()}
-                      variant="romance"
-                      className="h-auto self-end"
-                    >
-                      Send
-                    </Button>
-                  </div>
-                  
-                  {/* Persistent Try Another Scenario Button */}
+            </div>
+            
+            {/* Initial Scenario Buttons */}
+            {!showPracticeInput && practiceMessages.length === 1 && (
+              <div className="flex flex-col gap-3">
+                <div className="flex gap-2">
+                  <Button
+                    onClick={handleReplyToScenario}
+                    variant="romance"
+                    className="flex-1"
+                  >
+                    Reply
+                  </Button>
                   <Button
                     onClick={tryDifferentScenario}
                     disabled={isLoading}
-                    variant="soft"
-                    size="sm"
-                    className="w-full"
+                    variant="outline"
+                    className="flex-1"
                   >
-                    {isLoading ? 'Loading...' : 'Try Another Scenario'}
+                    {isLoading ? 'Loading...' : 'Try a Different Scenario'}
                   </Button>
                 </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
-        
-        {/* Session Feedback Modal */}
-        {showFeedback && sessionFeedback && (
-          <Card className="shadow-romance border-primary/20 bg-gradient-soft">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <HeartIcon className="w-5 h-5 text-primary animate-heart-pulse" size={20} />
-                <span>Practice Session Feedback</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="p-4 bg-muted/20 rounded-lg border">
-                <p className="text-lg leading-relaxed whitespace-pre-wrap">{sessionFeedback}</p>
               </div>
-              
-              <div className="flex gap-2">
+            )}
+            
+            {/* Message Input - Only show after Reply is clicked or during conversation */}
+            {showPracticeInput && (
+              <div className="space-y-3">
+                <div className="flex gap-2">
+                  <Textarea
+                    value={currentPracticeMessage}
+                    onChange={(e) => setCurrentPracticeMessage(e.target.value)}
+                    placeholder="Type your message..."
+                    className="flex-1 min-h-[60px] resize-none"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        sendPracticeMessage();
+                      }
+                    }}
+                  />
+                  <Button
+                    onClick={sendPracticeMessage}
+                    disabled={isLoading || !currentPracticeMessage.trim()}
+                    variant="romance"
+                    className="h-auto self-end"
+                  >
+                    Send
+                  </Button>
+                </div>
+                
+                {/* Persistent Try Another Scenario Button */}
                 <Button
-                  onClick={() => {
-                    setShowFeedback(false);
-                    setSessionFeedback('');
-                  }}
-                  variant="romance"
-                  className="flex-1"
+                  onClick={tryDifferentScenario}
+                  disabled={isLoading}
+                  variant="soft"
+                  size="sm"
+                  className="w-full"
                 >
-                  Got it! ✨
-                </Button>
-                <Button
-                  onClick={startPracticeSession}
-                  variant="outline"
-                  className="flex-1"
-                >
-                  Practice Again
+                  {isLoading ? 'Loading...' : 'Try Another Scenario'}
                 </Button>
               </div>
-            </CardContent>
-          </Card>
-        )}
-        </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+      
+      {/* Session Feedback Modal */}
+      {showFeedback && sessionFeedback && (
+        <Card className="shadow-romance border-primary/20 bg-gradient-soft">
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <HeartIcon className="w-5 h-5 text-primary animate-heart-pulse" size={20} />
+              <span>Practice Session Feedback</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="p-4 bg-muted/20 rounded-lg border">
+              <p className="text-lg leading-relaxed whitespace-pre-wrap">{sessionFeedback}</p>
+            </div>
+            
+            <div className="flex gap-2">
+              <Button
+                onClick={() => {
+                  setShowFeedback(false);
+                  setSessionFeedback('');
+                }}
+                variant="romance"
+                className="flex-1"
+              >
+                Got it! ✨
+              </Button>
+              <Button
+                onClick={startPracticeSession}
+                variant="outline"
+                className="flex-1"
+              >
+                Practice Again
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+      </div>
       )}
 
       {/* Full Screen Question Modal */}
