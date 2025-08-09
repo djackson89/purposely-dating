@@ -308,7 +308,7 @@ const TextGenie: React.FC<TextGenieProps> = ({ userProfile }) => {
       }
 
       // First, get the Purposely Perspective using therapy mode
-      const perspectivePrompt = `Analyze this message/situation and explain why the toxic implications are detrimental. Focus on what this behavior indicates about his character, emotional maturity, and viability as a long-term partner. Keep it to 2-3 sentences max: ${contextText}`;
+      const perspectivePrompt = `Analyze this message/situation and explain why the behavior may be unhealthy from one or two distinct angles (choose different angles each time). Possible angles include: accountability and follow-through, communication clarity, respect for boundaries, empathy and perspective-taking, reciprocity and effort, consistency and reliability, honesty/transparency, conflict resolution patterns, and alignment of values. Avoid cliches and do not use the exact phrase "emotional maturity". Use varied wording (e.g., "lack of accountability", "poor self-regulation", "defensiveness", "pattern of inconsistency") when relevant. Keep it to 2-3 concise sentences max: ${contextText}`;
       const perspective = await getAIResponse(perspectivePrompt, userProfile, 'therapy');
       setPurposelyPerspective(perspective.trim());
 
@@ -423,17 +423,7 @@ const TextGenie: React.FC<TextGenieProps> = ({ userProfile }) => {
         contextText += (contextText ? '\n\n' : '') + `Screenshot Analysis:\n${imageAnalysis}`;
       }
 
-      const newPerspectivePrompt = `The user wants a different perspective on this situation. Analyze the toxic implications from a different angle and explain what this behavior indicates about his character, emotional maturity, and viability as a long-term partner: ${contextText}
-
-Your new response should:
-- Examine different red flags or manipulation tactics than previously identified
-- Focus on what this reveals about his long-term relationship potential
-- Explain why this behavior pattern is detrimental to healthy relationships
-- Address his emotional intelligence and capacity for growth
-- Keep it to 2-3 sentences maximum
-- Use direct, protective language about relationship standards
-
-Provide a fresh analytical perspective on why this behavior is problematic for long-term partnership.`;
+      const newPerspectivePrompt = `Provide a fresh Purposely Perspective on this situation from a different lens than before. Choose 1–2 angles from: accountability, communication clarity, boundary respect, reciprocity/effort, consistency/reliability, honesty/transparency, empathy/perspective-taking, conflict‑resolution habits, or alignment of values. Do not use the exact phrase "emotional maturity"; avoid cliches and vary the wording. Keep it to 2–3 concise sentences. Context:\n${contextText}`;
 
       const newPerspective = await getFlirtSuggestion(newPerspectivePrompt, userProfile);
       setPurposelyPerspective(newPerspective.trim());
