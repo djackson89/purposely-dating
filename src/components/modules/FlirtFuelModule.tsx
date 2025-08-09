@@ -377,6 +377,42 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile, sneakPee
             { key: "C", text: "Tease me back with a whisper of your own" },
             { key: "D", text: "Pretend nothing happened and make me chase your attention" }
           ]
+        },
+        {
+          statement: "Movie night goes dark when the power cuts out mid-scene. You…",
+          options: [
+            { key: "A", text: "Light candles and turn the room into a cozy hideout" },
+            { key: "B", text: "Find me in the dark and pull me close" },
+            { key: "C", text: "Start a game we can only play without lights" },
+            { key: "D", text: "Tell me a secret you only say in the dark" }
+          ]
+        },
+        {
+          statement: "We're slow dancing in the living room when the song turns sultry. You…",
+          options: [
+            { key: "A", text: "Draw me closer and move with the rhythm" },
+            { key: "B", text: "Whisper exactly what you want next" },
+            { key: "C", text: "Spin me, making me guess what's coming" },
+            { key: "D", text: "Stop dancing and kiss me like you've missed me for years" }
+          ]
+        },
+        {
+          statement: "You find a note on your pillow: ‘Meet me in the kitchen in five minutes.’ You…",
+          options: [
+            { key: "A", text: "Show up early to catch me setting the scene" },
+            { key: "B", text: "Make me wait to build anticipation" },
+            { key: "C", text: "Bring something unexpected to surprise me" },
+            { key: "D", text: "Send a cryptic message before you arrive" }
+          ]
+        },
+        {
+          statement: "We're walking home at night when soft snow starts to fall. You…",
+          options: [
+            { key: "A", text: "Pull me close and warm my hands in yours" },
+            { key: "B", text: "Kiss me under the snowflakes" },
+            { key: "C", text: "Start a playful snowball challenge" },
+            { key: "D", text: "Lean in and say something only I can hear" }
+          ]
         }
       ]
     },
@@ -1195,16 +1231,15 @@ D. [mysterious/unexpected]`;
               line.replace(/^\d+\.?\s*/, '').replace(/\*\*/g, '').replace(/[""'']/g, "'").replace(/[^\w\s\?\.\!\,\:\;\(\)\-\'\"]/g, '').trim()
             ).slice(0, 25);
           } else if (selectedCategory === 'Pillow Talk & Tea' || selectedCategory === 'Heat of the Moment') {
-            // Parse multiple-choice questions
+            // Parse multiple-choice questions (supports statements that may not include a question mark)
             const responseLines = response.split('\n').filter(line => line.trim());
-            const multipleChoiceQuestions = [];
+            const multipleChoiceQuestions: { statement: string; options: { key: string; text: string }[] }[] = [];
             
             for (let i = 0; i < responseLines.length; i++) {
               const line = responseLines[i].trim();
-              // Look for question statements (lines with ? and not starting with A, B, C, D)
-              if (line.includes('?') && !line.match(/^[A-D]\.?\s*/)) {
-                const statement = line.replace(/^\d+\.?\s*/, '').replace(/\*\*/g, '').trim();
-                const options = [];
+              // Consider any non-option line as a potential statement if followed by A-D options
+              if (!/^[A-D]\.?\s*/.test(line)) {
+                const options: { key: string; text: string }[] = [];
                 
                 // Look for the next 4 lines for options A, B, C, D
                 for (let j = 1; j <= 4 && (i + j) < responseLines.length; j++) {
@@ -1213,15 +1248,19 @@ D. [mysterious/unexpected]`;
                   if (optionMatch) {
                     options.push({
                       key: optionMatch[1],
-                      text: optionMatch[2].replace(/\*\*/g, '').trim()
+                      text: optionMatch[2].replace(/\*\*/g, '').trim(),
                     });
                   }
                 }
                 
                 if (options.length >= 4) {
+                  const statement = line
+                    .replace(/^\d+\.?\s*/, '')
+                    .replace(/\*\*/g, '')
+                    .trim();
                   multipleChoiceQuestions.push({
-                    statement: statement,
-                    options: options.slice(0, 4)
+                    statement,
+                    options: options.slice(0, 4),
                   });
                   i += 4; // Skip the option lines we just processed
                 }

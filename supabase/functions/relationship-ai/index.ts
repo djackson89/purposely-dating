@@ -87,8 +87,10 @@ serve(async (req) => {
           { role: 'system', content: systemPrompt },
           { role: 'user', content: prompt }
         ],
-        max_tokens: 500,
-        temperature: type === 'intimacy' ? 0.8 : 0.7,
+        max_tokens: type === 'intimacy' ? 1600 : 900,
+        temperature: type === 'intimacy' ? 0.9 : 0.75,
+        presence_penalty: type === 'intimacy' ? 0.5 : 0.3,
+        frequency_penalty: 0.4,
       }),
     });
 
