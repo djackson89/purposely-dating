@@ -357,7 +357,7 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile, sneakPee
       ]
     },
     {
-      category: "Scenario Choices",
+      category: "Heat of the Moment",
       masterCategory: "18+ Intimacy",
       prompts: [
         {
@@ -1133,22 +1133,53 @@ Format as: Statement? followed by A. [option] B. [option] C. [option] D. [option
           prompt = `Generate 25 consent-focused sensory dares for adult couples. Match the tone, rhythm, and structure of these examples without repeating them: "Close your eyes while I trace something soft along your skin. Guess what it is?", "Stand still while I whisper three things I want to do to you, but I won't touch you yet.", "Let me feed you something sweet… but you have to keep your hands behind your back." Use sensual, evocative language (warmth, breath, fingertips, slow movements, closeness, goosebumps, lips) and imply desire without explicit acts. Vary patterns: imperative + condition, whisper/eyes closed/anticipation, food/temperature/texture, breath/movement/timing. Each line must be a single question ending with a question mark, may optionally begin with "Dare:", avoid crude terms, and avoid repeating the same opening three words across lines.`;
         } else if (selectedCategory === 'Scenario Sparks') {
           prompt = `Write 25 short, vivid roleplay-style scenario starters for adult couples. Match the tonality, rhythm, and structure of these examples without repeating them: "We've just checked into a luxury hotel. There's champagne chilling, the curtains are drawn… what happens next?", "You come home late, and I'm already in bed—but I'm not asleep. What do you do?", "We're dancing somewhere dark and crowded. My lips are almost at your ear… what do I whisper?", "We get locked inside an elevator for 10 minutes. How do we pass the time?" Use second-person invitations and present-tense setups with sensory cues (dim lights, fabric, shadows, breath, footsteps, rain, elevator hum). Keep it suggestive—not explicit—and lean on implication over description. Vary settings (hotel, living room, hallway, balcony, car at night, kitchen at midnight, elevator, rooftop in the rain) and dynamics (reunion, interruption, near-miss, temptation). Each line must be exactly one sentence, end with a question mark, avoid crude terms, avoid numbering, and avoid repeating the same opening three words across items.`;
-        } else if (selectedCategory === 'Scenario Choices') {
-          prompt = `Create 25 short, vivid, suggestive hypothetical scenarios for adult couples, each followed by four multiple-choice options labeled A., B., C., D. Tone: sensual, playful, a little daring, but tasteful and non-explicit. Scenario length: 1–3 sentences to set mood quickly. Options must include: one bold/adventurous choice, one soft/romantic choice, one teasing/playful choice, and optionally one mysterious or unexpected choice. Use settings that mix cozy/private with thrilling/public-edge moments (still non-explicit). Output format strictly:
-Scenario?
+        } else if (selectedCategory === 'Heat of the Moment') {
+          prompt = `Create 25 "Heat of the Moment" choose-your-reaction scenes for adult couples, each followed by four options. Match the tone, cadence, and decision-style of these examples without repeating them:
+We’re in the middle of a movie night when the power suddenly goes out. You…
+A. Light candles and turn it into a romantic evening.
+B. Use the dark to your advantage and pull me close.
+C. Suggest we play a game that only works without lights.
+D. Challenge me to a secret I can only tell you in the dark.
+
+We’re slow dancing in the living room, and the song changes to something sultry. You…
+A. Pull me closer and move with the music.
+B. Whisper the next thing you want to do in my ear.
+C. Spin me around, keeping me guessing.
+D. Stop dancing and kiss me like we’ve been apart for years.
+
+You find a note on your pillow that says “Meet me in the kitchen in five minutes.” You…
+A. Show up early to see what I’m planning.
+B. Make me wait to build anticipation.
+C. Bring something with you to surprise me.
+D. Send me a mysterious message before arriving.
+
+We’re walking home at night, and it starts to lightly snow. You…
+A. Pull me close to keep me warm.
+B. Kiss me under the snowflakes.
+C. Start a playful snowball fight.
+D. Whisper something in the cold air that only I can hear.
+
+I send you a single, suggestive emoji out of the blue. You…
+A. Send one back with a matching tone.
+B. Call me immediately to ask what I mean.
+C. Show up without warning.
+D. Send something cryptic that keeps me wondering.
+
+Guidelines:
+- Scenario line: 1–2 sentences, present tense, ending with "You…"
+- Use cozy/private and thrilling/public-edge settings (still non-explicit) and varied vibes (playful, romantic, bold, mysterious)
+- After each scenario, output exactly four options starting with A., B., C., D.
+- Ensure option mix: one bold/adventurous, one soft/romantic, one teasing/playful, one mysterious/unexpected
+- Keep options short (≈5–12 words), actionable, and distinct; vary opening verbs across items
+- Keep tasteful, consent-forward language; never explicit or crude
+- Do NOT number the scenarios; write 25 blocks back-to-back
+
+Output format strictly (repeat for each block):
+[Scenario ending with "You…"]
 A. [bold/adventurous]
 B. [soft/romantic]
 C. [teasing/playful]
-D. [mysterious/unexpected]
-Ensure options spark follow-up conversation and curiosity. Do not number scenarios; write 25 in a row.`;
-        } else if (selectedCategory === 'Truth Pulse') {
-          prompt = `Create 25 intimate, adult truth questions for couples. Match the tone and structure of these examples without repeating them: "What’s one fantasy you’ve never told me about?", "When was the first time you realized you were attracted to me?", "If you could plan our perfect intimate night from start to finish, what would it include?", "What’s one thing you wish I would do more often in bed?" Keep it sensual, emotionally revealing, and non-explicit. Use vivid but tasteful wording, invite vulnerability and desire, and vary patterns (when/first time, what/which, describe, wish, favorite, memory, curiosity). Each line must be exactly one sentence, be a single question ending with a question mark, avoid crude terms, avoid numbering, and avoid repeating the same opening three words across items.`;
-        } else if (selectedCategory === 'Open-Ended Invitations') {
-          prompt = `Develop 25 gentle yet suggestive open-ended invitations for adult couples. Match the tone, rhythm, and structure of these examples without repeating them: "Want to join me in the shower and see where the night takes us?", "How about we try something new tonight—something we’ve never done before?", "I’ve been thinking about a game we could play… want to hear the rules?", "What if we stayed up way too late tonight, just the two of us?" Use warm, alluring, non-explicit language that feels like a tempting offer. Vary patterns ("Want to…", "How about…", "What if…", "Would you…", "Care to…", "Shall we…"), add light time/place cues (tonight, after midnight, balcony, lights low), keep consent-forward phrasing, and avoid crude terms. Each item must be exactly one sentence, be a single question ending with a question mark, avoid numbering, and avoid repeating the same opening three words across items.`;
-        } else if (selectedCategory === 'Pillow Talk & Tea') {
-          prompt = `Generate 25 new multiple-choice questions for a "girl's night" conversation game about bedroom confessions, spicy secrets, and flirty topics. Each question should have a statement followed by 4 suggestive, revealing options labeled A, B, C, D. The tone should be fun, intimate, cheeky, bold, and playful - like late-night girl talk with wine in hand. Focus on turn-ons, hookup stories, fantasies, bedroom moves, post-hookup thoughts, and intimate confessions that girlfriends share with each other. Make them slightly provocative but always with a vibe of friendship, laughter, and trust. Format as: "Statement?" with options A. [option] B. [option] C. [option] D. [option]. Make them different from these examples: ${category.prompts.slice(0, 2).map(p => typeof p === 'object' ? p.statement : p).join(', ')}`;
-        } else {
-          prompt = `Generate 25 new conversation starter questions in the style of "${selectedCategory}" category that go beyond surface-level dating questions. Make them emotionally intelligent, boundary-aware, and specific enough that someone thinks "That's such a good question, I never thought about that." Focus on relationship dynamics, emotional maturity, and authentic connection. They should be similar to these examples but completely different: ${category.prompts.slice(0, 5).join(', ')}. Make them engaging, thought-provoking, and perfect for sparking meaningful conversations about real relationship topics.`;
+D. [mysterious/unexpected]`;
         }
         
         try {
@@ -1163,7 +1194,7 @@ Ensure options spark follow-up conversation and curiosity. Do not number scenari
             ).map(line => 
               line.replace(/^\d+\.?\s*/, '').replace(/\*\*/g, '').replace(/[""'']/g, "'").replace(/[^\w\s\?\.\!\,\:\;\(\)\-\'\"]/g, '').trim()
             ).slice(0, 25);
-          } else if (selectedCategory === 'Pillow Talk & Tea' || selectedCategory === 'Scenario Choices') {
+          } else if (selectedCategory === 'Pillow Talk & Tea' || selectedCategory === 'Heat of the Moment') {
             // Parse multiple-choice questions
             const responseLines = response.split('\n').filter(line => line.trim());
             const multipleChoiceQuestions = [];
@@ -1935,7 +1966,7 @@ Keep it warm, supportive, but specific enough to be genuinely helpful. Avoid gen
                           "Customize": "⚙️",
                           "Sensory Dares": "🔥",
                           "Scenario Sparks": "🎇",
-                          "Scenario Choices": "🎭",
+                          "Heat of the Moment": "🎭",
                           "Truth Pulse": "💓",
                           "Open-Ended Invitations": "💌"
                         };
