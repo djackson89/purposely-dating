@@ -8,6 +8,7 @@ interface SubscriptionData {
   subscription_tier?: string;
   subscription_end?: string;
   has_intimacy_addon?: boolean;
+  is_trial?: boolean;
 }
 
 // Simple module-level cache to avoid duplicate calls across components

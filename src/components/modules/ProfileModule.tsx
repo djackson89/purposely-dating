@@ -36,7 +36,7 @@ const ProfileModule: React.FC<ProfileModuleProps> = ({ userProfile, onProfileUpd
   const [userName, setUserName] = useState('Your Name');
   const [showSettings, setShowSettings] = useState(false);
   const { user, signOut } = useAuth();
-  const { subscription, openCustomerPortal } = useSubscription();
+  const { subscription, openCustomerPortal, createCheckoutSession } = useSubscription();
   const { toast } = useToast();
   const { selectPhoto } = useCamera();
   const { success, light } = useHaptics();
@@ -279,50 +279,66 @@ const ProfileModule: React.FC<ProfileModuleProps> = ({ userProfile, onProfileUpd
       </Card>
 
       {/* Subscription Management */}
-      {subscription.subscribed && (
-        <Card className="shadow-soft border-primary/10">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <CreditCard className="w-5 h-5 text-primary" />
-              <span>Subscription & Billing</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="bg-gradient-soft p-4 rounded-lg border border-primary/20">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="font-semibold text-primary">Current Plan</h3>
-                <span className="bg-gradient-romance text-white px-3 py-1 rounded-full text-sm font-medium">
-                  {subscription.subscription_tier || 'Premium'}
-                </span>
+      <Card className="shadow-soft border-primary/10">
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2">
+            <CreditCard className="w-5 h-5 text-primary" />
+            <span>Subscription & Billing</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {subscription.subscribed ? (
+            <>
+              <div className="bg-gradient-soft p-4 rounded-lg border border-primary/20">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="font-semibold text-primary">Current Plan</h3>
+                  <span className="bg-gradient-romance text-white px-3 py-1 rounded-full text-sm font-medium">
+                    {subscription.is_trial ? 'Free Trial' : 'Premium Access'}{subscription.subscription_tier ? ` • ${subscription.subscription_tier}` : ''}
+                  </span>
+                </div>
+                {subscription.subscription_end && (
+                  <p className="text-sm text-muted-foreground">
+                    {subscription.is_trial ? 'Trial ends:' : 'Renews:'} {new Date(subscription.subscription_end).toLocaleDateString()}
+                  </p>
+                )}
+                {subscription.has_intimacy_addon && (
+                  <p className="text-xs text-muted-foreground mt-1">18+ Intimacy add‑on active</p>
+                )}
               </div>
-              {subscription.subscription_end && (
-                <p className="text-sm text-muted-foreground">
-                  {subscription.subscription_tier?.includes('trial') || subscription.subscription_tier === 'Premium' 
-                    ? `Trial ends: ${new Date(subscription.subscription_end).toLocaleDateString()}`
-                    : `Next billing: ${new Date(subscription.subscription_end).toLocaleDateString()}`
-                  }
-                </p>
-              )}
-            </div>
-            
-            <Button 
-              variant="soft" 
-              className="w-full justify-start"
-              onClick={handleManageBilling}
-            >
-              <CreditCard className="w-4 h-4 mr-2" />
-              Manage Subscription & Billing
-            </Button>
-            
-            <div className="text-xs text-muted-foreground space-y-1">
-              <p>• Cancel your free trial before it renews</p>
-              <p>• Update payment methods</p>
-              <p>• Change or upgrade your plan</p>
-              <p>• View billing history</p>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+              <Button 
+                variant="soft" 
+                className="w-full justify-start"
+                onClick={handleManageBilling}
+              >
+                <CreditCard className="w-4 h-4 mr-2" />
+                Manage Subscription & Billing
+              </Button>
+              <div className="text-xs text-muted-foreground space-y-1">
+                <p>• Update payment methods</p>
+                <p>• Change or upgrade your plan</p>
+                <p>• View billing history</p>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="bg-gradient-soft p-4 rounded-lg border border-primary/20">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="font-semibold text-primary">Current Plan</h3>
+                  <span className="px-3 py-1 rounded-full text-sm font-medium bg-muted text-muted-foreground">Free</span>
+                </div>
+                <p className="text-sm text-muted-foreground">Unlock all features with Premium Access.</p>
+              </div>
+              <Button 
+                variant="romance" 
+                className="w-full"
+                onClick={() => createCheckoutSession('yearly', true)}
+              >
+                Go Premium
+              </Button>
+            </>
+          )}
+        </CardContent>
+      </Card>
 
       {/* App Info */}
       <Card className="shadow-soft border-primary/10">

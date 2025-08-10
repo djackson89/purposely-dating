@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import SupportDialog from '@/components/SupportDialog';
+import { useSubscription } from '@/hooks/useSubscription';
 
 interface SideMenuProps {
   isOpen: boolean;
@@ -24,6 +25,7 @@ const SideMenu: React.FC<SideMenuProps> = ({ isOpen, onClose, onNavigateToModule
   const menuRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const [showSupportDialog, setShowSupportDialog] = useState(false);
+  const { subscription, createCheckoutSession } = useSubscription();
 
   const menuItems = [
     { id: 'profile', label: 'Profile', icon: User },
@@ -144,6 +146,37 @@ const SideMenu: React.FC<SideMenuProps> = ({ isOpen, onClose, onNavigateToModule
           >
             <X className="w-5 h-5 text-muted-foreground" />
           </button>
+        </div>
+
+        {/* Subscription Status */}
+        <div className="px-6 py-3 border-b border-border">
+          {subscription.subscribed ? (
+            <div className="flex flex-wrap items-center gap-2 text-sm">
+              <span className="px-2 py-1 rounded-full bg-primary/10 text-primary font-medium">
+                {subscription.is_trial ? 'Free Trial' : 'Premium Access'}
+              </span>
+              {subscription.has_intimacy_addon && (
+                <span className="px-2 py-1 rounded-full bg-secondary text-secondary-foreground text-xs">
+                  18+ Add‑on
+                </span>
+              )}
+              {subscription.subscription_end && (
+                <span className="text-muted-foreground">
+                  {subscription.is_trial ? 'Trial ends' : 'Renews'} {new Date(subscription.subscription_end).toLocaleDateString()}
+                </span>
+              )}
+            </div>
+          ) : (
+            <div className="text-sm">
+              <span className="text-muted-foreground mr-2">Plan: Free</span>
+              <button
+                onClick={() => createCheckoutSession('yearly', true)}
+                className="text-primary underline-offset-4 hover:underline font-medium"
+              >
+                Go Premium
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Menu Items */}

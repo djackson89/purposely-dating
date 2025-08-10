@@ -119,6 +119,7 @@ serve(async (req) => {
     let subscriptionEnd = null;
     let hasIntimacyAddon = false;
     let hasPremium = false;
+    let isTrial = false;
 
     if (hasAnyActive) {
       // Evaluate across all active subscriptions
@@ -135,6 +136,9 @@ serve(async (req) => {
           if (!subscriptionTier) {
             subscriptionTier = interval === 'week' ? 'Weekly' : 'Yearly';
           }
+          if (sub.status === 'trialing' || (sub.trial_end && sub.trial_end * 1000 > Date.now())) {
+            isTrial = true;
+          }
         }
 
         // Detect add-on by scanning items for $2.99/week
@@ -148,7 +152,7 @@ serve(async (req) => {
         });
         if (subHasAddon) hasIntimacyAddon = true;
       }
-      logStep("Computed subscription flags", { hasPremium, hasIntimacyAddon, subscriptionEnd, subscriptionTier });
+      logStep("Computed subscription flags", { hasPremium, hasIntimacyAddon, subscriptionEnd, subscriptionTier, isTrial });
     } else {
       logStep("No active subscription found");
     }
@@ -164,12 +168,13 @@ serve(async (req) => {
       updated_at: new Date().toISOString(),
     }, { onConflict: 'email' });
 
-    logStep("Updated database with subscription info", { subscribed: hasPremium, subscriptionTier, hasIntimacyAddon });
+    logStep("Updated database with subscription info", { subscribed: hasPremium, subscriptionTier, hasIntimacyAddon, isTrial });
     return new Response(JSON.stringify({
       subscribed: hasPremium,
       subscription_tier: subscriptionTier,
       subscription_end: subscriptionEnd,
-      has_intimacy_addon: hasIntimacyAddon
+      has_intimacy_addon: hasIntimacyAddon,
+      is_trial: isTrial
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,

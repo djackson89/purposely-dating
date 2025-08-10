@@ -21,6 +21,7 @@ import { useBiometricAuth } from '@/hooks/useBiometricAuth';
 import { useHaptics } from '@/hooks/useHaptics';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useSubscription } from '@/hooks/useSubscription';
 
 interface AppSettingsProps {
   onClose: () => void;
@@ -32,6 +33,7 @@ const AppSettings: React.FC<AppSettingsProps> = ({ onClose }) => {
   const { isAvailable: biometricAvailable, isBiometricEnabled, enableBiometricAuth, disableBiometricAuth } = useBiometricAuth();
   const { isSupported: hapticsSupported, success, medium } = useHaptics();
   const { toast } = useToast();
+  const { subscription, openCustomerPortal, createCheckoutSession } = useSubscription();
 
   // Check if notifications are supported (either native or browser)
   const notificationsSupported = pushSupported || ('Notification' in window);
@@ -174,6 +176,34 @@ const AppSettings: React.FC<AppSettingsProps> = ({ onClose }) => {
                 </div>
               </div>
             </div>
+          </div>
+          
+          {/* Subscription */}
+          <div className="space-y-3">
+            <h3 className="font-medium text-sm text-muted-foreground uppercase tracking-wide">Subscription</h3>
+            {subscription.subscribed ? (
+              <div className="space-y-2 text-sm">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="px-2 py-1 rounded-full bg-primary/10 text-primary font-medium">
+                    {subscription.is_trial ? 'Free Trial' : 'Premium Access'}{subscription.subscription_tier ? ` • ${subscription.subscription_tier}` : ''}
+                  </span>
+                  {subscription.has_intimacy_addon && (
+                    <span className="px-2 py-1 rounded-full bg-secondary text-secondary-foreground text-xs">18+ Add‑on</span>
+                  )}
+                </div>
+                {subscription.subscription_end && (
+                  <div className="text-muted-foreground">
+                    {subscription.is_trial ? 'Trial ends:' : 'Renews:'} {new Date(subscription.subscription_end).toLocaleDateString()}
+                  </div>
+                )}
+                <Button variant="soft" size="sm" onClick={openCustomerPortal} className="mt-1 w-full">Manage Billing</Button>
+              </div>
+            ) : (
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Plan: Free</span>
+                <Button variant="link" onClick={() => createCheckoutSession('yearly', true)}>Go Premium</Button>
+              </div>
+            )}
           </div>
 
           {/* Notifications */}
