@@ -300,6 +300,7 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
                     return;
                   }
                   setMasterCategory('18+ Intimacy');
+                  setDepthLevel([1]); // Force default depth to Casual for 18+
                 }}
                 className="rounded-full px-4 py-1 text-xs"
               >
@@ -620,8 +621,8 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
             </Card>
           </div>
 
-          {/* Depth Slider - Hidden for Girl's Night */}
-          {masterCategory !== "Girl's Night" && (
+          {/* Depth Slider - Hidden for Girl's Night and 18+ Intimacy */}
+          {masterCategory !== "Girl's Night" && masterCategory !== '18+ Intimacy' && (
             <Card className="shadow-soft border-primary/10">
               <CardContent className="pt-6 pb-4">
                 <div className="space-y-3">
