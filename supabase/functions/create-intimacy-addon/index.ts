@@ -48,9 +48,19 @@ serve(async (req) => {
     }
     const customerId = customers.data[0].id;
 
-    const subs = await stripe.subscriptions.list({ customer: customerId, status: "active", limit: 1, expand: ["data.items.data.price"] });
-    if (subs.data.length === 0) {
-      throw new Error("No active Premium subscription. Please subscribe to Premium first.");
+    const subs = await stripe.subscriptions.list({ customer: customerId, limit: 10, expand: ["data.items.data.price"] });
+    // Allow users who are active OR trialing on Premium (weekly/yearly)
+    const hasEligiblePremium = subs.data.some((sub) => {
+      const status = sub.status;
+      const eligibleStatus = status === "active" || status === "trialing";
+      const hasPremiumItem = sub.items.data.some((item) => {
+        const interval = item.price?.recurring?.interval;
+        return interval === "week" || interval === "year";
+      });
+      return eligibleStatus && hasPremiumItem;
+    });
+    if (!hasEligiblePremium) {
+      throw new Error("No active or trialing Premium subscription. Please subscribe to Premium first.");
     }
 
     // Create a checkout session for the $2.99/week add-on, no trial

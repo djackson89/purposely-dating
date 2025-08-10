@@ -143,7 +143,8 @@ export const useSubscription = () => {
         return;
       }
       if (data?.url) {
-        window.open(data.url, '_blank');
+        // Redirect in the same tab to avoid popup blockers breaking Stripe Checkout
+        window.location.href = data.url;
       }
     } catch (error) {
       console.error('Add-on session creation failed:', error);
