@@ -41,6 +41,10 @@ const PaymentSuccess = () => {
         });
       } finally {
         setIsVerifying(false);
+        // Briefly show success, then continue
+        setTimeout(() => {
+          navigate('/', { replace: true });
+        }, 1800);
       }
     };
 

@@ -76,27 +76,30 @@ const Index = () => {
       setHasCompletedNotifications(true);
     }
     
-    // Premium users skip onboarding automatically
+    // If user is already subscribed, skip paywall and welcome screens,
+    // but do NOT auto-complete onboarding unless a profile already exists
     if (!subscriptionLoading && subscription.subscribed) {
       if (!savedProfile) {
-        // Create a default profile for premium users
-        const defaultProfile: OnboardingData = {
-          firstName: 'User',
-          profilePhoto: undefined,
-          loveLanguage: 'Words of Affirmation',
-          relationshipStatus: 'Single',
-          age: '25-30',
-          gender: 'Prefer not to say',
-          personalityType: 'Explorer'
-        };
-        setUserProfile(defaultProfile);
-        localStorage.setItem('relationshipCompanionProfile', JSON.stringify(defaultProfile));
+        // Keep onboarding incomplete so user can enter first name and photo
+      } else {
+        setHasCompletedOnboarding(true);
       }
-      setHasCompletedOnboarding(true);
       setHasSeenPaywall(true);
       setHasSeenWelcome(true);
       setHasCompletedNotifications(true);
     }
+
+    // Restore the module the user was on before opening the paywall (in-app upgrade)
+    try {
+      const returnModule = localStorage.getItem('returnToModule');
+      if (returnModule) {
+        const validModules = ['home', 'flirtfuel', 'concierge', 'therapy', 'profile'] as const;
+        if ((validModules as readonly string[]).includes(returnModule)) {
+          setActiveModule(returnModule as typeof validModules[number]);
+        }
+        localStorage.removeItem('returnToModule');
+      }
+    } catch {}
   }, [subscription.subscribed, subscriptionLoading]);
 
   const handleOnboardingComplete = async (data: OnboardingData) => {
@@ -133,6 +136,8 @@ const Index = () => {
   };
 
   const handlePlanSelected = async () => {
+    // Remember where the user was to restore after checkout
+    try { localStorage.setItem('returnToModule', activeModule); } catch {}
     // Start the Stripe checkout process
     await createCheckoutSession('yearly', true);
     setShowPaywallModal(false);
@@ -163,6 +168,8 @@ const Index = () => {
   };
 
   const handlePaywallPopupUpgrade = async () => {
+    // Remember where the user was to restore after checkout
+    try { localStorage.setItem('returnToModule', activeModule); } catch {}
     await createCheckoutSession('yearly', true);
     setShowPaywallPopup(false);
     sneakPeekTracking.setAsFreeTrial();
