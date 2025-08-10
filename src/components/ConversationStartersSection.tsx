@@ -10,7 +10,7 @@ import { useDevice } from '@/hooks/useDevice';
 import LockedCategoryModal from './LockedCategoryModal';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { useSubscription } from '@/hooks/useSubscription';
-
+import IntimacyAddonPaywall from './IntimacyAddonPaywall';
 interface OnboardingData {
   loveLanguage: string;
   relationshipStatus: string;
@@ -847,28 +847,14 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
       )}
 
       {/* 18+ Add-on Modal */}
-      <Dialog open={showIntimacyAddonModal} onOpenChange={setShowIntimacyAddonModal}>
-        <DialogContent className="sm:max-w-md">
-          <div className="space-y-4">
-            <div className="text-center space-y-2">
-              <div className="text-3xl">🔥</div>
-              <h3 className="text-xl font-semibold">Unlock 18+ Intimacy</h3>
-              <p className="text-sm text-muted-foreground">Access spicy conversation starters designed for consenting adults.</p>
-              <p className="text-sm font-medium">$2.99/week • No trial • Cancel anytime</p>
-            </div>
-            <Button
-              onClick={() => {
-                createIntimacyAddonCheckout();
-                setShowIntimacyAddonModal(false);
-              }}
-              className="w-full bg-gradient-romance text-white"
-            >
-              Unlock for $2.99/week
-            </Button>
-            <Button variant="ghost" className="w-full" onClick={() => setShowIntimacyAddonModal(false)}>Maybe Later</Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <IntimacyAddonPaywall
+        isOpen={showIntimacyAddonModal}
+        onClose={() => setShowIntimacyAddonModal(false)}
+        onUnlock={() => {
+          createIntimacyAddonCheckout();
+          setShowIntimacyAddonModal(false);
+        }}
+      />
 
       {/* Locked Category Modal */}
       <LockedCategoryModal
