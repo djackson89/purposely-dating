@@ -110,35 +110,38 @@ serve(async (req) => {
 
     const subscriptions = await stripe.subscriptions.list({
       customer: customerId,
-      status: "active",
       limit: 10,
       expand: ["data.items.data.price"],
     });
-    const hasAnyActive = subscriptions.data.length > 0;
+
     let subscriptionTier = null;
     let subscriptionEnd = null;
     let hasIntimacyAddon = false;
     let hasPremium = false;
     let isTrial = false;
 
-    if (hasAnyActive) {
-      // Evaluate across all active subscriptions
+    if (subscriptions.data.length > 0) {
       for (const sub of subscriptions.data) {
-        // track the most distant end date
+        // Track the most distant end date
         const end = new Date(sub.current_period_end * 1000).toISOString();
         if (!subscriptionEnd || end > subscriptionEnd) subscriptionEnd = end;
 
-        // Determine if this sub is premium by interval week/year
         const firstItem = sub.items.data[0];
         const interval = firstItem.price?.recurring?.interval;
-        if (interval === 'week' || interval === 'year') {
+        const status = sub.status;
+        const eligibleStatus = status === 'active' || status === 'trialing';
+
+        // Determine premium plan (weekly/yearly) only when sub is active or trialing
+        if ((interval === 'week' || interval === 'year') && eligibleStatus) {
           hasPremium = true;
           if (!subscriptionTier) {
             subscriptionTier = interval === 'week' ? 'Weekly' : 'Yearly';
           }
-          if (sub.status === 'trialing' || (sub.trial_end && sub.trial_end * 1000 > Date.now())) {
-            isTrial = true;
-          }
+        }
+
+        // Trial detection
+        if (status === 'trialing' || (sub.trial_end && sub.trial_end * 1000 > Date.now())) {
+          isTrial = true;
         }
 
         // Detect add-on by scanning items for $2.99/week
@@ -154,7 +157,7 @@ serve(async (req) => {
       }
       logStep("Computed subscription flags", { hasPremium, hasIntimacyAddon, subscriptionEnd, subscriptionTier, isTrial });
     } else {
-      logStep("No active subscription found");
+      logStep("No subscriptions found");
     }
 
     await supabaseAdmin.from("subscribers").upsert({
