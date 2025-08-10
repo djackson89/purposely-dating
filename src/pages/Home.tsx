@@ -50,6 +50,7 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
   const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
   const [showWelcomeTour, setShowWelcomeTour] = useState(false);
   const [isFirstTimeUser, setIsFirstTimeUser] = useState(false);
+  const [askScenarios, setAskScenarios] = useState<{ question: string; answer: string }[]>([]);
   
   // Touch/swipe handling state
   const [touchStart, setTouchStart] = useState<number | null>(null);
@@ -123,7 +124,7 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
   ];
 
   // Hypothetical Ask Purposely scenarios
-  const askPurposelyScenarios = [
+  const defaultPurposelyScenarios = [
     {
       question: "I just found out my man has been texting his ex wife about how I'm no good in bed. Although he's asking her how to 'train' me to be better, I feel completely humiliated and betrayed. Should I leave him?",
       answer: "The disrespect is so loud it's deafening, and yet you're asking if you should leave? Baby, he didn't just cross a line—he bulldozed through your dignity and made his ex-wife a consultant on your intimacy. This isn't about 'training' you; it's about him training you to accept disrespect as normal. A man who truly loves you doesn't outsource conversations about your most vulnerable moments to another woman, especially not his ex. He's not trying to help you get better; he's trying to make you feel smaller so you won't realize you deserve a man who would never speak about you like a project that needs fixing. You're not broken—your picker just needs recalibrating."
@@ -149,6 +150,82 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
       answer: "He's weaponizing your past to control your present, and that's emotional terrorism. A man who truly loves you doesn't use your vulnerability as ammunition in fights. He's creating the very insecurity he claims you have by constantly reopening old wounds. This isn't about your baggage—it's about his inability to handle that you existed before him. Stop defending your past to someone who refuses to honor your present. You can't heal in the same environment that broke you."
     }
   ];
+
+  // Daily "Ask Purposely" scenarios — regenerate at local midnight (user's local time)
+  const getTodayKey = React.useCallback(() => {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, '0');
+    const d = String(now.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }, []);
+
+  const msUntilNextMidnight = React.useCallback(() => {
+    const now = new Date();
+    const next = new Date(now);
+    next.setHours(24, 0, 0, 0);
+    return next.getTime() - now.getTime();
+  }, []);
+
+  const generateDailyScenarios = React.useCallback(async (resetIndex: boolean) => {
+    const todayKey = getTodayKey();
+
+    // Use cache if available
+    const cached = localStorage.getItem(`askPurposelyScenarios_${todayKey}`);
+    if (cached) {
+      try {
+        const parsed = JSON.parse(cached);
+        setAskScenarios(parsed);
+        if (resetIndex) {
+          setCurrentScenarioIndex(0);
+          localStorage.setItem(`dailyScenarioIndex_${new Date().toDateString()}`, '0');
+        }
+        return;
+      } catch {}
+    }
+
+    try {
+      const prompt = `Generate 6 realistic relationship dilemmas from a woman's perspective and a concise "Purposely Perspective" response to each.\nReturn STRICT JSON array with 6 objects, each: {"question": "...", "answer": "..."}.\nNo markdown, no backticks, no labels. Keep answers 2-3 sentences, witty, direct, empowering.`;
+      const result = await getAIResponse(prompt, userProfile, 'therapy');
+      let parsed: any[] | null = null;
+      try {
+        parsed = JSON.parse(result);
+      } catch {
+        const match = result?.match(/\[[\s\S]*\]/);
+        if (match) {
+          try { parsed = JSON.parse(match[0]); } catch {}
+        }
+      }
+
+      const cleaned = (Array.isArray(parsed) ? parsed : defaultPurposelyScenarios)
+        .map((item: any) => ({
+          question: String(item?.question || '').trim().replace(/^["']|["']$/g, ''),
+          answer: String(item?.answer || '').trim().replace(/^["']|["']$/g, '')
+        }))
+        .filter((i: any) => i.question && i.answer)
+        .slice(0, 6);
+
+      const finalList = cleaned.length >= 3 ? cleaned : defaultPurposelyScenarios;
+
+      setAskScenarios(finalList);
+      localStorage.setItem(`askPurposelyScenarios_${todayKey}`, JSON.stringify(finalList));
+      if (resetIndex) {
+        setCurrentScenarioIndex(0);
+        localStorage.setItem(`dailyScenarioIndex_${new Date().toDateString()}`, '0');
+      }
+    } catch (e) {
+      console.error('Error generating daily Ask Purposely scenarios:', e);
+      setAskScenarios(defaultPurposelyScenarios);
+    }
+  }, [getAIResponse, userProfile, getTodayKey]);
+
+  useEffect(() => {
+    generateDailyScenarios(false);
+    const t = setTimeout(() => {
+      generateDailyScenarios(true);
+    }, msUntilNextMidnight());
+    return () => clearTimeout(t);
+  }, [generateDailyScenarios, msUntilNextMidnight]);
 
   // Get or set daily question (changes at midnight)
   useEffect(() => {
@@ -323,11 +400,11 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
   };
 
   const getCurrentScenario = () => {
-    return askPurposelyScenarios[currentScenarioIndex];
+    return askScenarios[currentScenarioIndex] || defaultPurposelyScenarios[0];
   };
 
   const handleSeeMoreScenarios = () => {
-    setCurrentScenarioIndex((prev) => (prev + 1) % askPurposelyScenarios.length);
+    setCurrentScenarioIndex((prev) => (askScenarios.length ? (prev + 1) % askScenarios.length : 0));
   };
 
   // Initialize current scenario index on first load
@@ -338,7 +415,7 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
     if (savedScenarioIndex) {
       setCurrentScenarioIndex(parseInt(savedScenarioIndex));
     } else {
-      const randomIndex = Math.floor(Math.random() * askPurposelyScenarios.length);
+      const randomIndex = Math.floor(Math.random() * defaultPurposelyScenarios.length);
       setCurrentScenarioIndex(randomIndex);
       localStorage.setItem(`dailyScenarioIndex_${today}`, randomIndex.toString());
     }
