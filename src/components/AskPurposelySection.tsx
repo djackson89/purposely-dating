@@ -17,18 +17,29 @@ interface Props {
 const AskPurposelySection: React.FC<Props> = ({ userProfile, sneakPeekTracking, onPaywallTrigger }) => {
   const { toast } = useToast();
   const { getAIResponse } = useRelationshipAI();
-  const { current, nextScenario, isLoading, items, reload } = useAskPurposely(userProfile);
+  const { current, nextScenario, isLoading, items, reload, isGenerating, error } = useAskPurposely(userProfile);
 
   const [showInput, setShowInput] = useState(false);
   const [question, setQuestion] = useState('');
   const [answer, setAnswer] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Force-refresh on first mount so the new tone is shown immediately
-  useEffect(() => {
-    reload(true, true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+// Force-refresh on first mount so the new tone is shown immediately
+useEffect(() => {
+  reload(true, true);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, []);
+
+// Surface generation errors with a retry toast
+useEffect(() => {
+  if (error) {
+    toast({
+      title: "Couldn't load a new scenario. Retrying…",
+      description: 'We\'ll try once more automatically. If it fails, tap Try Again.',
+      variant: 'destructive',
+    });
+  }
+}, [error, toast]);
 
   const handleAskYourQuestion = () => {
     if (sneakPeekTracking?.shouldShowPaywallForAskPurposely()) {
@@ -71,11 +82,11 @@ const AskPurposelySection: React.FC<Props> = ({ userProfile, sneakPeekTracking, 
           <span>Ask Purposely</span>
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+<CardContent className="space-y-4" aria-live="polite">
         {!showInput ? (
           <>
             <div className="space-y-4">
-              {isLoading && items.length === 0 ? (
+              {(isLoading || (isGenerating && items.length === 0)) ? (
                 <>
                   <div className="p-4 bg-white rounded-lg border border-border">
                     <div className="space-y-2">
@@ -94,7 +105,7 @@ const AskPurposelySection: React.FC<Props> = ({ userProfile, sneakPeekTracking, 
                 </>
               ) : (
                 <>
-                  <div className="p-4 bg-white rounded-lg border border-border">
+                  <div key={(current as any).id ?? (current.question + current.answer).slice(0,16)} className="p-4 bg-white rounded-lg border border-border">
                     <p className="text-foreground leading-relaxed font-medium">"{current.question}"</p>
                     <p className="text-xs text-muted-foreground mt-2">Submitted by: Anonymous</p>
                   </div>
@@ -111,10 +122,17 @@ const AskPurposelySection: React.FC<Props> = ({ userProfile, sneakPeekTracking, 
                 onTouchEnd={(e) => { e.preventDefault(); nextScenario(); }}
                 variant="romance"
                 className="flex-1"
-                disabled={isLoading || items.length === 0}
+                disabled={isLoading || isGenerating}
                 aria-label="See more Ask Purposely scenarios"
               >
-                See More
+                {isLoading || isGenerating ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Generating…
+                  </>
+                ) : (
+                  'See More'
+                )}
               </Button>
               <Button onClick={handleAskYourQuestion} variant="romance" className="flex-1">
                 <Send className="w-4 h-4 mr-2" />
