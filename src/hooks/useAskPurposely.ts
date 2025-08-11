@@ -14,6 +14,9 @@ export interface OnboardingData {
   personalityType: string;
 }
 
+const CACHE_VERSION = 'v2';
+const SCENARIO_TTL_HOURS = 6;
+
 // Fallback scenarios in case AI fails
 const fallbackScenarios: AskItem[] = [
   {
@@ -107,16 +110,24 @@ export const useAskPurposely = (userProfile: OnboardingData) => {
     return `${y}-${m}-${d}`;
   };
 
-  const loadOrGenerate = useCallback(async (resetIndex: boolean) => {
+  const loadOrGenerate = useCallback(async (resetIndex: boolean, forceFresh = false) => {
     const key = todayKey();
-    const cached = localStorage.getItem(`askPurposelyScenarios_${key}`);
-    if (cached) {
-      try {
-        const parsed = JSON.parse(cached) as AskItem[];
-        setItems(parsed);
-        if (resetIndex) setIndex(0);
-        return;
-      } catch {}
+    const storageKey = `askPurposelyScenarios_${key}_${CACHE_VERSION}`;
+    const tsKey = `askPurposelyGeneratedAt_${key}_${CACHE_VERSION}`;
+
+    if (!forceFresh) {
+      const cached = localStorage.getItem(storageKey);
+      const ts = Number(localStorage.getItem(tsKey) || '0');
+      const ageMs = Date.now() - ts;
+      const ttlMs = SCENARIO_TTL_HOURS * 60 * 60 * 1000;
+      if (cached && ts && ageMs < ttlMs) {
+        try {
+          const parsed = JSON.parse(cached) as AskItem[];
+          setItems(parsed);
+          if (resetIndex) setIndex(0);
+          return;
+        } catch {}
+      }
     }
 
     try {
@@ -142,7 +153,8 @@ export const useAskPurposely = (userProfile: OnboardingData) => {
 
       const finalList = cleaned.length >= 3 ? cleaned : fallbackScenarios;
       setItems(finalList);
-      localStorage.setItem(`askPurposelyScenarios_${key}`, JSON.stringify(finalList));
+      localStorage.setItem(storageKey, JSON.stringify(finalList));
+      localStorage.setItem(tsKey, String(Date.now()));
       if (resetIndex) setIndex(0);
     } catch (e) {
       console.error('AskPurposely generation failed:', e);
