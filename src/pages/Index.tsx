@@ -67,11 +67,45 @@ const Index = () => {
         if (error && error.code !== 'PGRST116') {
           console.error('Error loading user settings:', error);
         }
+
+        // If system thinks onboarding is complete, verify the profile actually has answers
         if (settings?.onboarding_completed) {
-          setHasSeenWelcome(true);
-          setHasCompletedNotifications(true);
-          setHasSeenPaywall(true);
-          setHasCompletedOnboarding(true);
+          try {
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('love_language, relationship_status, age, personality_type')
+              .eq('id', user.id)
+              .maybeSingle();
+
+            const needsQuiz = !profile || [
+              profile?.love_language,
+              profile?.relationship_status,
+              profile?.age,
+              profile?.personality_type,
+            ].some((v) => !v || String(v).trim() === '');
+
+            if (needsQuiz) {
+              // Force only the quiz to re-run next login and this session
+              setHasSeenWelcome(true);
+              setHasCompletedNotifications(true);
+              setHasSeenPaywall(true);
+              setHasCompletedOnboarding(false);
+
+              await supabase
+                .from('user_settings')
+                .upsert(
+                  { user_id: user.id, onboarding_completed: false, updated_at: new Date().toISOString() },
+                  { onConflict: 'user_id' }
+                );
+            } else {
+              setHasSeenWelcome(true);
+              setHasCompletedNotifications(true);
+              setHasSeenPaywall(true);
+              setHasCompletedOnboarding(true);
+            }
+          } catch (e) {
+            console.error('Error checking profile completeness:', e);
+          }
         }
       } catch (e) {
         console.error('Error fetching user settings:', e);
@@ -90,8 +124,12 @@ const Index = () => {
     const savedNotificationsFlag = localStorage.getItem('hasCompletedNotifications');
     
     if (savedProfile) {
-      setUserProfile(JSON.parse(savedProfile));
-      setHasCompletedOnboarding(true);
+      const parsed = JSON.parse(savedProfile);
+      setUserProfile(parsed);
+      // Only consider onboarding complete if local profile has all required answers
+      if (parsed?.loveLanguage && parsed?.relationshipStatus && parsed?.age && parsed?.personalityType) {
+        setHasCompletedOnboarding(true);
+      }
     }
     
     if (savedPaywallFlag) {
