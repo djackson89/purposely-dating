@@ -1,15 +1,22 @@
 import { sha256 } from 'js-sha256';
-import { v4 as uuidv4 } from 'uuid';
 
-// Minimal inline UUID fallback if uuid isn't available (in case of tree-shaking)
-// Note: We prefer uuid v4, but if it's not present, use a simple fallback.
-// However, our project doesn't include uuid; create a tiny fallback.
+// Minimal inline UUID generator with crypto fallback
 const uuidFallback = () =>
   'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
     const r = (Math.random() * 16) | 0;
     const v = c === 'x' ? r : (r & 0x3) | 0x8;
     return v.toString(16);
   });
+
+const newId = () => {
+  try {
+    const c: any = (globalThis as any).crypto;
+    if (c && typeof c.randomUUID === 'function') {
+      return c.randomUUID();
+    }
+  } catch {}
+  return uuidFallback();
+};
 
 export type Scenario = {
   id: string;
@@ -123,7 +130,7 @@ export class AskPurposelyService {
       .map((r) => {
         const q = String(r?.question || '').trim().replace(/^[\["']|[\]"']$/g, '');
         const a = String(r?.answer || '').trim().replace(/^[\["']|[\]"']$/g, '');
-        const id = (typeof uuidv4 === 'function' ? uuidv4() : uuidFallback());
+        const id = newId();
         const hash = computeHash(q, a);
         return {
           id,
