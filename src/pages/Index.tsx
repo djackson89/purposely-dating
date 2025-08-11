@@ -154,7 +154,7 @@ const Index = () => {
     // Save to localStorage for persistence
     localStorage.setItem('relationshipCompanionProfile', JSON.stringify(data));
     
-    // Save to Supabase if user is authenticated
+    // Save to Supabase if user is authenticated (map to snake_case columns)
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
@@ -162,7 +162,13 @@ const Index = () => {
           .from('profiles')
           .upsert({
             id: user.id,
-            ...data,
+            full_name: data.firstName || undefined,
+            avatar_url: data.profilePhoto || undefined,
+            love_language: data.loveLanguage,
+            relationship_status: data.relationshipStatus,
+            age: data.age,
+            gender: data.gender,
+            personality_type: data.personalityType,
             timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
           });
       }
@@ -175,13 +181,13 @@ const Index = () => {
   const handleWelcomeComplete = async () => {
     setHasSeenWelcome(true);
     localStorage.setItem('hasSeenWelcome', 'true');
-    await markOnboardingCompleted();
+    // Do not mark onboarding complete here; completion happens after the quiz
   };
 
   const handleNotificationsComplete = async () => {
     setHasCompletedNotifications(true);
     localStorage.setItem('hasCompletedNotifications', 'true');
-    await markOnboardingCompleted();
+    // Do not mark onboarding complete here; completion happens after the quiz
   };
 
   const handlePlanSelected = async () => {
