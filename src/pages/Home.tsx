@@ -352,103 +352,11 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
       </Card>
 
       {/* Ask Purposely Section */}
-      <Card className="shadow-romance border-primary/20" data-tour="ask-purposely">
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <MessageCircle className="w-5 h-5 text-primary animate-heart-pulse" />
-            <span>Ask Purposely</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {!showQuestionInput ? (
-            <>
-              {/* Daily Hypothetical Q&A */}
-              <div className="space-y-4">
-                <div className="p-4 bg-white rounded-lg border border-border">
-                  <p className="text-foreground leading-relaxed font-medium">
-                    "{getCurrentScenario().question}"
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-2">Submitted by: Anonymous</p>
-                </div>
-                
-                <div className="p-4 bg-gradient-soft rounded-lg border border-primary/10">
-                  <p className="text-sm font-bold text-foreground mb-2">Purposely Perspective:</p>
-                  <p className="text-foreground leading-relaxed font-bold">
-                    {getCurrentScenario().answer}
-                  </p>
-                </div>
-              </div>
-              
-              <div className="flex space-x-2">
-                <Button
-                  onClick={handleSeeMoreScenarios}
-                  variant="romance"
-                  className="flex-1"
-                >
-                  See More
-                </Button>
-                <Button
-                  onClick={handleAskYourQuestion}
-                  variant="romance"
-                  className="flex-1"
-                >
-                  <Send className="w-4 h-4 mr-2" />
-                  Ask Your Question
-                </Button>
-              </div>
-            </>
-          ) : (
-            <>
-              {/* User Question Input */}
-              <div className="space-y-4">
-                <Textarea
-                  placeholder="Describe what's happening (what was said or done, why it felt triggering or offensive, and what outcome you want)."
-                  value={userQuestion}
-                  onChange={(e) => setUserQuestion(e.target.value)}
-                  className="min-h-[100px]"
-                />
-                
-                {purposelyResponse && (
-                  <div className="p-4 bg-gradient-soft rounded-lg border border-primary/10">
-                    <p className="text-sm font-bold text-foreground mb-2">Purposely Perspective:</p>
-                    <p className="text-foreground leading-relaxed font-bold">
-                      {purposelyResponse}
-                    </p>
-                  </div>
-                )}
-                
-                <div className="flex space-x-2">
-                  <Button
-                    onClick={handleSubmitQuestion}
-                    variant="romance"
-                    className="flex-1"
-                    disabled={isLoadingResponse}
-                  >
-                    {isLoadingResponse ? (
-                      <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                        Getting Perspective...
-                      </>
-                    ) : (
-                      <>
-                        <Send className="w-4 h-4 mr-2" />
-                        Get Purposely Perspective
-                      </>
-                    )}
-                  </Button>
-                  
-                  <Button
-                    onClick={() => setShowQuestionInput(false)}
-                    variant="soft"
-                  >
-                    Back
-                  </Button>
-                </div>
-              </div>
-            </>
-          )}
-        </CardContent>
-      </Card>
+      <AskPurposelySection
+        userProfile={userProfile}
+        sneakPeekTracking={sneakPeekTracking}
+        onPaywallTrigger={(t) => onPaywallTrigger?.(t)}
+      />
 
       {/* Quick Start Module */}
       <div data-tour="quick-start-modules">
