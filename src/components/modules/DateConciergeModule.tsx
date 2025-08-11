@@ -17,6 +17,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import DatingPreferencesOnboarding, { DatingPreferences } from '@/components/DatingPreferencesOnboarding';
 import CustomChecklistEditor from '@/components/CustomChecklistEditor';
+import { getSafeProfile } from '@/utils/safeProfile';
 
 interface OnboardingData {
   loveLanguage: string;

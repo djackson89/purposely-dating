@@ -16,6 +16,7 @@ import { useRelationshipAI } from '@/hooks/useRelationshipAI';
 import { useQuestionPoolInitialization } from '@/hooks/useQuestionPoolInitialization';
 import TextGenie from '@/components/TextGenie';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { getSafeProfile } from '@/utils/safeProfile';
 
 interface OnboardingData {
   loveLanguage: string;
@@ -32,7 +33,15 @@ interface FlirtFuelModuleProps {
 }
 
 
-const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile, sneakPeekTracking, onPaywallTrigger }) => {
+const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile: up, sneakPeekTracking, onPaywallTrigger }) => {
+  const safe = getSafeProfile(up as any);
+  const userProfile = React.useMemo(() => ({
+    loveLanguage: safe.loveLanguage ?? '',
+    relationshipStatus: safe.relationshipStatus ?? '',
+    age: safe.age ?? '25',
+    gender: safe.gender ?? '',
+    personalityType: safe.personalityType ?? ''
+  }), [safe.loveLanguage, safe.relationshipStatus, safe.age, safe.gender, safe.personalityType]);
   const [activeSection, setActiveSection] = useState<'starters' | 'practice' | 'textgenie'>('starters');
   const [masterCategory, setMasterCategory] = useState('Date Night');
   const [showCategorySelection, setShowCategorySelection] = useState(true);
