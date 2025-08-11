@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      ap_seed: {
+        Row: {
+          consumed_at: string | null
+          created_at: string
+          hash: string
+          id: string
+          perspective: string
+          question: string
+          reserved_at: string | null
+          reserved_by: string | null
+          status: string
+          tags: string[] | null
+        }
+        Insert: {
+          consumed_at?: string | null
+          created_at?: string
+          hash: string
+          id?: string
+          perspective: string
+          question: string
+          reserved_at?: string | null
+          reserved_by?: string | null
+          status?: string
+          tags?: string[] | null
+        }
+        Update: {
+          consumed_at?: string | null
+          created_at?: string
+          hash?: string
+          id?: string
+          perspective?: string
+          question?: string
+          reserved_at?: string | null
+          reserved_by?: string | null
+          status?: string
+          tags?: string[] | null
+        }
+        Relationships: []
+      }
       billing: {
         Row: {
           cancel_at_period_end: boolean | null
@@ -540,6 +579,25 @@ export type Database = {
       admin_metrics: {
         Args: { tz: string; price_id: string }
         Returns: Json
+      }
+      ap_seed_consume: {
+        Args: { p_ids: string[] }
+        Returns: undefined
+      }
+      ap_seed_take: {
+        Args: { p_user: string; p_n: number; p_ttl_minutes?: number }
+        Returns: {
+          consumed_at: string | null
+          created_at: string
+          hash: string
+          id: string
+          perspective: string
+          question: string
+          reserved_at: string | null
+          reserved_by: string | null
+          status: string
+          tags: string[] | null
+        }[]
       }
       count_pool_questions: {
         Args: { p_user_id: string; p_category: string; p_depth_level: number }

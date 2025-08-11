@@ -34,6 +34,7 @@ export const useAskPurposely = (userProfile: OnboardingData) => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const consumedRef = useRef<Set<string>>(new Set());
 
   // Initialize service once per userKey
   useEffect(() => {
@@ -78,9 +79,18 @@ export const useAskPurposely = (userProfile: OnboardingData) => {
       serviceRef.current?.cancel();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userKey]);
-
-  // Refill in background when queue below threshold
+   }, [userKey]);
+ 
+   // Mark shown scenario as consumed in ap_seed (once per id)
+   useEffect(() => {
+     const id = current?.id;
+     if (!id) return;
+     if (consumedRef.current.has(id)) return;
+     consumedRef.current.add(id);
+     serviceRef.current?.consumeIfSeed(id).catch(() => {});
+   }, [current?.id]);
+ 
+   // Refill in background when queue below threshold
   const ensureRefill = useCallback(async () => {
     const svc = serviceRef.current!;
     if (!svc) return;

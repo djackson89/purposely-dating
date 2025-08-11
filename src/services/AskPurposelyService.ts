@@ -1,4 +1,5 @@
 import { sha256 } from 'js-sha256';
+import { supabase } from '@/integrations/supabase/client';
 
 // Minimal inline UUID generator with crypto fallback
 const uuidFallback = () =>
@@ -212,6 +213,50 @@ export class AskPurposelyService {
     return Promise.race([cleaned, timeout]);
   }
 
+  private isAuthed() {
+    return this.userKey && this.userKey !== 'anon';
+  }
+
+  private mapSeedRows(rows: Array<{ id: string; question: string; perspective: string; tags: string[]; created_at?: string; hash?: string; }>): Scenario[] {
+    return (rows || []).map((r) => {
+      const q = String(r.question || '').trim();
+      const a = String(r.perspective || '').trim();
+      const h = r.hash || computeHash(q, a);
+      return {
+        id: `seed_${r.id}`,
+        question: q,
+        perspective: a,
+        tags: Array.isArray(r.tags) ? r.tags : detectTags(q, a),
+        createdAt: r.created_at ? Date.parse(r.created_at) : now(),
+        hash: h,
+      } as Scenario;
+    });
+  }
+
+  private async takeFromSeed(n: number): Promise<Scenario[]> {
+    if (!this.isAuthed()) return [];
+    const { data, error } = await supabase.rpc('ap_seed_take', {
+      p_user: this.userKey,
+      p_n: n,
+    });
+    if (error) {
+      log(this.telemetry, 'ap_seed_take_fail', { error: error.message });
+      return [];
+    }
+    const mapped = this.mapSeedRows(data as any[]);
+    log(this.telemetry, 'ap_seed_take', { count: mapped.length });
+    return this.deDupe(mapped);
+  }
+
+  async consumeIfSeed(id: string) {
+    if (!this.isAuthed()) return;
+    if (!id?.startsWith('seed_')) return;
+    const realId = id.slice(5);
+    const { error } = await supabase.rpc('ap_seed_consume', { p_ids: [realId] });
+    if (error) log(this.telemetry, 'ap_seed_consume_fail', { error: error.message, id });
+    else log(this.telemetry, 'ap_seed_consume', { id });
+  }
+
   async prefetch(n: number): Promise<Scenario[]> {
     if (this.inflight) return (this.inflight as Promise<Scenario[]>);
     this.aborted = false;
@@ -220,18 +265,35 @@ export class AskPurposelyService {
 
     const task = (async () => {
       try {
-        const prompt = buildPromptMany(Math.max(6, n));
-        const raw = await this.withTimeout(this.getAIResponse(prompt, this.userProfile, 'therapy'));
-        if (this.aborted) throw new Error('aborted');
-        const arr = parseArrayJson(raw) || [];
-        const scenarios = this.mapToScenarios(arr);
-        const unique = this.deDupe(scenarios);
-        const finalList = unique.length ? unique : this.mapToScenarios(fallbackList(Math.max(3, n)));
+        // 1) Try seed inventory first for instant UX
+        const seed = await this.takeFromSeed(n);
+        let results: Scenario[] = [...seed];
+        const remaining = Math.max(0, n - results.length);
+
+        // 2) If not enough, generate remainder live (with timeout + retry handled by generateMany)
+        if (remaining > 0) {
+          try {
+            const prompt = buildPromptMany(Math.max(remaining, 3));
+            const raw = await this.withTimeout(this.getAIResponse(prompt, this.userProfile, 'therapy'));
+            if (this.aborted) throw new Error('aborted');
+            const arr = parseArrayJson(raw) || [];
+            const scenarios = this.mapToScenarios(arr);
+            results = this.deDupe([...results, ...scenarios]);
+          } catch (e: any) {
+            log(this.telemetry, 'askprefetch_live_fill_fail', { error: String(e?.message || e) });
+          }
+        }
+
+        // 3) Ensure we always have something
+        if (!results.length) {
+          results = this.mapToScenarios(fallbackList(Math.max(3, n)));
+        }
+
+        const finalList = results.slice(0, n);
         log(this.telemetry, 'askprefetch_success', { took_ms: performance.now() - start, count: finalList.length });
-        return finalList.slice(0, n);
+        return finalList;
       } catch (e: any) {
         log(this.telemetry, 'askprefetch_fail', { error: String(e?.message || e) });
-        // Fallback so UI never renders empty
         const fb = this.mapToScenarios(fallbackList(Math.max(3, n)));
         return fb.slice(0, n);
       } finally {

@@ -32,3 +32,6 @@ verify_jwt = true
 
 [functions.stripe-webhook]
 verify_jwt = false
+
+[functions.ap_refill]
+verify_jwt = false
