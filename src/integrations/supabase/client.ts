@@ -5,12 +5,43 @@ import type { Database } from './types';
 const SUPABASE_URL = "https://csupviqxprhtrbfbugct.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNzdXB2aXF4cHJodHJiZmJ1Z2N0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM0NjkzMDAsImV4cCI6MjA2OTA0NTMwMH0.n6TVqq3meOhshgGzTfMt2Ef90mSYi8mxUz2UXteyHzg";
 
+// A resilient storage adapter that falls back to in-memory storage if localStorage is unavailable
+const memoryStore = new Map<string, string>();
+const safeStorage: Pick<Storage, 'getItem' | 'setItem' | 'removeItem'> = {
+  getItem: (key: string) => {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        return window.localStorage.getItem(key);
+      }
+    } catch {}
+    return memoryStore.get(key) ?? null;
+  },
+  setItem: (key: string, value: string) => {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        window.localStorage.setItem(key, value);
+        return;
+      }
+    } catch {}
+    memoryStore.set(key, value);
+  },
+  removeItem: (key: string) => {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        window.localStorage.removeItem(key);
+        return;
+      }
+    } catch {}
+    memoryStore.delete(key);
+  }
+};
+
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
-    storage: localStorage,
+    storage: safeStorage,
     persistSession: true,
     autoRefreshToken: true,
   }
