@@ -36,7 +36,7 @@ const ProfileModule: React.FC<ProfileModuleProps> = ({ userProfile, onProfileUpd
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [userName, setUserName] = useState('Your Name');
   const [showSettings, setShowSettings] = useState(false);
-  const { user, signOut } = useAuth();
+  const { user, session, signOut } = useAuth();
   const { subscription, openCustomerPortal, createCheckoutSession } = useSubscription();
   const { toast } = useToast();
   const { selectPhoto } = useCamera();
@@ -61,14 +61,36 @@ const ProfileModule: React.FC<ProfileModuleProps> = ({ userProfile, onProfileUpd
     if (!user) return;
     setAdminLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('admin-metrics');
+      // Ensure we always send the current JWT to the Edge Function
+      let token = session?.access_token || null;
+      if (!token) {
+        const { data: sess } = await supabase.auth.getSession();
+        token = sess?.session?.access_token || null;
+      }
+      if (!token) {
+        setIsAdmin(false);
+        setAdminStats(null);
+        toast({ title: 'Admin metrics unavailable', description: 'missing_jwt', variant: 'destructive' });
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke('admin-metrics', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'x-client-info': 'purposely-web',
+        },
+      });
+
       if (error || !data) {
         setIsAdmin(false);
         setAdminStats(null);
-        toast({ title: 'Admin metrics unavailable', description: error?.message || 'Please try again shortly.', variant: 'destructive' });
-      } else if (data?.error === 'forbidden') {
-        setIsAdmin(false);
+        toast({ title: 'Admin metrics unavailable', description: error?.message || 'non_2xx', variant: 'destructive' });
+      } else if (data?.error) {
+        // Structured error from Edge Function (e.g., not_admin, missing_jwt, invalid_jwt, server_error)
+        const code = data.error;
+        if (code === 'not_admin') setIsAdmin(false);
         setAdminStats(null);
+        toast({ title: 'Admin metrics unavailable', description: code, variant: 'destructive' });
       } else {
         setIsAdmin(true);
         setAdminStats({
