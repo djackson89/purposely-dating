@@ -12,6 +12,28 @@ interface UserProfile {
 
 type AIType = 'therapy' | 'flirt' | 'date' | 'intimacy' | 'general';
 
+export type Audience = 'woman' | 'man' | 'couple' | 'unspecified';
+export type LengthPref = 'short' | 'standard' | 'long';
+
+export interface PurposelyOptions {
+  audience: Audience;
+  spice_level: number; // 1-5
+  length: LengthPref;
+  topic_tags: string[];
+}
+
+export interface PurposelyResult {
+  rendered: string;
+  json: {
+    hook: string;
+    pattern: string;
+    validation: string;
+    perspective: string;
+    actions: string[];
+    cta: string;
+  } | null;
+}
+
 export const useRelationshipAI = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
@@ -62,11 +84,43 @@ export const useRelationshipAI = () => {
     return getAIResponse(prompt, userProfile, 'date');
   }, [getAIResponse]);
 
+  const getPurposelyPerspective = useCallback(async (
+    user_question: string,
+    userProfile: UserProfile,
+    options: PurposelyOptions
+  ): Promise<PurposelyResult> => {
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('relationship-ai', {
+        body: {
+          prompt: user_question,
+          userProfile,
+          type: 'purposely',
+          audience: options.audience,
+          spice_level: options.spice_level,
+          length: options.length,
+          topic_tags: options.topic_tags,
+        }
+      });
+      if (error) throw new Error(error.message || 'Failed to get Purposely Perspective');
+      if ((data as any)?.error) throw new Error((data as any).error);
+      const rendered: string = (data as any).response ?? '';
+      const json = (data as any).json ?? null;
+      return { rendered, json };
+    } catch (e) {
+      console.error('Purposely AI error', e);
+      toast({ title: 'AI Error', description: e instanceof Error ? e.message : 'Failed to get perspective', variant: 'destructive' });
+      throw e;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [toast]);
+
   return {
     isLoading,
     getAIResponse,
     getTherapyInsight,
     getFlirtSuggestion,
-    getDateIdea
+    getDateIdea,
+    getPurposelyPerspective,
   };
-};

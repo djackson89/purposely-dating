@@ -13,7 +13,7 @@ serve(async (req) => {
   }
 
   try {
-    const { prompt, userProfile, type } = await req.json();
+    const { prompt, userProfile, type, audience, spice_level, length, topic_tags } = await req.json();
     
     if (!prompt) {
       throw new Error('Prompt is required');
@@ -69,6 +69,53 @@ serve(async (req) => {
         Provide mature, adult-oriented guidance about physical and emotional intimacy. Be direct but tasteful, helping adults explore their desires and improve their intimate connections. Focus on passion, attraction, and adult relationship dynamics while maintaining respect and consent. Use confident, alluring language appropriate for mature audiences.`;
         break;
         
+      case 'purposely':
+        systemPrompt = `You are Purposely's in-house voice: bold, witty, emotionally intelligent. Generate a "Purposely Perspective" tailored to the user's scenario.
+
+Inputs to consider:
+- Audience: ${audience || 'unspecified'}
+- Spice level (1-5): ${typeof spice_level === 'number' ? spice_level : 3}
+- Desired length: ${length || 'standard'}
+- Topic tags: ${(Array.isArray(topic_tags) ? topic_tags : []).join(', ') || 'none'}
+
+Voice & Tonality Blueprint:
+- Hook first line: a punchy, quotable thesis (<= 20 words).
+- Confident, witty, precise: sharp one-liners; controlled humor/sarcasm; no rambling.
+- Validate the reader; call out manipulation without demeaning victims.
+- Rhetorical devices: parallelism, reversals, callbacks, quick contrasts, strategic italics/caps sparingly, pop metaphors (audit, rerun, gatekeeping, prerequisites, etc.).
+- Perspective: pro-healing, pro-boundaries, pro-accountability; celebrate self-respect.
+- Originality: do not reuse exact phrasing from any reference.
+
+Content Rules:
+- Make it scenario-specific: cite 1–2 details verbatim from the user question.
+- Name the pattern succinctly (e.g., post-breakup surveillance, contingent confession, damage deflection, unanswered pain signal, misplaced grief).
+- Flip the frame: expose the real incentive behind the behavior (control, avoidance, image maintenance).
+- Validate → Reclaim: affirm feelings, then redirect power with clear next steps.
+- Safety: no shaming trauma, no revenge instructions, inclusive language.
+
+Output Format (STRICT):
+<json>{
+  "hook": string,
+  "pattern": string,
+  "validation": string,
+  "perspective": string,
+  "actions": string[],
+  "cta": string
+}</json>
+<rendered>
+Hook:\n<one-line hook>\n\nPurposely Perspective:\n<3–6 short paragraphs mixing bars + empathy + specificity>\n\nNext Moves:\n• <action 1>\n• <action 2>\n• <action 3>\n\nCTA:\n<closing line>
+</rendered>
+
+Generation Steps:
+1) Extract specifics from the user question (behaviors, timeline, asks). Quote one detail.
+2) Select the best-fitting template: Revoked Access, Self-Guided Journey, Completion Catalyst, Unreachable Evolution, Reclaimed Priority, Relationship Reset Button, Contingent Confession, Damage Deflector, Unanswered Pain Signal, Misplaced Grief.
+3) Write the hook (<=20 words). Ensure it stands alone.
+4) Craft the perspective with parallelism + reversals; weave 1–2 tailored metaphors.
+5) Offer 2–4 concrete actions matching the scenario (boundary script, time limit, check-in window, journaling prompt, therapy pointer).
+6) Tone-check to spice_level and audience. Keep dignity intact.
+7) Enforce the Output Format exactly with <json> then <rendered>.`;
+        break;
+        
       default:
         systemPrompt = `You are a helpful relationship and dating assistant. Provide supportive, practical advice based on the user's profile and question.`;
     }
@@ -87,9 +134,9 @@ serve(async (req) => {
           { role: 'system', content: systemPrompt },
           { role: 'user', content: prompt }
         ],
-        max_tokens: type === 'intimacy' ? 1600 : 900,
-        temperature: type === 'intimacy' ? 0.9 : 0.75,
-        presence_penalty: type === 'intimacy' ? 0.5 : 0.3,
+        max_tokens: type === 'intimacy' ? 1600 : type === 'purposely' ? 1400 : 900,
+        temperature: type === 'intimacy' ? 0.9 : type === 'purposely' ? 0.9 : 0.75,
+        presence_penalty: type === 'intimacy' ? 0.5 : type === 'purposely' ? 0.4 : 0.3,
         frequency_penalty: 0.4,
       }),
     });
@@ -101,9 +148,31 @@ serve(async (req) => {
     }
 
     const data = await response.json();
-    const aiResponse = data.choices[0].message.content;
+    const aiResponse = data.choices?.[0]?.message?.content ?? '';
 
     console.log('AI response generated successfully');
+
+    // For 'purposely', extract the structured JSON and rendered text from tags
+    if (type === 'purposely') {
+      let rendered = aiResponse;
+      let jsonPayload: unknown = null;
+      try {
+        const jsonMatch = aiResponse.match(/<json>([\s\S]*?)<\/json>/i);
+        if (jsonMatch) {
+          jsonPayload = JSON.parse(jsonMatch[1]);
+        }
+        const renderedMatch = aiResponse.match(/<rendered>([\s\S]*?)<\/rendered>/i);
+        if (renderedMatch) {
+          rendered = renderedMatch[1].trim();
+        }
+      } catch (e) {
+        console.warn('Failed to parse Purposely response format', e);
+      }
+
+      return new Response(JSON.stringify({ response: rendered, json: jsonPayload }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     return new Response(JSON.stringify({ response: aiResponse }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
