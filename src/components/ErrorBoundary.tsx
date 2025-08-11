@@ -27,9 +27,9 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
     // Log error for debugging
     if (typeof window !== 'undefined') {
       console.error('ErrorBoundary caught an error:', {
-        error: error.message,
-        stack: error.stack,
-        componentStack: errorInfo.componentStack,
+        error: error?.message,
+        stack: error?.stack,
+        componentStack: errorInfo?.componentStack,
         userAgent: navigator.userAgent,
         url: window.location.href,
         timestamp: new Date().toISOString()

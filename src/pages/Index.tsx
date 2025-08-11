@@ -342,8 +342,19 @@ const Index = () => {
   };
 
   const renderActiveModule = () => {
+    // Normalize user profile so modules never crash on null
+    const profile: OnboardingData = userProfile ?? {
+      firstName: '',
+      profilePhoto: undefined,
+      loveLanguage: '',
+      relationshipStatus: '',
+      age: '25',
+      gender: '',
+      personalityType: ''
+    };
+
     const moduleProps = {
-      userProfile,
+      userProfile: profile,
       sneakPeekTracking,
       onPaywallTrigger: handlePaywallTrigger
     };
@@ -351,7 +362,7 @@ const Index = () => {
     switch (activeModule) {
       case 'home':
         return <Home 
-          userProfile={userProfile} 
+          userProfile={profile} 
           onNavigateToFlirtFuel={handleNavigateToFlirtFuel} 
           onNavigateToAIPractice={handleNavigateToAIPractice} 
           onNavigateToModule={handleNavigateToModule}
@@ -365,10 +376,10 @@ const Index = () => {
       case 'therapy':
         return <TherapyCompanionModule {...moduleProps} />;
       case 'profile':
-        return <ProfileModule userProfile={userProfile} onProfileUpdate={handleProfileUpdate} />;
+        return <ProfileModule userProfile={profile} onProfileUpdate={handleProfileUpdate} />;
       default:
         return <Home 
-          userProfile={userProfile} 
+          userProfile={profile} 
           onNavigateToFlirtFuel={handleNavigateToFlirtFuel} 
           onNavigateToAIPractice={handleNavigateToAIPractice} 
           sneakPeekTracking={sneakPeekTracking}
