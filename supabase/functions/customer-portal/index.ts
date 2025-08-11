@@ -52,11 +52,14 @@ serve(async (req) => {
     logStep("Found Stripe customer", { customerId });
 
     const origin = req.headers.get("origin") || "http://localhost:3000";
-    const portalSession = await stripe.billingPortal.sessions.create({
+    const portalConfigurationId = Deno.env.get("STRIPE_PORTAL_CONFIGURATION_ID");
+    const portalParams: Stripe.BillingPortal.SessionCreateParams = {
       customer: customerId,
       return_url: `${origin}/`,
-    });
-    logStep("Customer portal session created", { sessionId: portalSession.id, url: portalSession.url });
+      ...(portalConfigurationId ? { configuration: portalConfigurationId } : {}),
+    };
+    const portalSession = await stripe.billingPortal.sessions.create(portalParams);
+    logStep("Customer portal session created", { sessionId: portalSession.id, url: portalSession.url, usingConfiguration: !!portalConfigurationId });
 
     return new Response(JSON.stringify({ url: portalSession.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
