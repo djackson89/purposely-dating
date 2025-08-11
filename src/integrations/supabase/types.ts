@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      billing: {
+        Row: {
+          cancel_at_period_end: boolean | null
+          created_at: string
+          current_period_end: string | null
+          id: string
+          plan_price_id: string | null
+          premium_activated_at: string | null
+          status: string
+          stripe_customer_id: string | null
+          subscription_id: string | null
+          trial_end: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cancel_at_period_end?: boolean | null
+          created_at?: string
+          current_period_end?: string | null
+          id?: string
+          plan_price_id?: string | null
+          premium_activated_at?: string | null
+          status: string
+          stripe_customer_id?: string | null
+          subscription_id?: string | null
+          trial_end?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cancel_at_period_end?: boolean | null
+          created_at?: string
+          current_period_end?: string | null
+          id?: string
+          plan_price_id?: string | null
+          premium_activated_at?: string | null
+          status?: string
+          stripe_customer_id?: string | null
+          subscription_id?: string | null
+          trial_end?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       conversation_starters_pool: {
         Row: {
           category: string
@@ -275,6 +320,24 @@ export type Database = {
         }
         Relationships: []
       }
+      presence: {
+        Row: {
+          last_seen_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          last_seen_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          last_seen_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           age: string | null
@@ -474,6 +537,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_metrics: {
+        Args: { tz: string; price_id: string }
+        Returns: Json
+      }
       count_pool_questions: {
         Args: { p_user_id: string; p_category: string; p_depth_level: number }
         Returns: number

@@ -43,7 +43,16 @@ const ProfileModule: React.FC<ProfileModuleProps> = ({ userProfile, onProfileUpd
   const { success, light } = useHaptics();
 
   // Admin stats state
-  const [adminStats, setAdminStats] = useState<{ totalUsers: number; todaySignups: number } | null>(null);
+  const [adminStats, setAdminStats] = useState<{
+    users_all: number;
+    signups_today: number;
+    free_trial_now: number;
+    premium_active_now: number;
+    premium_converted_today: number;
+    premium_converted_last7: number;
+    active_now: number;
+    generated_at?: string;
+  } | null>(null);
   const [adminLoading, setAdminLoading] = useState(false);
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const computedIsAdmin = (isAdmin === true) || (subscription?.subscription_tier?.toLowerCase?.() === 'admin');
@@ -52,19 +61,31 @@ const ProfileModule: React.FC<ProfileModuleProps> = ({ userProfile, onProfileUpd
     if (!user) return;
     setAdminLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('admin-stats');
+      const { data, error } = await supabase.functions.invoke('admin-metrics');
       if (error || !data) {
         setIsAdmin(false);
         setAdminStats(null);
-        toast({ title: 'Admin stats unavailable', description: error?.message || 'Please try again shortly.', variant: 'destructive' });
+        toast({ title: 'Admin metrics unavailable', description: error?.message || 'Please try again shortly.', variant: 'destructive' });
+      } else if (data?.error === 'forbidden') {
+        setIsAdmin(false);
+        setAdminStats(null);
       } else {
         setIsAdmin(true);
-        setAdminStats({ totalUsers: data.total_users, todaySignups: data.today_signups_cst });
+        setAdminStats({
+          users_all: data.totals?.users_all ?? 0,
+          signups_today: data.totals?.signups_today ?? 0,
+          free_trial_now: data.totals?.free_trial_now ?? 0,
+          premium_active_now: data.totals?.premium_active_now ?? 0,
+          premium_converted_today: data.totals?.premium_converted_today ?? 0,
+          premium_converted_last7: data.totals?.premium_converted_last7 ?? 0,
+          active_now: data.totals?.active_now ?? 0,
+          generated_at: data.generated_at,
+        });
       }
     } catch (e: any) {
       setIsAdmin(false);
       setAdminStats(null);
-      toast({ title: 'Admin stats error', description: e?.message || 'Unable to load admin analytics.', variant: 'destructive' });
+      toast({ title: 'Admin metrics error', description: e?.message || 'Unable to load admin analytics.', variant: 'destructive' });
     } finally {
       setAdminLoading(false);
     }
@@ -420,11 +441,32 @@ const ProfileModule: React.FC<ProfileModuleProps> = ({ userProfile, onProfileUpd
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-gradient-soft p-4 rounded-lg border border-primary/20">
                 <div className="text-sm text-muted-foreground">Total users</div>
-                <div className="text-2xl font-bold text-primary">{adminStats ? adminStats.totalUsers : (adminLoading ? '…' : '—')}</div>
+                <div className="text-2xl font-bold text-primary">{adminStats ? adminStats.users_all : (adminLoading ? '…' : '—')}</div>
               </div>
               <div className="bg-gradient-soft p-4 rounded-lg border border-primary/20">
                 <div className="text-sm text-muted-foreground">Signups today (CST)</div>
-                <div className="text-2xl font-bold text-primary">{adminStats ? adminStats.todaySignups : (adminLoading ? '…' : '—')}</div>
+                <div className="text-2xl font-bold text-primary">{adminStats ? adminStats.signups_today : (adminLoading ? '…' : '—')}</div>
+              </div>
+              <div className="bg-gradient-soft p-4 rounded-lg border border-primary/20">
+                <div className="text-sm text-muted-foreground">Free‑trial (now)</div>
+                <div className="text-2xl font-bold text-primary">{adminStats ? adminStats.free_trial_now : (adminLoading ? '…' : '—')}</div>
+              </div>
+              <div className="bg-gradient-soft p-4 rounded-lg border border-primary/20">
+                <div className="text-sm text-muted-foreground">Premium active (post‑trial)</div>
+                <div className="text-2xl font-bold text-primary">{adminStats ? adminStats.premium_active_now : (adminLoading ? '…' : '—')}</div>
+              </div>
+              <div className="bg-gradient-soft p-4 rounded-lg border border-primary/20">
+                <div className="text-sm text-muted-foreground">New Premium today (CST)</div>
+                <div className="text-2xl font-bold text-primary">{adminStats ? adminStats.premium_converted_today : (adminLoading ? '…' : '—')}</div>
+              </div>
+              <div className="bg-gradient-soft p-4 rounded-lg border border-primary/20">
+                <div className="text-sm text-muted-foreground">New Premium – last 7 days (CST)</div>
+                <div className="text-2xl font-bold text-primary">{adminStats ? adminStats.premium_converted_last7 : (adminLoading ? '…' : '—')}</div>
+              </div>
+              <div className="bg-gradient-soft p-4 rounded-lg border border-primary/20 col-span-2">
+                <div className="text-sm text-muted-foreground">Active now (≤2 min)</div>
+                <div className="text-2xl font-bold text-primary">{adminStats ? adminStats.active_now : (adminLoading ? '…' : '—')}</div>
+                <div className="text-xs text-muted-foreground mt-1">Last updated: {adminStats?.generated_at ? new Date(adminStats.generated_at).toLocaleTimeString('en-US', { timeZone: 'America/Chicago' }) + ' CST' : '—'}</div>
               </div>
             </div>
           </CardContent>

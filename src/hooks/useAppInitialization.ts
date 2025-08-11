@@ -71,6 +71,23 @@ export const useAppInitialization = (userProfile?: any) => {
       // Track app initialization
       trackScreenView('app_launch', 'AppInitialization');
 
+      // Start presence heartbeat every 30s (pause if tab hidden)
+      try {
+        const sendHeartbeat = async () => {
+          if (typeof document !== 'undefined' && document.hidden) return;
+          const { supabase } = await import('@/integrations/supabase/client');
+          await supabase.functions.invoke('presence-heartbeat');
+        };
+        sendHeartbeat();
+        const interval = setInterval(sendHeartbeat, 30000);
+        // @ts-ignore store globally for cleanup on reloads
+        window.__presenceInterval && clearInterval(window.__presenceInterval);
+        // @ts-ignore
+        window.__presenceInterval = interval;
+      } catch (e) {
+        console.warn('presence heartbeat init failed', e);
+      }
+
       console.log('✅ App initialization complete');
     };
 
