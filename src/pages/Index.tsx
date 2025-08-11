@@ -16,6 +16,7 @@ import { useReviewTracking } from '@/hooks/useReviewTracking';
 import { useSneakPeekTracking } from '@/hooks/useSneakPeekTracking';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
+import { getSafeProfile } from '@/utils/safeProfile';
 
 interface OnboardingData {
   firstName: string;
@@ -341,23 +342,24 @@ const Index = () => {
     }
   };
 
-  const renderActiveModule = () => {
-    // Normalize user profile so modules never crash on null
-    const profile: OnboardingData = userProfile ?? {
-      firstName: '',
-      profilePhoto: undefined,
-      loveLanguage: '',
-      relationshipStatus: '',
-      age: '25',
-      gender: '',
-      personalityType: ''
-    };
+    const renderActiveModule = () => {
+      // Normalize user profile so modules never crash on null
+      const raw = getSafeProfile(userProfile);
+      const profile: OnboardingData = {
+        firstName: raw.firstName ?? '',
+        profilePhoto: raw.profilePhoto,
+        loveLanguage: raw.loveLanguage ?? '',
+        relationshipStatus: raw.relationshipStatus ?? '',
+        age: raw.age ?? '25',
+        gender: raw.gender ?? '',
+        personalityType: raw.personalityType ?? ''
+      };
 
-    const moduleProps = {
-      userProfile: profile,
-      sneakPeekTracking,
-      onPaywallTrigger: handlePaywallTrigger
-    };
+      const moduleProps = {
+        userProfile: profile,
+        sneakPeekTracking,
+        onPaywallTrigger: handlePaywallTrigger
+      };
 
     switch (activeModule) {
       case 'home':
