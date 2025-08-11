@@ -124,3 +124,4 @@ export const useRelationshipAI = () => {
     getDateIdea,
     getPurposelyPerspective,
   };
+};
