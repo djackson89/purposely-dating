@@ -187,21 +187,10 @@ export const useAskPurposely = (userProfile: OnboardingData) => {
   }, [loadOrGenerate]);
 
   const nextScenario = useCallback(() => {
-    if (items.length) {
-      const nextIdx = (index + 1) % items.length;
-      if (nextIdx === 0) {
-        // Reached the end — generate a fresh new set so it feels endless
-        loadOrGenerate(true, true);
-        return;
-      }
-      setIndex(nextIdx);
-      const today = new Date().toDateString();
-      localStorage.setItem(`dailyScenarioIndex_${today}`, String(nextIdx));
-    } else {
-      // No items yet — generate immediately
-      loadOrGenerate(true, true);
-    }
-  }, [items.length, index, loadOrGenerate]);
+    // Always fetch a brand new fresh set for "See More"
+    // This matches product requirement: every click generates new user-submitted scenarios
+    loadOrGenerate(true, true);
+  }, [loadOrGenerate]);
 
   const current = items[index] || fallbackScenarios[0];
 
