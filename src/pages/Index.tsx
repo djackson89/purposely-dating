@@ -16,7 +16,7 @@ import { useReviewTracking } from '@/hooks/useReviewTracking';
 import { useSneakPeekTracking } from '@/hooks/useSneakPeekTracking';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
-import { getSafeProfile } from '@/utils/safeProfile';
+import { getSafeProfile, safeGetJSON } from '@/utils/safeProfile';
 
 interface OnboardingData {
   firstName: string;
@@ -119,16 +119,25 @@ const Index = () => {
 
   // Check for existing onboarding and paywall data
   useEffect(() => {
-    const savedProfile = localStorage.getItem('relationshipCompanionProfile');
+    const savedProfileRaw = safeGetJSON<any>('relationshipCompanionProfile', null);
     const savedPaywallFlag = localStorage.getItem('hasSeenPaywall');
     const savedWelcomeFlag = localStorage.getItem('hasSeenWelcome');
     const savedNotificationsFlag = localStorage.getItem('hasCompletedNotifications');
     
-    if (savedProfile) {
-      const parsed = JSON.parse(savedProfile);
+    if (savedProfileRaw) {
+      const raw = getSafeProfile(savedProfileRaw);
+      const parsed: OnboardingData = {
+        firstName: raw.firstName ?? '',
+        profilePhoto: raw.profilePhoto,
+        loveLanguage: raw.loveLanguage ?? '',
+        relationshipStatus: raw.relationshipStatus ?? '',
+        age: raw.age ?? '25',
+        gender: raw.gender ?? '',
+        personalityType: raw.personalityType ?? ''
+      };
       setUserProfile(parsed);
       // Only consider onboarding complete if local profile has all required answers
-      if (parsed?.loveLanguage && parsed?.relationshipStatus && parsed?.age && parsed?.personalityType) {
+      if (parsed.loveLanguage && parsed.relationshipStatus && parsed.age && parsed.personalityType) {
         setHasCompletedOnboarding(true);
       }
     }
@@ -148,7 +157,7 @@ const Index = () => {
     // If user is already subscribed, skip paywall and welcome screens,
     // but do NOT auto-complete onboarding unless a profile already exists
     if (!subscriptionLoading && subscription.subscribed) {
-      if (!savedProfile) {
+      if (!savedProfileRaw) {
         // Keep onboarding incomplete so user can enter first name and photo
       } else {
         setHasCompletedOnboarding(true);
@@ -188,10 +197,22 @@ const Index = () => {
   };
 
   const handleOnboardingComplete = async (data: OnboardingData) => {
-    setUserProfile(data);
+    // Normalize incoming data to guarantee full shape across browsers
+    const raw = getSafeProfile(data as any);
+    const normalized: OnboardingData = {
+      firstName: raw.firstName ?? '',
+      profilePhoto: raw.profilePhoto,
+      loveLanguage: raw.loveLanguage ?? '',
+      relationshipStatus: raw.relationshipStatus ?? '',
+      age: raw.age ?? '25',
+      gender: raw.gender ?? '',
+      personalityType: raw.personalityType ?? ''
+    };
+
+    setUserProfile(normalized);
     setHasCompletedOnboarding(true);
     // Save to localStorage for persistence
-    localStorage.setItem('relationshipCompanionProfile', JSON.stringify(data));
+    localStorage.setItem('relationshipCompanionProfile', JSON.stringify(normalized));
     
     // Save to Supabase if user is authenticated (map to snake_case columns)
     try {
@@ -201,13 +222,13 @@ const Index = () => {
           .from('profiles')
           .upsert({
             id: user.id,
-            full_name: data.firstName || undefined,
-            avatar_url: data.profilePhoto || undefined,
-            love_language: data.loveLanguage,
-            relationship_status: data.relationshipStatus,
-            age: data.age,
-            gender: data.gender,
-            personality_type: data.personalityType,
+            full_name: normalized.firstName || undefined,
+            avatar_url: normalized.profilePhoto || undefined,
+            love_language: normalized.loveLanguage,
+            relationship_status: normalized.relationshipStatus,
+            age: normalized.age,
+            gender: normalized.gender,
+            personality_type: normalized.personalityType,
             timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
           });
       }
