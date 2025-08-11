@@ -126,28 +126,28 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
   // Hypothetical Ask Purposely scenarios
   const defaultPurposelyScenarios = [
     {
-      question: "I just found out my man has been texting his ex wife about how I'm no good in bed. Although he's asking her how to 'train' me to be better, I feel completely humiliated and betrayed. Should I leave him?",
-      answer: "The disrespect is so loud it's deafening, and yet you're asking if you should leave? Baby, he didn't just cross a line—he bulldozed through your dignity and made his ex-wife a consultant on your intimacy. This isn't about 'training' you; it's about him training you to accept disrespect as normal. A man who truly loves you doesn't outsource conversations about your most vulnerable moments to another woman, especially not his ex. He's not trying to help you get better; he's trying to make you feel smaller so you won't realize you deserve a man who would never speak about you like a project that needs fixing. You're not broken—your picker just needs recalibrating."
+      question: `Two months ago, things felt easy. Now my boyfriend keeps working "late" and coming home showered, saying, "Don’t start, I’m exhausted." I brushed it off—until I recognized the cologne on his hoodie that isn’t his… it’s the one I bought for his best friend last Christmas. When I asked, he said they’ve been training together at the gym. Then I found a receipt for a fancy wine bar, two glasses. He swears it was a client. I want to believe him, but my stomach is in knots. Am I wrong for feeling like I’m being slowly gaslit?`,
+      answer: "Your body caught the truth before your brain did—listen to it. Ask for full transparency (receipts, calendars, a call with the ‘client’), and set a hard boundary: no more mystery nights. If he resists clarity, that’s your answer—protect your peace and leave." 
     },
     {
-      question: "My boyfriend of 2 years still has photos with his ex all over his social media. When I bring it up, he says I'm being 'insecure.' Am I wrong for wanting them gone?",
-      answer: "You're not insecure—you're intuitive. A man who's truly moved on doesn't need a digital shrine to his past. His refusal to remove them isn't about memory keeping; it's about keeping doors open. When he calls you insecure for having standards, he's using manipulation to avoid accountability. You deserve someone who closes chapters, not someone who keeps you competing with ghosts. Your discomfort isn't jealousy—it's your self-respect trying to save you."
+      question: `At brunch, my fiancé passed his phone to me to show a meme, and I accidentally saw a group chat with his groomsmen titled "Operation Upgrade." They were rating bridesmaids and joking about who he "could have pulled if he waited." My fiancé sent a laughing emoji and said, "Relax, it’s just guy stuff." But last night, he asked if we could make the wedding party "more balanced" and add one of his ex situationships. I feel humiliated. Should I call off the wedding or am I overreacting to dumb jokes?`,
+      answer: "He didn’t shut down the disrespect because, on some level, he enjoys it. Require a firm line: no objectifying chat, no ex in the bridal party, and accountability from him to clean up his circle. If he minimizes you again, this isn’t a wedding issue—it’s a values mismatch." 
     },
     {
-      question: "He says he needs 'space to figure things out' after a year of dating. Should I wait for him or is this just a soft breakup?",
-      answer: "When a man needs space to figure out if he wants you, he's already figured it out—he just doesn't want to be the bad guy who says it. Real love doesn't come with confusion periods. You're not a maybe, you're not a backup plan, and you're definitely not something that needs to be 'figured out.' Stop giving your energy to someone who's treating your heart like a trial subscription. His 'space' is just him keeping you on the hook while he explores other options."
+      question: `I was folding laundry when I found a tiny velvet pouch in my boyfriend’s jacket—inside was a ring. My heart dropped… until I realized it was engraved with another woman’s initials. He admitted it was the ring he never got to propose with years ago and said he kept it "for closure." Last week he asked my ring size "for fun." Now I don’t know if I’m the real choice or just the second chance. How do I even begin to trust again?`,
+      answer: "You can’t build a new chapter while he’s still clutching a relic from the last one. Ask him to release the ring and discuss why he’s keeping doors cracked open. If he can’t choose you cleanly, you can choose yourself." 
     },
     {
-      question: "My husband's female coworker keeps texting him late at night about 'work stuff' and when I ask to see the messages, he gets defensive and says I don't trust him. Am I being paranoid?",
-      answer: "Trust your gut—it's not paranoid, it's protective. A transparent man with nothing to hide doesn't get defensive about showing messages, especially when his wife's comfort is at stake. Work conversations at 11 PM? Please. The only thing working overtime here is his audacity. His anger at your reasonable request is a deflection tactic. A faithful husband would either show you the messages or establish boundaries with this coworker himself. You're not asking too much—you're asking the bare minimum."
+      question: `My husband told me he was "helping a coworker through a hard time." I met her at a company event—she hugged him a beat too long and called him her "rock." I tried to let it go… until I found a blanket and toiletries in our trunk because he’s been letting her nap on our couch "between shifts." He says I’m heartless for not wanting her around. Am I wrong for drawing a hard boundary?`,
+      answer: "Compassion doesn’t require access to your home or husband. Your boundary is reasonable: no private support without your consent. If he prioritizes her comfort over your safety and trust, that’s not kindness—it’s a breach." 
     },
     {
-      question: "Found out my boyfriend has been on dating apps while we've been together for 6 months. He says he was just 'looking' and never met anyone. Should I give him another chance?",
-      answer: "He wasn't 'just looking'—he was shopping. Being on dating apps while in a relationship isn't window shopping, it's actively hunting for your replacement. His defense is insulting your intelligence and minimizing his betrayal. The audacity to ask for another chance after showing you exactly how little he values what you already have together? No ma'am. A man who's happy with his woman doesn't need to see what else is out there. You deserve someone whose eyes never wander to other options."
+      question: `We’ve been trying to save for a house, but the numbers never add up. Last night, I checked our joint account and found monthly transfers labeled "Family Help." Turns out, my wife has been secretly paying her brother’s gambling debt for a year because she didn’t want me to "judge him." I’m crushed—not just about the money, but the secrecy. Should I leave or try to fix this?`,
+      answer: "The betrayal isn’t the dollars—it’s the deception. You need full financial transparency, a repayment plan, and a shared rule: no secret commitments with joint funds. If she can’t practice honesty, a house isn’t the only thing you won’t be able to build." 
     },
     {
-      question: "My partner keeps bringing up my past relationships and using them against me in arguments. He says I have 'too much baggage' but won't stop bringing it up. How do I handle this?",
-      answer: "He's weaponizing your past to control your present, and that's emotional terrorism. A man who truly loves you doesn't use your vulnerability as ammunition in fights. He's creating the very insecurity he claims you have by constantly reopening old wounds. This isn't about your baggage—it's about his inability to handle that you existed before him. Stop defending your past to someone who refuses to honor your present. You can't heal in the same environment that broke you."
+      question: `On our anniversary, my boyfriend booked "our spot"—the little Italian place with the twinkle lights. Halfway through dinner, the hostess waved at him: "Good to see you again! The usual table?" He said it was a mix-up, but later I saw his name on a Polaroid behind the bar… with another woman, dated last month. He swears it was a business dinner and she was "just a friend." I feel sick. Am I wrong for not buying it?`,
+      answer: "Patterns don’t lie—people do. Ask for receipts and specifics; if his story keeps changing, so should your plans with him. Your trust isn’t dramatic—it’s data-informed." 
     }
   ];
 
@@ -185,7 +185,53 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
     }
 
     try {
-      const prompt = `Generate 6 first-person, user-submitted scenarios describing a triggering, offensive, or potentially toxic dating/relationship situation from a woman's perspective, and a concise "Purposely Perspective" response to each.\nReturn a STRICT JSON array with 6 objects, each exactly: {"question": "...", "answer": "..."}.\nNo markdown, no backticks, no labels. Each question should read like a real scenario (what happened, why it felt triggering, what she’s unsure about). Keep answers 2-3 sentences, validate feelings, call out red flags, and suggest a clear boundary or next step. Tone: loving, witty, and direct.`;
+      const prompt = `You are writing fictional, anonymous, user-submitted relationship and dating dilemmas for a section called "Ask Purposely." Your goal is to produce emotionally gripping, debate-inducing scenarios that feel plausibly real.
+
+Return a STRICT JSON array with exactly 6 objects, each exactly: {"question": "...", "answer": "..."}. No markdown, no backticks, no labels, no extra commentary.
+
+QUESTION rules:
+- First-person confessional voice from a woman.
+- Start with a short context sentence.
+- Unfold with vivid, specific details, emotional beats, and occasional dialogue using quotes.
+- Include at least one surprising gut-punch reveal that reframes the situation.
+- Mix light drama with high-stakes themes (betrayal, secrecy, intimacy, family interference, money, trust, jealousy, boundaries, emotional labor, mismatched values, or life decisions).
+- Avoid clichés; create moral ambiguity where readers could reasonably side with either person.
+- End with a short, raw question to the audience (e.g., "Am I wrong for feeling this way?", "Should I leave or try to fix this?", "How do I even begin to trust again?").
+
+ANSWER (Purposely Perspective) rules:
+- 2–3 sentences only.
+- Validate feelings, name the dynamic/red flag, and suggest one clear boundary or next step.
+- Choose 1–2 angles from: accountability, communication clarity, boundary respect, reciprocity/effort, consistency/reliability, honesty/transparency, empathy/perspective-taking, conflict-resolution habits, alignment of values.
+- Avoid clichés; do NOT use the exact phrase "emotional maturity."
+- Loving, witty, direct tone.
+
+Use the following seed scenarios ONLY as inspiration so outputs stay fresh and varied. Do not reuse wording:
+The Wedding Photographer — "My fiancé wants to hire his ex to shoot our wedding; says I’m insecure."
+The Secret Family Trip — "He took our kids on a trip with his sister while I was away; called it a ‘break for me.’"
+The Late-Night Messages — "He texts his coworker goodnight nightly; says she needs support."
+The Graduation Ultimatum — "Stepdad won’t attend unless bio dad stays home."
+The Surprise Baby — "Boyfriend’s ex is pregnant; he wants me to stay and help raise the baby."
+The Debt Collector — "Wife used joint savings to pay brother’s gambling debts in secret."
+The Bedroom Dealbreaker — "Partner wants to open the relationship or he’s ‘not attracted.’"
+The Uninvited Ex — "Boyfriend invited his ex to my birthday ‘to keep the peace.’"
+The Parenting Clash — "I undermined a grounding; now trust is broken with my husband."
+The Anniversary Gift — "Wife reused a card she wrote to her ex."
+The Name Tattoo — "Girlfriend still has her ex’s name tattooed."
+The Secret Guest Room — "Husband secretly let coworker stay in our home."
+The Forgotten Funeral — "Boyfriend skipped my mom’s funeral for a festival."
+The Engagement Switch — "He proposed with the ring he once bought for his ex."
+The Hospital Secret — "He stayed at dinner with a female friend while I went into labor."
+The Job Opportunity — "Girlfriend wants a break to ‘fully experience’ an overseas job."
+The Shared Account — "He uses a profile with his ex’s name and fresh watch history."
+The Bridal Party Snub — "Fiancé refuses to include my brother in the wedding party."
+The Secret Retirement Fund — "Wife hid a six-figure fund ‘for security in case we divorce.’"
+The Jealous Best Friend — "Husband says I must drop my male best friend."
+The Pet Dilemma — "Girlfriend wants to give away my dog."
+The Password Change — "Partner changed all passwords for ‘privacy.’"
+The Public Proposal — "He proposed at a stadium knowing I hate attention."
+The Silent Treatment — "Wife hasn’t spoken to me for two weeks after a fight."
+The Shared Grave Plot — "Husband keeps a joint grave plot with his ex-wife."
+`;
       const result = await getAIResponse(prompt, userProfile, 'therapy');
       let parsed: any[] | null = null;
       try {
