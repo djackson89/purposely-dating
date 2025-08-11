@@ -7,6 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useRelationshipAI } from '@/hooks/useRelationshipAI';
 import { useAskPurposely, OnboardingData } from '@/hooks/useAskPurposely';
 import { Skeleton } from '@/components/ui/skeleton';
+import { truncate } from '@/lib/ask/utils';
 
 interface Props {
   userProfile: OnboardingData & { first_name?: string; full_name?: string };
@@ -105,7 +106,7 @@ useEffect(() => {
                 </>
               ) : (
                 <>
-                  <div key={(current as any).id ?? (current.question + current.answer).slice(0,16)} className="p-4 bg-white rounded-lg border border-border">
+                  <div key={(current as any).id ?? truncate(`${(current as any)?.question}::${(current as any)?.answer}`, 16)} className="p-4 bg-white rounded-lg border border-border">
                     <p className="text-foreground leading-relaxed font-medium">"{current.question}"</p>
                     <p className="text-xs text-muted-foreground mt-2">Submitted by: Anonymous</p>
                   </div>

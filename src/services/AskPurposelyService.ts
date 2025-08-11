@@ -1,5 +1,6 @@
 import { sha256 } from 'js-sha256';
 import { supabase } from '@/integrations/supabase/client';
+import { normalizeScenario } from '@/lib/ask/types';
 
 // Minimal inline UUID generator with crypto fallback
 const uuidFallback = () =>
@@ -154,23 +155,33 @@ export class AskPurposelyService {
     this.aborted = true;
   }
 
-  private mapToScenarios(rows: Array<{ question: string; answer: string }>): Scenario[] {
+  private mapToScenarios(rows: Array<any>): Scenario[] {
     return rows
       .map((r) => {
-        const q = String(r?.question || '').trim().replace(/^[\["']|[\]"']$/g, '');
-        const a = String(r?.answer || '').trim().replace(/^[\["']|[\]"']$/g, '');
-        const id = newId();
-        const hash = computeHash(q, a);
-        return {
-          id,
-          question: q,
-          perspective: a,
-          tags: detectTags(q, a),
-          createdAt: now(),
-          hash,
-        } as Scenario;
+        try {
+          const normalized = normalizeScenario({
+            id: newId(),
+            question: r?.question,
+            perspective: (r as any)?.perspective,
+            answer: (r as any)?.answer,
+            tags: Array.isArray((r as any)?.tags) ? (r as any).tags : [],
+            createdAt: new Date().toISOString(),
+            hash: undefined,
+          });
+          return {
+            id: normalized.id,
+            question: normalized.question,
+            perspective: normalized.perspective,
+            tags: normalized.tags?.length ? normalized.tags : detectTags(normalized.question, normalized.perspective),
+            createdAt: Date.parse(normalized.createdAt),
+            hash: normalized.hash,
+          } as Scenario;
+        } catch (e) {
+          log(this.telemetry, 'normalize_fail', { error: String((e as any)?.message || e) });
+          return null as any;
+        }
       })
-      .filter((s) => s.question && s.perspective);
+      .filter((s) => s && s.question && s.perspective);
   }
 
   private getHistory(): string[] {
@@ -217,20 +228,31 @@ export class AskPurposelyService {
     return this.userKey && this.userKey !== 'anon';
   }
 
-  private mapSeedRows(rows: Array<{ id: string; question: string; perspective: string; tags: string[]; created_at?: string; hash?: string; }>): Scenario[] {
+  private mapSeedRows(rows: Array<{ id: string; question: any; perspective?: any; answer?: any; tags?: any; created_at?: string; hash?: string; }>): Scenario[] {
     return (rows || []).map((r) => {
-      const q = String(r.question || '').trim();
-      const a = String(r.perspective || '').trim();
-      const h = r.hash || computeHash(q, a);
-      return {
-        id: `seed_${r.id}`,
-        question: q,
-        perspective: a,
-        tags: Array.isArray(r.tags) ? r.tags : detectTags(q, a),
-        createdAt: r.created_at ? Date.parse(r.created_at) : now(),
-        hash: h,
-      } as Scenario;
-    });
+      try {
+        const normalized = normalizeScenario({
+          id: `seed_${r.id}`,
+          question: r.question,
+          perspective: (r as any)?.perspective,
+          answer: (r as any)?.answer,
+          tags: Array.isArray(r.tags) ? r.tags : [],
+          createdAt: r.created_at ?? new Date().toISOString(),
+          hash: r.hash,
+        });
+        return {
+          id: normalized.id,
+          question: normalized.question,
+          perspective: normalized.perspective,
+          tags: normalized.tags?.length ? normalized.tags : detectTags(normalized.question, normalized.perspective),
+          createdAt: Date.parse(normalized.createdAt),
+          hash: normalized.hash,
+        } as Scenario;
+      } catch (e) {
+        log(this.telemetry, 'normalize_fail', { error: String((e as any)?.message || e) });
+        return null as any;
+      }
+    }).filter(Boolean as any);
   }
 
   private async takeFromSeed(n: number): Promise<Scenario[]> {
@@ -352,8 +374,24 @@ export class AskPurposelyService {
     const key = `ap:queue:${this.userKey}`;
     try {
       const raw = sessionStorage.getItem(key);
-      const parsed = raw ? (JSON.parse(raw) as Scenario[]) : [];
-      return Array.isArray(parsed) ? parsed : [];
+      const parsed = raw ? (JSON.parse(raw) as any[]) : [];
+      if (!Array.isArray(parsed)) return [];
+      const normalized = parsed.map((r: any) => {
+        try {
+          const n = normalizeScenario(r);
+          return {
+            id: n.id,
+            question: n.question,
+            perspective: n.perspective,
+            tags: Array.isArray(n.tags) ? n.tags : [],
+            createdAt: Date.parse(n.createdAt),
+            hash: n.hash,
+          } as Scenario;
+        } catch {
+          return null as any;
+        }
+      }).filter(Boolean as any);
+      return normalized;
     } catch {
       return [];
     }
