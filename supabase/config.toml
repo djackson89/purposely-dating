@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.daily-question-notification]
 verify_jwt = false
+
+[functions.admin-stats]
+verify_jwt = true

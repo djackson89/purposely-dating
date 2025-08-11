@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { User, Camera, Edit, Heart, Calendar, MessageCircle, LogOut, Settings, CreditCard } from 'lucide-react';
+import { User, Camera, Edit, Heart, Calendar, MessageCircle, LogOut, Settings, CreditCard, RefreshCw } from 'lucide-react';
 import { HeartIcon } from '@/components/ui/heart-icon';
 import { InfoDialog } from '@/components/ui/info-dialog';
 import { AboutDialog } from '@/components/ui/about-dialog';
@@ -15,6 +15,7 @@ import { useCamera } from '@/hooks/useCamera';
 import { useHaptics } from '@/hooks/useHaptics';
 import { useSubscription } from '@/hooks/useSubscription';
 import AppSettings from '@/components/AppSettings';
+import { supabase } from '@/integrations/supabase/client';
 
 interface OnboardingData {
   loveLanguage: string;
@@ -40,6 +41,63 @@ const ProfileModule: React.FC<ProfileModuleProps> = ({ userProfile, onProfileUpd
   const { toast } = useToast();
   const { selectPhoto } = useCamera();
   const { success, light } = useHaptics();
+
+  // Admin stats state
+  const [adminStats, setAdminStats] = useState<{ totalUsers: number; todaySignups: number } | null>(null);
+  const [adminLoading, setAdminLoading] = useState(false);
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+
+  const fetchAdminStats = async () => {
+    if (!user) return;
+    setAdminLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-stats');
+      if (error || !data) {
+        setIsAdmin(false);
+        setAdminStats(null);
+      } else {
+        setIsAdmin(true);
+        setAdminStats({ totalUsers: data.total_users, todaySignups: data.today_signups_cst });
+      }
+    } catch (e) {
+      setIsAdmin(false);
+      setAdminStats(null);
+    } finally {
+      setAdminLoading(false);
+    }
+  };
+
+  const msUntilNextChicagoMidnight = () => {
+    const now = new Date();
+    const chicagoNow = new Date(now.toLocaleString('en-US', { timeZone: 'America/Chicago' }));
+    const tzOffsetMs = now.getTime() - chicagoNow.getTime();
+    const chicagoMidnightLocal = new Date(
+      chicagoNow.getFullYear(),
+      chicagoNow.getMonth(),
+      chicagoNow.getDate() + 1,
+      0, 0, 0, 0
+    );
+    const chicagoMidnightUtcMs = chicagoMidnightLocal.getTime() + tzOffsetMs;
+    return Math.max(chicagoMidnightUtcMs - now.getTime(), 0);
+  };
+
+  useEffect(() => {
+    fetchAdminStats();
+    const timeout = setTimeout(() => {
+      fetchAdminStats();
+      const interval = setInterval(fetchAdminStats, 24 * 60 * 60 * 1000);
+      // store interval on window to ensure cleanup is handled on reloads
+      // @ts-ignore
+      window.__adminStatsInterval && clearInterval(window.__adminStatsInterval);
+      // @ts-ignore
+      window.__adminStatsInterval = interval;
+    }, msUntilNextChicagoMidnight());
+    return () => {
+      clearTimeout(timeout);
+      // @ts-ignore
+      window.__adminStatsInterval && clearInterval(window.__adminStatsInterval);
+    };
+  }, [user]);
 
   const handleSaveProfile = () => {
     onProfileUpdate(editedProfile);
@@ -339,6 +397,35 @@ const ProfileModule: React.FC<ProfileModuleProps> = ({ userProfile, onProfileUpd
           )}
         </CardContent>
       </Card>
+
+      {isAdmin && (
+        <Card className="shadow-soft border-primary/10">
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <span className="flex items-center space-x-2">
+                <User className="w-5 h-5 text-primary" />
+                <span>Admin Analytics</span>
+              </span>
+              <Button variant="soft" size="sm" onClick={fetchAdminStats} disabled={adminLoading}>
+                <RefreshCw className={`w-4 h-4 mr-1 ${adminLoading ? 'animate-spin' : ''}`} />
+                Refresh
+              </Button>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-gradient-soft p-4 rounded-lg border border-primary/20">
+                <div className="text-sm text-muted-foreground">Total users</div>
+                <div className="text-2xl font-bold text-primary">{adminStats ? adminStats.totalUsers : '—'}</div>
+              </div>
+              <div className="bg-gradient-soft p-4 rounded-lg border border-primary/20">
+                <div className="text-sm text-muted-foreground">Signups today (CST)</div>
+                <div className="text-2xl font-bold text-primary">{adminStats ? adminStats.todaySignups : '—'}</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* App Info */}
       <Card className="shadow-soft border-primary/10">
