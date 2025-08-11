@@ -14,7 +14,7 @@ export interface OnboardingData {
   personalityType: string;
 }
 
-const CACHE_VERSION = 'v2';
+const CACHE_VERSION = 'v3';
 const SCENARIO_TTL_HOURS = 6;
 
 // Fallback scenarios in case AI fails
@@ -88,11 +88,11 @@ Formatting Requirements for question:
 - End with a short, raw, emotional question such as: "Am I wrong for feeling this way?", "Should I leave or try to fix this?", or "How do I even begin to trust again?"
 
 Answer (Purposely Perspective) rules:
-- 2–3 sentences only.
-- Validate feelings, name the dynamic/red flag, and suggest one clear boundary or next step.
-- Choose 1–2 angles from: accountability, clarity, boundaries, reciprocity, consistency, honesty, empathy, conflict-resolution, alignment of values.
-- Avoid clichés; do NOT use the exact phrase "emotional maturity".
-- Loving, witty, direct tone.
+- 5–7 sentences only.
+- Start with a sharp, declarative line that frames the real dynamic; then validate her feelings, name the pattern/red flag, and offer one decisive boundary or next step.
+- Prioritize angles like accountability, clarity, boundaries, reciprocity, consistency, honesty, empathy, conflict-resolution, and values alignment.
+- Keep it punchy, cinematic, and quotable—use vivid, memorable phrasing and avoid clichés. Do NOT use the exact phrase "emotional maturity".
+- Voice: compassionate but uncompromising; direct, assertive, and practical—similar in tone to the provided scripts (hooks, clean lines, zero hedging).
 
 Use the following seed scenarios ONLY as inspiration so outputs stay fresh and varied. Do not reuse wording:
 ${seedBank}`;

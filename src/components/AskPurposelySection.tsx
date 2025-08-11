@@ -47,7 +47,7 @@ const AskPurposelySection: React.FC<Props> = ({ userProfile, sneakPeekTracking, 
 
     setLoading(true);
     try {
-      const prompt = `Provide a short Purposely Perspective (2–3 sentences) to this first-person dilemma from a woman: "${question}"\n\nRules:\n- Validate her feelings, name the dynamic/red flag, suggest one clear boundary or next step.\n- Choose 1–2 angles: accountability, clarity, boundaries, reciprocity, consistency, honesty, empathy, conflict-resolution, alignment of values.\n- Avoid clichés; do NOT use the exact phrase "emotional maturity".\n- Loving, witty, direct tone. Strong opener, quote-worthy lines.`;
+      const prompt = `Provide a Purposely Perspective (5–7 sentences) to this first-person dilemma from a woman: "${question}"\n\nRules:\n- Open with a sharp, declarative line that frames the real dynamic.\n- Validate her feelings, name the pattern/red flag, and offer one decisive boundary or next step.\n- Prioritize angles: accountability, clarity, boundaries, reciprocity, consistency, honesty, empathy, conflict-resolution, values alignment.\n- Keep it punchy, quotable, and assertive—similar in tone to the provided scripts (hooks, clean lines, zero hedging).\n- Avoid clichés; do NOT use the exact phrase "emotional maturity". No disclaimers or therapy-speak.`;
       const resp = await getAIResponse(prompt, userProfile, 'therapy');
       setAnswer(resp);
     } catch (e) {
