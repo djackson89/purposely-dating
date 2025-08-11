@@ -133,7 +133,7 @@ const FlirtFuelModule: React.FC<FlirtFuelModuleProps> = ({ userProfile, sneakPee
   const conversationStarters = [
     {
       category: "First Date Deep Dive",
-      prompts: userProfile.personalityType?.includes("Outgoing") || false 
+      prompts: (userProfile?.personalityType?.includes("Outgoing") ?? false) 
         ? [
             "What belief you held strongly in your twenties has completely shifted as you've grown?",
             "What's something you're working on healing within yourself right now?",

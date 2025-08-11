@@ -905,7 +905,7 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile, 
         }
         
         // Age-appropriate suggestions (rough matching)
-        const ageNum = parseInt(userProfile.age) || 25;
+        const ageNum = parseInt(userProfile?.age || '25') || 25;
         if (ageNum < 25) {
           // Younger crowd - prefer social, fun, energetic activities
           if (idea.mood.some(mood => ['Energetic', 'Social', 'Fun', 'Interactive'].includes(mood))) {
@@ -1280,7 +1280,7 @@ const DateConciergeModule: React.FC<DateConciergeModuleProps> = ({ userProfile, 
         let score = 0;
         
         // Age-appropriate event matching
-        const ageNum = parseInt(userProfile.age) || 25;
+        const ageNum = parseInt(userProfile?.age || '25') || 25;
         if (ageNum < 25) {
           // Younger crowd - prefer nightlife, social, energetic
           if (event.mood.some(mood => ['Energetic', 'Social', 'Party', 'Fun'].includes(mood))) {
