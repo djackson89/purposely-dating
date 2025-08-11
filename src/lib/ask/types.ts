@@ -19,8 +19,14 @@ export const safeRandomUUID = () => {
 
 export const ScenarioSchema = z.object({
   id: z.string().min(1),
-  question: z.string().min(1),
-  perspective: z.string().min(1),
+  question: z
+    .string()
+    .transform((s) => s.trim())
+    .refine((s) => s.length >= 12, 'empty_question'),
+  perspective: z
+    .string()
+    .transform((s) => s.trim())
+    .refine((s) => s.length >= 24, 'empty_perspective'),
   tags: z.array(z.string()).default([]),
   createdAt: z.string().transform((v) => new Date(v).toISOString()),
   hash: z.string().min(16),

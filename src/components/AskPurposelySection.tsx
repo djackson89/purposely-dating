@@ -106,14 +106,35 @@ useEffect(() => {
                 </>
               ) : (
                 <>
-                  <div key={(current as any).id ?? truncate(`${(current as any)?.question}::${(current as any)?.answer}`, 16)} className="p-4 bg-white rounded-lg border border-border">
-                    <p className="text-foreground leading-relaxed font-medium">"{current.question}"</p>
-                    <p className="text-xs text-muted-foreground mt-2">Submitted by: Anonymous</p>
-                  </div>
-                  <div className="p-4 bg-gradient-soft rounded-lg border border-primary/10">
-                    <p className="text-sm font-bold text-foreground mb-2">Purposely Perspective:</p>
-                    <p className="text-foreground leading-relaxed font-bold">{current.answer}</p>
-                  </div>
+                  {String(current.question || '').trim() && String(current.answer || '').trim() ? (
+                    <>
+                      <div key={String(current.id || truncate(`${current.question}::${current.answer}`, 16))} className="p-4 bg-white rounded-lg border border-border">
+                        <p className="text-foreground leading-relaxed font-medium">"{current.question}"</p>
+                        <p className="text-xs text-muted-foreground mt-2">Submitted by: Anonymous</p>
+                      </div>
+                      <div className="p-4 bg-gradient-soft rounded-lg border border-primary/10">
+                        <p className="text-sm font-bold text-foreground mb-2">Purposely Perspective:</p>
+                        <p className="text-foreground leading-relaxed font-bold">{current.answer}</p>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="p-4 bg-white rounded-lg border border-border">
+                        <div className="space-y-2">
+                          <Skeleton className="h-4 w-3/4" />
+                          <Skeleton className="h-4 w-5/6" />
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-2">Submitted by: Anonymous</p>
+                      </div>
+                      <div className="p-4 bg-gradient-soft rounded-lg border border-primary/10">
+                        <p className="text-sm font-bold text-foreground mb-2">Purposely Perspective:</p>
+                        <div className="space-y-2">
+                          <Skeleton className="h-4 w-4/5" />
+                          <Skeleton className="h-4 w-2/3" />
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </>
               )}
             </div>

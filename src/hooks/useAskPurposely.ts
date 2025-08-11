@@ -110,11 +110,16 @@ export const useAskPurposely = (userProfile: OnboardingData) => {
     console.info('telemetry:seemore_click', { size_before: queue.length });
     setError(null);
 
-    // Pop next if available
+    // Fast path: pop deterministically using functional state to avoid stale closures
     if (queue.length > 1) {
-      const [, ...rest] = queue;
-      const next = rest[0] ?? null;
-      setQueue(rest);
+      let next: Scenario | null = null;
+      let rest: Scenario[] = [];
+      setQueue((prev) => {
+        const [, ...r] = prev;
+        rest = r;
+        next = r[0] ?? null;
+        return r;
+      });
       setCurrent(next);
       serviceRef.current?.saveQueue(rest);
       ensureRefill();
@@ -126,7 +131,6 @@ export const useAskPurposely = (userProfile: OnboardingData) => {
     try {
       const svc = serviceRef.current!;
       if (queue.length === 1) {
-        // Consume the last one and immediately generate next to show
         const last = queue[0];
         setQueue([]);
         setCurrent(last);
@@ -143,7 +147,6 @@ export const useAskPurposely = (userProfile: OnboardingData) => {
         ensureRefill();
       } catch (firstErr) {
         console.warn('Generate failed, auto-retrying once...', firstErr);
-        // Toast responsibility is in component via error state; just try once more
         const one = await svc.generateOne();
         const newQueue = [one];
         setQueue(newQueue);
@@ -157,7 +160,7 @@ export const useAskPurposely = (userProfile: OnboardingData) => {
     } finally {
       setIsGenerating(false);
     }
-  }, [queue, ensureRefill]);
+  }, [queue.length, ensureRefill]);
 
   const reload = useCallback(async (resetIndex = true, forceFresh = false) => {
     // Back-compat with previous callers
