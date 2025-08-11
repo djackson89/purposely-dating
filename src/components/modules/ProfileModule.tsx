@@ -46,6 +46,7 @@ const ProfileModule: React.FC<ProfileModuleProps> = ({ userProfile, onProfileUpd
   const [adminStats, setAdminStats] = useState<{ totalUsers: number; todaySignups: number } | null>(null);
   const [adminLoading, setAdminLoading] = useState(false);
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+  const computedIsAdmin = (isAdmin === true) || (subscription?.subscription_tier?.toLowerCase?.() === 'admin');
 
   const fetchAdminStats = async () => {
     if (!user) return;
@@ -55,13 +56,15 @@ const ProfileModule: React.FC<ProfileModuleProps> = ({ userProfile, onProfileUpd
       if (error || !data) {
         setIsAdmin(false);
         setAdminStats(null);
+        toast({ title: 'Admin stats unavailable', description: error?.message || 'Please try again shortly.', variant: 'destructive' });
       } else {
         setIsAdmin(true);
         setAdminStats({ totalUsers: data.total_users, todaySignups: data.today_signups_cst });
       }
-    } catch (e) {
+    } catch (e: any) {
       setIsAdmin(false);
       setAdminStats(null);
+      toast({ title: 'Admin stats error', description: e?.message || 'Unable to load admin analytics.', variant: 'destructive' });
     } finally {
       setAdminLoading(false);
     }
@@ -82,6 +85,7 @@ const ProfileModule: React.FC<ProfileModuleProps> = ({ userProfile, onProfileUpd
   };
 
   useEffect(() => {
+    if (!user) return;
     fetchAdminStats();
     const timeout = setTimeout(() => {
       fetchAdminStats();
@@ -398,7 +402,7 @@ const ProfileModule: React.FC<ProfileModuleProps> = ({ userProfile, onProfileUpd
         </CardContent>
       </Card>
 
-      {isAdmin && (
+      {computedIsAdmin && (
         <Card className="shadow-soft border-primary/10">
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
@@ -416,11 +420,11 @@ const ProfileModule: React.FC<ProfileModuleProps> = ({ userProfile, onProfileUpd
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-gradient-soft p-4 rounded-lg border border-primary/20">
                 <div className="text-sm text-muted-foreground">Total users</div>
-                <div className="text-2xl font-bold text-primary">{adminStats ? adminStats.totalUsers : '—'}</div>
+                <div className="text-2xl font-bold text-primary">{adminStats ? adminStats.totalUsers : (adminLoading ? '…' : '—')}</div>
               </div>
               <div className="bg-gradient-soft p-4 rounded-lg border border-primary/20">
                 <div className="text-sm text-muted-foreground">Signups today (CST)</div>
-                <div className="text-2xl font-bold text-primary">{adminStats ? adminStats.todaySignups : '—'}</div>
+                <div className="text-2xl font-bold text-primary">{adminStats ? adminStats.todaySignups : (adminLoading ? '…' : '—')}</div>
               </div>
             </div>
           </CardContent>
