@@ -48,9 +48,39 @@ const Index = () => {
 
   // Only block the UI on the very first load; after that, keep the current screen rendered
   const [hasHydrated, setHasHydrated] = useState(false);
+  const [settingsLoading, setSettingsLoading] = useState(true);
   useEffect(() => {
-    if (!subscriptionLoading) setHasHydrated(true);
-  }, [subscriptionLoading]);
+    if (!subscriptionLoading && !settingsLoading) setHasHydrated(true);
+  }, [subscriptionLoading, settingsLoading]);
+
+  // Fetch persistent onboarding status from Supabase to avoid re-showing welcome/onboarding
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) { setSettingsLoading(false); return; }
+        const { data: settings, error } = await supabase
+          .from('user_settings')
+          .select('onboarding_completed')
+          .eq('user_id', user.id)
+          .single();
+        if (error && error.code !== 'PGRST116') {
+          console.error('Error loading user settings:', error);
+        }
+        if (settings?.onboarding_completed) {
+          setHasSeenWelcome(true);
+          setHasCompletedNotifications(true);
+          setHasSeenPaywall(true);
+          setHasCompletedOnboarding(true);
+        }
+      } catch (e) {
+        console.error('Error fetching user settings:', e);
+      } finally {
+        setSettingsLoading(false);
+      }
+    };
+    fetchSettings();
+  }, []);
 
   // Check for existing onboarding and paywall data
   useEffect(() => {
@@ -102,6 +132,22 @@ const Index = () => {
     } catch {}
   }, [subscription.subscribed, subscriptionLoading]);
 
+  const markOnboardingCompleted = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase
+          .from('user_settings')
+          .upsert(
+            { user_id: user.id, onboarding_completed: true, updated_at: new Date().toISOString() },
+            { onConflict: 'user_id' }
+          );
+      }
+    } catch (e) {
+      console.error('Error marking onboarding completed:', e);
+    }
+  };
+
   const handleOnboardingComplete = async (data: OnboardingData) => {
     setUserProfile(data);
     setHasCompletedOnboarding(true);
@@ -123,16 +169,19 @@ const Index = () => {
     } catch (error) {
       console.error('Error saving profile to Supabase:', error);
     }
+    await markOnboardingCompleted();
   };
 
-  const handleWelcomeComplete = () => {
+  const handleWelcomeComplete = async () => {
     setHasSeenWelcome(true);
     localStorage.setItem('hasSeenWelcome', 'true');
+    await markOnboardingCompleted();
   };
 
-  const handleNotificationsComplete = () => {
+  const handleNotificationsComplete = async () => {
     setHasCompletedNotifications(true);
     localStorage.setItem('hasCompletedNotifications', 'true');
+    await markOnboardingCompleted();
   };
 
   const handlePlanSelected = async () => {
@@ -176,32 +225,32 @@ const Index = () => {
   };
 
   // 1. Show welcome screens first
-  if (!subscriptionLoading && !hasSeenWelcome) {
+  if (!subscriptionLoading && !settingsLoading && !hasSeenWelcome) {
     console.log('Rendering welcome screen');
     return <OnboardingFlow onComplete={handleWelcomeComplete} showOnlyWelcome />;
   }
 
   // 2. Show notifications permission after welcome
-  if (!subscriptionLoading && hasSeenWelcome && !hasCompletedNotifications) {
+  if (!subscriptionLoading && !settingsLoading && hasSeenWelcome && !hasCompletedNotifications) {
     console.log('Rendering notifications screen');
     return <NotificationPermissionStep onComplete={handleNotificationsComplete} userProfile={null} />;
   }
 
   // 3. Show paywall after notifications if user doesn't have subscription
-  if (!subscriptionLoading && hasCompletedNotifications && !subscription.subscribed && !hasSeenPaywall) {
+  if (!subscriptionLoading && !settingsLoading && hasCompletedNotifications && !subscription.subscribed && !hasSeenPaywall) {
     console.log('Rendering paywall');
     return <Paywall onPlanSelected={handlePlanSelected} onSkipToFree={handleSkipToFree} />;
   }
 
   // 4. Show intake quiz if paywall has been seen but onboarding not completed and not premium
-  if (!subscriptionLoading && hasSeenPaywall && (!hasCompletedOnboarding || !userProfile)) {
+  if (!subscriptionLoading && !settingsLoading && hasSeenPaywall && !hasCompletedOnboarding) {
     console.log('Rendering onboarding quiz');
     return <OnboardingFlow onComplete={handleOnboardingComplete} showOnlyQuiz />;
   }
 
   // Show loading state only on first hydration; keep UI during background refreshes
-  if (subscriptionLoading && !hasHydrated) {
-    console.log('Subscription loading (initial)...');
+  if ((subscriptionLoading || settingsLoading) && !hasHydrated) {
+    console.log('Subscription/settings loading (initial)...');
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-soft">
         <div className="text-center">
