@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import QuickStartModule from '@/components/QuickStartModule';
 import SideMenu from '@/components/SideMenu';
 import WelcomeTour from '@/components/WelcomeTour';
+import AskPurposelySection from '@/components/AskPurposelySection';
 
 interface OnboardingData {
   loveLanguage: string;
@@ -42,15 +43,9 @@ const moduleNavigationMap = {
 
 const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavigateToAIPractice, onNavigateToModule, sneakPeekTracking, onPaywallTrigger }) => {
   const [dailyQuestion, setDailyQuestion] = useState('');
-  const [showQuestionInput, setShowQuestionInput] = useState(false);
-  const [userQuestion, setUserQuestion] = useState('');
-  const [purposelyResponse, setPurposelyResponse] = useState('');
-  const [isLoadingResponse, setIsLoadingResponse] = useState(false);
-  const [currentScenarioIndex, setCurrentScenarioIndex] = useState(0);
   const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
   const [showWelcomeTour, setShowWelcomeTour] = useState(false);
   const [isFirstTimeUser, setIsFirstTimeUser] = useState(false);
-  const [askScenarios, setAskScenarios] = useState<{ question: string; answer: string }[]>([]);
   
   // Touch/swipe handling state
   const [touchStart, setTouchStart] = useState<number | null>(null);
@@ -123,155 +118,6 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
     "How important is shared values versus shared interests in a partnership?"
   ];
 
-  // Hypothetical Ask Purposely scenarios
-  const defaultPurposelyScenarios = [
-    {
-      question: `Two months ago, things felt easy. Now my boyfriend keeps working "late" and coming home showered, saying, "Don’t start, I’m exhausted." I brushed it off—until I recognized the cologne on his hoodie that isn’t his… it’s the one I bought for his best friend last Christmas. When I asked, he said they’ve been training together at the gym. Then I found a receipt for a fancy wine bar, two glasses. He swears it was a client. I want to believe him, but my stomach is in knots. Am I wrong for feeling like I’m being slowly gaslit?`,
-      answer: "Your body caught the truth before your brain did—listen to it. Ask for full transparency (receipts, calendars, a call with the ‘client’), and set a hard boundary: no more mystery nights. If he resists clarity, that’s your answer—protect your peace and leave." 
-    },
-    {
-      question: `At brunch, my fiancé passed his phone to me to show a meme, and I accidentally saw a group chat with his groomsmen titled "Operation Upgrade." They were rating bridesmaids and joking about who he "could have pulled if he waited." My fiancé sent a laughing emoji and said, "Relax, it’s just guy stuff." But last night, he asked if we could make the wedding party "more balanced" and add one of his ex situationships. I feel humiliated. Should I call off the wedding or am I overreacting to dumb jokes?`,
-      answer: "He didn’t shut down the disrespect because, on some level, he enjoys it. Require a firm line: no objectifying chat, no ex in the bridal party, and accountability from him to clean up his circle. If he minimizes you again, this isn’t a wedding issue—it’s a values mismatch." 
-    },
-    {
-      question: `I was folding laundry when I found a tiny velvet pouch in my boyfriend’s jacket—inside was a ring. My heart dropped… until I realized it was engraved with another woman’s initials. He admitted it was the ring he never got to propose with years ago and said he kept it "for closure." Last week he asked my ring size "for fun." Now I don’t know if I’m the real choice or just the second chance. How do I even begin to trust again?`,
-      answer: "You can’t build a new chapter while he’s still clutching a relic from the last one. Ask him to release the ring and discuss why he’s keeping doors cracked open. If he can’t choose you cleanly, you can choose yourself." 
-    },
-    {
-      question: `My husband told me he was "helping a coworker through a hard time." I met her at a company event—she hugged him a beat too long and called him her "rock." I tried to let it go… until I found a blanket and toiletries in our trunk because he’s been letting her nap on our couch "between shifts." He says I’m heartless for not wanting her around. Am I wrong for drawing a hard boundary?`,
-      answer: "Compassion doesn’t require access to your home or husband. Your boundary is reasonable: no private support without your consent. If he prioritizes her comfort over your safety and trust, that’s not kindness—it’s a breach." 
-    },
-    {
-      question: `We’ve been trying to save for a house, but the numbers never add up. Last night, I checked our joint account and found monthly transfers labeled "Family Help." Turns out, my wife has been secretly paying her brother’s gambling debt for a year because she didn’t want me to "judge him." I’m crushed—not just about the money, but the secrecy. Should I leave or try to fix this?`,
-      answer: "The betrayal isn’t the dollars—it’s the deception. You need full financial transparency, a repayment plan, and a shared rule: no secret commitments with joint funds. If she can’t practice honesty, a house isn’t the only thing you won’t be able to build." 
-    },
-    {
-      question: `On our anniversary, my boyfriend booked "our spot"—the little Italian place with the twinkle lights. Halfway through dinner, the hostess waved at him: "Good to see you again! The usual table?" He said it was a mix-up, but later I saw his name on a Polaroid behind the bar… with another woman, dated last month. He swears it was a business dinner and she was "just a friend." I feel sick. Am I wrong for not buying it?`,
-      answer: "Patterns don’t lie—people do. Ask for receipts and specifics; if his story keeps changing, so should your plans with him. Your trust isn’t dramatic—it’s data-informed." 
-    }
-  ];
-
-  // Daily "Ask Purposely" scenarios — regenerate at local midnight (user's local time)
-  const getTodayKey = React.useCallback(() => {
-    const now = new Date();
-    const y = now.getFullYear();
-    const m = String(now.getMonth() + 1).padStart(2, '0');
-    const d = String(now.getDate()).padStart(2, '0');
-    return `${y}-${m}-${d}`;
-  }, []);
-
-  const msUntilNextMidnight = React.useCallback(() => {
-    const now = new Date();
-    const next = new Date(now);
-    next.setHours(24, 0, 0, 0);
-    return next.getTime() - now.getTime();
-  }, []);
-
-  const generateDailyScenarios = React.useCallback(async (resetIndex: boolean) => {
-    const todayKey = getTodayKey();
-
-    // Use cache if available
-    const cached = localStorage.getItem(`askPurposelyScenarios_${todayKey}`);
-    if (cached) {
-      try {
-        const parsed = JSON.parse(cached);
-        setAskScenarios(parsed);
-        if (resetIndex) {
-          setCurrentScenarioIndex(0);
-          localStorage.setItem(`dailyScenarioIndex_${new Date().toDateString()}`, '0');
-        }
-        return;
-      } catch {}
-    }
-
-    try {
-      const prompt = `You are writing fictional, anonymous, user-submitted relationship and dating dilemmas for a section called "Ask Purposely." Your goal is to produce emotionally gripping, debate-inducing scenarios that feel plausibly real.
-
-Return a STRICT JSON array with exactly 6 objects, each exactly: {"question": "...", "answer": "..."}. No markdown, no backticks, no labels, no extra commentary.
-
-QUESTION rules:
-- First-person confessional voice from a woman.
-- Start with a short context sentence.
-- Unfold with vivid, specific details, emotional beats, and occasional dialogue using quotes.
-- Include at least one surprising gut-punch reveal that reframes the situation.
-- Mix light drama with high-stakes themes (betrayal, secrecy, intimacy, family interference, money, trust, jealousy, boundaries, emotional labor, mismatched values, or life decisions).
-- Avoid clichés; create moral ambiguity where readers could reasonably side with either person.
-- End with a short, raw question to the audience (e.g., "Am I wrong for feeling this way?", "Should I leave or try to fix this?", "How do I even begin to trust again?").
-
-ANSWER (Purposely Perspective) rules:
-- 2–3 sentences only.
-- Validate feelings, name the dynamic/red flag, and suggest one clear boundary or next step.
-- Choose 1–2 angles from: accountability, communication clarity, boundary respect, reciprocity/effort, consistency/reliability, honesty/transparency, empathy/perspective-taking, conflict-resolution habits, alignment of values.
-- Avoid clichés; do NOT use the exact phrase "emotional maturity."
-- Loving, witty, direct tone.
-
-Use the following seed scenarios ONLY as inspiration so outputs stay fresh and varied. Do not reuse wording:
-The Wedding Photographer — "My fiancé wants to hire his ex to shoot our wedding; says I’m insecure."
-The Secret Family Trip — "He took our kids on a trip with his sister while I was away; called it a ‘break for me.’"
-The Late-Night Messages — "He texts his coworker goodnight nightly; says she needs support."
-The Graduation Ultimatum — "Stepdad won’t attend unless bio dad stays home."
-The Surprise Baby — "Boyfriend’s ex is pregnant; he wants me to stay and help raise the baby."
-The Debt Collector — "Wife used joint savings to pay brother’s gambling debts in secret."
-The Bedroom Dealbreaker — "Partner wants to open the relationship or he’s ‘not attracted.’"
-The Uninvited Ex — "Boyfriend invited his ex to my birthday ‘to keep the peace.’"
-The Parenting Clash — "I undermined a grounding; now trust is broken with my husband."
-The Anniversary Gift — "Wife reused a card she wrote to her ex."
-The Name Tattoo — "Girlfriend still has her ex’s name tattooed."
-The Secret Guest Room — "Husband secretly let coworker stay in our home."
-The Forgotten Funeral — "Boyfriend skipped my mom’s funeral for a festival."
-The Engagement Switch — "He proposed with the ring he once bought for his ex."
-The Hospital Secret — "He stayed at dinner with a female friend while I went into labor."
-The Job Opportunity — "Girlfriend wants a break to ‘fully experience’ an overseas job."
-The Shared Account — "He uses a profile with his ex’s name and fresh watch history."
-The Bridal Party Snub — "Fiancé refuses to include my brother in the wedding party."
-The Secret Retirement Fund — "Wife hid a six-figure fund ‘for security in case we divorce.’"
-The Jealous Best Friend — "Husband says I must drop my male best friend."
-The Pet Dilemma — "Girlfriend wants to give away my dog."
-The Password Change — "Partner changed all passwords for ‘privacy.’"
-The Public Proposal — "He proposed at a stadium knowing I hate attention."
-The Silent Treatment — "Wife hasn’t spoken to me for two weeks after a fight."
-The Shared Grave Plot — "Husband keeps a joint grave plot with his ex-wife."
-`;
-      const result = await getAIResponse(prompt, userProfile, 'therapy');
-      let parsed: any[] | null = null;
-      try {
-        parsed = JSON.parse(result);
-      } catch {
-        const match = result?.match(/\[[\s\S]*\]/);
-        if (match) {
-          try { parsed = JSON.parse(match[0]); } catch {}
-        }
-      }
-
-      const cleaned = (Array.isArray(parsed) ? parsed : defaultPurposelyScenarios)
-        .map((item: any) => ({
-          question: String(item?.question || '').trim().replace(/^["']|["']$/g, ''),
-          answer: String(item?.answer || '').trim().replace(/^["']|["']$/g, '')
-        }))
-        .filter((i: any) => i.question && i.answer)
-        .slice(0, 6);
-
-      const finalList = cleaned.length >= 3 ? cleaned : defaultPurposelyScenarios;
-
-      setAskScenarios(finalList);
-      localStorage.setItem(`askPurposelyScenarios_${todayKey}`, JSON.stringify(finalList));
-      if (resetIndex) {
-        setCurrentScenarioIndex(0);
-        localStorage.setItem(`dailyScenarioIndex_${new Date().toDateString()}`, '0');
-      }
-    } catch (e) {
-      console.error('Error generating daily Ask Purposely scenarios:', e);
-      setAskScenarios(defaultPurposelyScenarios);
-    }
-  }, [getAIResponse, userProfile, getTodayKey]);
-
-  useEffect(() => {
-    generateDailyScenarios(false);
-    const t = setTimeout(() => {
-      generateDailyScenarios(true);
-    }, msUntilNextMidnight());
-    return () => clearTimeout(t);
-  }, [generateDailyScenarios, msUntilNextMidnight]);
 
   // Get or set daily question (changes at midnight)
   useEffect(() => {
@@ -395,77 +241,6 @@ The Shared Grave Plot — "Husband keeps a joint grave plot with his ex-wife."
       });
     }
   };
-
-  const handleAskYourQuestion = () => {
-    // Check if sneak peek user should see paywall
-    if (sneakPeekTracking?.shouldShowPaywallForAskPurposely()) {
-      onPaywallTrigger?.('ask_purposely');
-      return;
-    }
-    
-    setShowQuestionInput(true);
-    setPurposelyResponse('');
-    setUserQuestion('');
-  };
-
-  const handleSubmitQuestion = async () => {
-    // Check if sneak peek user should see paywall
-    if (sneakPeekTracking?.shouldShowPaywallForAskPurposely()) {
-      onPaywallTrigger?.('ask_purposely');
-      return;
-    }
-
-    if (!userQuestion.trim()) {
-      toast({
-        title: "Please enter a question",
-        description: "We'd love to give you our Purposely Perspective!",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsLoadingResponse(true);
-    try {
-      const prompt = `Please provide a "Purposely Perspective" response to this question from a woman: "${userQuestion}". 
-
-      Respond in the style of a loving, witty, and straight-to-the-point dating coach. The advice should be raw and uncut, not cliche and fluffy. Make it short and concise, but ensure every insightful statement hits hard and is worded with such wit, it could be its own viral quote.
-
-      The tone should have a strong opener, validation for the woman's feelings, and quote-worthy insights. Be direct about red flags and encourage high standards. The response should empower the woman and help her recognize her worth.`;
-
-      const response = await getAIResponse(prompt, userProfile, 'therapy');
-      setPurposelyResponse(response);
-    } catch (error) {
-      toast({
-        title: "Oops!",
-        description: "We couldn't get your Purposely Perspective right now. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoadingResponse(false);
-    }
-  };
-
-  const getCurrentScenario = () => {
-    return askScenarios[currentScenarioIndex] || defaultPurposelyScenarios[0];
-  };
-
-  const handleSeeMoreScenarios = () => {
-    setCurrentScenarioIndex((prev) => (askScenarios.length ? (prev + 1) % askScenarios.length : 0));
-  };
-
-  // Initialize current scenario index on first load
-  useEffect(() => {
-    const today = new Date().toDateString();
-    const savedScenarioIndex = localStorage.getItem(`dailyScenarioIndex_${today}`);
-    
-    if (savedScenarioIndex) {
-      setCurrentScenarioIndex(parseInt(savedScenarioIndex));
-    } else {
-      const randomIndex = Math.floor(Math.random() * defaultPurposelyScenarios.length);
-      setCurrentScenarioIndex(randomIndex);
-      localStorage.setItem(`dailyScenarioIndex_${today}`, randomIndex.toString());
-    }
-  }, []);
 
   // Touch event handlers for swipe detection
   const onTouchStart = (e: React.TouchEvent) => {
