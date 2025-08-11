@@ -101,6 +101,7 @@ export const useAskPurposely = (userProfile: OnboardingData) => {
   const { getAIResponse } = useRelationshipAI();
   const [items, setItems] = useState<AskItem[]>([]);
   const [index, setIndex] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
 
   const todayKey = () => {
     const now = new Date();
@@ -111,6 +112,7 @@ export const useAskPurposely = (userProfile: OnboardingData) => {
   };
 
   const loadOrGenerate = useCallback(async (resetIndex: boolean, forceFresh = false) => {
+    setIsLoading(true);
     const key = todayKey();
     const storageKey = `askPurposelyScenarios_${key}_${CACHE_VERSION}`;
     const tsKey = `askPurposelyGeneratedAt_${key}_${CACHE_VERSION}`;
@@ -125,6 +127,7 @@ export const useAskPurposely = (userProfile: OnboardingData) => {
           const parsed = JSON.parse(cached) as AskItem[];
           setItems(parsed);
           if (resetIndex) setIndex(0);
+          setIsLoading(false);
           return;
         } catch {}
       }
@@ -160,6 +163,8 @@ export const useAskPurposely = (userProfile: OnboardingData) => {
       console.error('AskPurposely generation failed:', e);
       setItems(fallbackScenarios);
       if (resetIndex) setIndex(0);
+    } finally {
+      setIsLoading(false);
     }
   }, [getAIResponse, userProfile]);
 
@@ -181,5 +186,5 @@ export const useAskPurposely = (userProfile: OnboardingData) => {
 
   const current = items[index] || fallbackScenarios[0];
 
-  return { items, current, index, setIndex, nextScenario, reload: loadOrGenerate };
+  return { items, current, index, setIndex, nextScenario, reload: loadOrGenerate, isLoading };
 };

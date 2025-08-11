@@ -6,6 +6,7 @@ import { MessageCircle, Send } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useRelationshipAI } from '@/hooks/useRelationshipAI';
 import { useAskPurposely, OnboardingData } from '@/hooks/useAskPurposely';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface Props {
   userProfile: OnboardingData & { first_name?: string; full_name?: string };
@@ -16,7 +17,7 @@ interface Props {
 const AskPurposelySection: React.FC<Props> = ({ userProfile, sneakPeekTracking, onPaywallTrigger }) => {
   const { toast } = useToast();
   const { getAIResponse } = useRelationshipAI();
-  const { current, nextScenario } = useAskPurposely(userProfile);
+  const { current, nextScenario, isLoading, items } = useAskPurposely(userProfile);
 
   const [showInput, setShowInput] = useState(false);
   const [question, setQuestion] = useState('');
@@ -68,17 +69,38 @@ const AskPurposelySection: React.FC<Props> = ({ userProfile, sneakPeekTracking, 
         {!showInput ? (
           <>
             <div className="space-y-4">
-              <div className="p-4 bg-white rounded-lg border border-border">
-                <p className="text-foreground leading-relaxed font-medium">"{current.question}"</p>
-                <p className="text-xs text-muted-foreground mt-2">Submitted by: Anonymous</p>
-              </div>
-              <div className="p-4 bg-gradient-soft rounded-lg border border-primary/10">
-                <p className="text-sm font-bold text-foreground mb-2">Purposely Perspective:</p>
-                <p className="text-foreground leading-relaxed font-bold">{current.answer}</p>
-              </div>
+              {isLoading && items.length === 0 ? (
+                <>
+                  <div className="p-4 bg-white rounded-lg border border-border">
+                    <div className="space-y-2">
+                      <Skeleton className="h-4 w-3/4" />
+                      <Skeleton className="h-4 w-5/6" />
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-2">Submitted by: Anonymous</p>
+                  </div>
+                  <div className="p-4 bg-gradient-soft rounded-lg border border-primary/10">
+                    <p className="text-sm font-bold text-foreground mb-2">Purposely Perspective:</p>
+                    <div className="space-y-2">
+                      <Skeleton className="h-4 w-4/5" />
+                      <Skeleton className="h-4 w-2/3" />
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="p-4 bg-white rounded-lg border border-border">
+                    <p className="text-foreground leading-relaxed font-medium">"{current.question}"</p>
+                    <p className="text-xs text-muted-foreground mt-2">Submitted by: Anonymous</p>
+                  </div>
+                  <div className="p-4 bg-gradient-soft rounded-lg border border-primary/10">
+                    <p className="text-sm font-bold text-foreground mb-2">Purposely Perspective:</p>
+                    <p className="text-foreground leading-relaxed font-bold">{current.answer}</p>
+                  </div>
+                </>
+              )}
             </div>
             <div className="flex space-x-2">
-              <Button onClick={nextScenario} variant="romance" className="flex-1">See More</Button>
+              <Button onClick={nextScenario} variant="romance" className="flex-1" disabled={isLoading || items.length === 0}>See More</Button>
               <Button onClick={handleAskYourQuestion} variant="romance" className="flex-1">
                 <Send className="w-4 h-4 mr-2" />
                 Ask Your Question
