@@ -33,6 +33,15 @@ const fallbackScenarios: AskItem[] = [
   }
 ];
 
+const shuffle = <T,>(arr: T[]): T[] => {
+  const copy = [...arr];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+};
+
 const seedBank = `
 The Wedding Photographer — My fiancé wants to hire his ex to shoot our wedding; says I’m insecure.
 The Secret Family Trip — He took our kids on a trip with his sister while I was away; called it a ‘break for me.’
@@ -154,14 +163,14 @@ export const useAskPurposely = (userProfile: OnboardingData) => {
         .filter((i) => i.question && i.answer)
         .slice(0, 6);
 
-      const finalList = cleaned.length >= 3 ? cleaned : fallbackScenarios;
+      const finalList = cleaned.length >= 3 ? cleaned : shuffle(fallbackScenarios);
       setItems(finalList);
       localStorage.setItem(storageKey, JSON.stringify(finalList));
       localStorage.setItem(tsKey, String(Date.now()));
       if (resetIndex) setIndex(0);
     } catch (e) {
       console.error('AskPurposely generation failed:', e);
-      setItems(fallbackScenarios);
+      setItems(shuffle(fallbackScenarios));
       if (resetIndex) setIndex(0);
     } finally {
       setIsLoading(false);

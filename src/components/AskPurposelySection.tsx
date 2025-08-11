@@ -106,7 +106,16 @@ const AskPurposelySection: React.FC<Props> = ({ userProfile, sneakPeekTracking, 
               )}
             </div>
             <div className="flex space-x-2">
-              <Button onClick={nextScenario} variant="romance" className="flex-1" disabled={isLoading || items.length === 0}>See More</Button>
+              <Button
+                onClick={nextScenario}
+                onTouchEnd={(e) => { e.preventDefault(); nextScenario(); }}
+                variant="romance"
+                className="flex-1"
+                disabled={isLoading || items.length === 0}
+                aria-label="See more Ask Purposely scenarios"
+              >
+                See More
+              </Button>
               <Button onClick={handleAskYourQuestion} variant="romance" className="flex-1">
                 <Send className="w-4 h-4 mr-2" />
                 Ask Your Question
