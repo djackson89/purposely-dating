@@ -185,7 +185,7 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
     }
 
     try {
-      const prompt = `Generate 6 realistic relationship dilemmas from a woman's perspective and a concise "Purposely Perspective" response to each.\nReturn STRICT JSON array with 6 objects, each: {"question": "...", "answer": "..."}.\nNo markdown, no backticks, no labels. Keep answers 2-3 sentences, witty, direct, empowering.`;
+      const prompt = `Generate 6 first-person, user-submitted scenarios describing a triggering, offensive, or potentially toxic dating/relationship situation from a woman's perspective, and a concise "Purposely Perspective" response to each.\nReturn a STRICT JSON array with 6 objects, each exactly: {"question": "...", "answer": "..."}.\nNo markdown, no backticks, no labels. Each question should read like a real scenario (what happened, why it felt triggering, what she’s unsure about). Keep answers 2-3 sentences, validate feelings, call out red flags, and suggest a clear boundary or next step. Tone: loving, witty, and direct.`;
       const result = await getAIResponse(prompt, userProfile, 'therapy');
       let parsed: any[] | null = null;
       try {
@@ -547,11 +547,11 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
                   <p className="text-foreground leading-relaxed font-medium">
                     "{getCurrentScenario().question}"
                   </p>
-                  <p className="text-xs text-muted-foreground mt-2">- Anonymous</p>
+                  <p className="text-xs text-muted-foreground mt-2">Submitted by: Anonymous</p>
                 </div>
                 
                 <div className="p-4 bg-gradient-soft rounded-lg border border-primary/10">
-                  <p className="text-sm font-bold text-foreground mb-2">Purposely Says:</p>
+                  <p className="text-sm font-bold text-foreground mb-2">Purposely Perspective:</p>
                   <p className="text-foreground leading-relaxed font-bold">
                     {getCurrentScenario().answer}
                   </p>
@@ -581,7 +581,7 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
               {/* User Question Input */}
               <div className="space-y-4">
                 <Textarea
-                  placeholder="What's your relationship question? Be specific about your situation..."
+                  placeholder="Describe what's happening (what was said or done, why it felt triggering or offensive, and what outcome you want)."
                   value={userQuestion}
                   onChange={(e) => setUserQuestion(e.target.value)}
                   className="min-h-[100px]"

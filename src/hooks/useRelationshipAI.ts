@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -16,61 +16,51 @@ export const useRelationshipAI = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const getAIResponse = async (
-    prompt: string, 
-    userProfile: UserProfile, 
+  const getAIResponse = useCallback(async (
+    prompt: string,
+    userProfile: UserProfile,
     type: AIType = 'general'
   ): Promise<string> => {
     setIsLoading(true);
-    
     try {
       console.log('Requesting AI response for type:', type);
-      
       const { data, error } = await supabase.functions.invoke('relationship-ai', {
-        body: { 
-          prompt, 
-          userProfile, 
-          type 
-        }
+        body: { prompt, userProfile, type }
       });
-
       if (error) {
         console.error('Supabase function error:', error);
         throw new Error(error.message || 'Failed to get AI response');
       }
-
-      if (data.error) {
-        console.error('AI service error:', data.error);
-        throw new Error(data.error);
+      if ((data as any)?.error) {
+        console.error('AI service error:', (data as any).error);
+        throw new Error((data as any).error);
       }
-
       console.log('AI response received successfully');
-      return data.response;
-      
+      return (data as any).response as string;
     } catch (error) {
       console.error('Error getting AI response:', error);
       toast({
-        title: "AI Error",
+        title: 'AI Error',
         description: error instanceof Error ? error.message : 'Failed to get AI response',
-        variant: "destructive",
+        variant: 'destructive',
       });
       throw error;
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [toast]);
 
-  const getTherapyInsight = async (prompt: string, userProfile: UserProfile) => {
+  const getTherapyInsight = useCallback((prompt: string, userProfile: UserProfile) => {
     return getAIResponse(prompt, userProfile, 'therapy');
-  };
+  }, [getAIResponse]);
 
-  const getFlirtSuggestion = async (prompt: string, userProfile: UserProfile) => {
+  const getFlirtSuggestion = useCallback((prompt: string, userProfile: UserProfile) => {
     return getAIResponse(prompt, userProfile, 'flirt');
-  };
+  }, [getAIResponse]);
 
-  const getDateIdea = async (prompt: string, userProfile: UserProfile) => {
+  const getDateIdea = useCallback((prompt: string, userProfile: UserProfile) => {
     return getAIResponse(prompt, userProfile, 'date');
-  };
+  }, [getAIResponse]);
 
   return {
     isLoading,
