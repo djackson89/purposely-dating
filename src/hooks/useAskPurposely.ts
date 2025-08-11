@@ -178,11 +178,21 @@ export const useAskPurposely = (userProfile: OnboardingData) => {
   }, [loadOrGenerate]);
 
   const nextScenario = useCallback(() => {
-    setIndex((prev) => (items.length ? (prev + 1) % items.length : 0));
-    const today = new Date().toDateString();
-    const nextIdx = items.length ? (index + 1) % items.length : 0;
-    localStorage.setItem(`dailyScenarioIndex_${today}`, String(nextIdx));
-  }, [items.length, index]);
+    if (items.length) {
+      const nextIdx = (index + 1) % items.length;
+      if (nextIdx === 0) {
+        // Reached the end — generate a fresh new set so it feels endless
+        loadOrGenerate(true, true);
+        return;
+      }
+      setIndex(nextIdx);
+      const today = new Date().toDateString();
+      localStorage.setItem(`dailyScenarioIndex_${today}`, String(nextIdx));
+    } else {
+      // No items yet — generate immediately
+      loadOrGenerate(true, true);
+    }
+  }, [items.length, index, loadOrGenerate]);
 
   const current = items[index] || fallbackScenarios[0];
 

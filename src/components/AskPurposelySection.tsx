@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -17,12 +17,18 @@ interface Props {
 const AskPurposelySection: React.FC<Props> = ({ userProfile, sneakPeekTracking, onPaywallTrigger }) => {
   const { toast } = useToast();
   const { getAIResponse } = useRelationshipAI();
-  const { current, nextScenario, isLoading, items } = useAskPurposely(userProfile);
+  const { current, nextScenario, isLoading, items, reload } = useAskPurposely(userProfile);
 
   const [showInput, setShowInput] = useState(false);
   const [question, setQuestion] = useState('');
   const [answer, setAnswer] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Force-refresh on first mount so the new tone is shown immediately
+  useEffect(() => {
+    reload(true, true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleAskYourQuestion = () => {
     if (sneakPeekTracking?.shouldShowPaywallForAskPurposely()) {
