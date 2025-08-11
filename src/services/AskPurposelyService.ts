@@ -106,6 +106,34 @@ Tone & Style Rules:
 
 const buildPromptOne = () => `Return a STRICT JSON object exactly: {"question": "...", "answer": "..."} with the same tone rules. No markdown.`;
 
+// Local fallback scenarios to ensure UI never renders empty
+const FALLBACK: Array<{ question: string; answer: string }> = [
+  {
+    question:
+      `Two months ago, things felt easy. Now my boyfriend keeps working "late" and coming home showered, saying, "Don’t start, I’m exhausted." I brushed it off—until I recognized the cologne on his hoodie that isn’t his. When I asked, he said they’ve been training together at the gym. Then I found a receipt for a fancy wine bar, two glasses. He swears it was a client. Am I wrong for feeling like I’m being slowly gaslit?`,
+    answer:
+      'Your body clocked the truth before your brain did—listen to it. Ask for receipts, calendars, and a quick call with the “client.” Set a hard boundary: no more mystery nights. If clarity is resisted, that is your clarity—choose your peace.'
+  },
+  {
+    question:
+      `At brunch, my fiancé passed his phone to show a meme; I accidentally saw a group chat called "Operation Upgrade" rating bridesmaids. He sent a laughing emoji and said, "Relax, guy stuff." Now he wants to add an ex to the wedding party. Am I overreacting?`,
+    answer:
+      'He didn’t stop the disrespect because he benefits from it. Set terms: no objectifying chat, no ex in the party, accountability to clean up his circle. If he minimizes you again, this isn’t a wedding issue—it’s values.'
+  },
+  {
+    question:
+      `I found a velvet pouch in my boyfriend’s jacket—inside was a ring engraved with another woman’s initials. He says it’s from years ago and kept it for closure. Last week he asked my ring size “for fun.” Am I the real choice or the second chance?`,
+    answer:
+      'You can’t start a new chapter while he’s still bookmarking the last one. Ask him to release the ring and close the loop. If he can’t choose cleanly, you can choose yourself.'
+  },
+];
+
+const fallbackList = (n: number) => {
+  const arr: Array<{ question: string; answer: string }> = [];
+  for (let i = 0; i < n; i++) arr.push(FALLBACK[i % FALLBACK.length]);
+  return arr;
+};
+
 export class AskPurposelyService {
   private telemetry: boolean;
   private getAIResponse: ServiceOptions['getAIResponse'];
@@ -180,7 +208,8 @@ export class AskPurposelyService {
     const timeout = new Promise<T>((_, rej) => {
       t = setTimeout(() => rej(new Error('timeout')), ms);
     });
-    return Promise.race([p.finally(() => clearTimeout(t)), timeout]);
+    const cleaned = p.then((v) => { clearTimeout(t); return v; }, (e) => { clearTimeout(t); throw e; });
+    return Promise.race([cleaned, timeout]);
   }
 
   async prefetch(n: number): Promise<Scenario[]> {
@@ -197,11 +226,14 @@ export class AskPurposelyService {
         const arr = parseArrayJson(raw) || [];
         const scenarios = this.mapToScenarios(arr);
         const unique = this.deDupe(scenarios);
-        log(this.telemetry, 'askprefetch_success', { took_ms: performance.now() - start, count: unique.length });
-        return unique.slice(0, n);
+        const finalList = unique.length ? unique : this.mapToScenarios(fallbackList(Math.max(3, n)));
+        log(this.telemetry, 'askprefetch_success', { took_ms: performance.now() - start, count: finalList.length });
+        return finalList.slice(0, n);
       } catch (e: any) {
         log(this.telemetry, 'askprefetch_fail', { error: String(e?.message || e) });
-        throw e;
+        // Fallback so UI never renders empty
+        const fb = this.mapToScenarios(fallbackList(Math.max(3, n)));
+        return fb.slice(0, n);
       } finally {
         this.inflight = null;
       }
@@ -242,7 +274,9 @@ export class AskPurposelyService {
         }
       } catch (e: any) {
         log(this.telemetry, 'generate_fail', { error: String(e?.message || e) });
-        throw e;
+        // Fallback single scenario so UI keeps moving
+        const [fb] = this.mapToScenarios(fallbackList(1));
+        return fb;
       } finally {
         this.inflight = null;
       }
