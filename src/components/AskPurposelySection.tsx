@@ -5,7 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { MessageCircle, Send } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useRelationshipAI } from '@/hooks/useRelationshipAI';
-import { useAskPurposely, OnboardingData } from '@/hooks/useAskPurposely';
+import { useAskPurposelyFeature, OnboardingData } from '@/features/askPurposely/useAsk';
 import { Skeleton } from '@/components/ui/skeleton';
 import { truncate } from '@/lib/ask/utils';
 
@@ -18,7 +18,7 @@ interface Props {
 const AskPurposelySection: React.FC<Props> = ({ userProfile, sneakPeekTracking, onPaywallTrigger }) => {
   const { toast } = useToast();
   const { getAIResponse } = useRelationshipAI();
-  const { current, nextScenario, isLoading, items, reload, isGenerating, error } = useAskPurposely(userProfile);
+  const { current, nextScenario, refresh, isLoading, isSwapping, error } = useAskPurposelyFeature(userProfile);
 
   const [showInput, setShowInput] = useState(false);
   const [question, setQuestion] = useState('');
@@ -27,7 +27,7 @@ const AskPurposelySection: React.FC<Props> = ({ userProfile, sneakPeekTracking, 
 
 // Force-refresh on first mount so the new tone is shown immediately
 useEffect(() => {
-  reload(true, true);
+  refresh();
   // eslint-disable-next-line react-hooks/exhaustive-deps
 }, []);
 
@@ -87,7 +87,7 @@ useEffect(() => {
         {!showInput ? (
           <>
             <div className="space-y-4">
-              {(isLoading || (isGenerating && items.length === 0)) ? (
+              {(isLoading || isSwapping) ? (
                 <>
                   <div className="p-4 bg-white rounded-lg border border-border">
                     <div className="space-y-2">
@@ -144,7 +144,7 @@ useEffect(() => {
                 onTouchEnd={(e) => { e.preventDefault(); nextScenario(); }}
                 variant="romance"
                 className="flex-1"
-                disabled={isLoading || isGenerating}
+                disabled={isLoading || isSwapping}
                 aria-label="See more Ask Purposely scenarios"
               >
                 {isLoading || isGenerating ? (
