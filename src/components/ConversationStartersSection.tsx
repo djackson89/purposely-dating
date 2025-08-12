@@ -126,6 +126,10 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
   const { subscription, createIntimacyAddonCheckout, checkSubscription } = useSubscription();
   const [showIntimacyAddonModal, setShowIntimacyAddonModal] = useState(false);
 
+  const requiresTrial = React.useMemo(() => {
+    return !subscription.subscribed && !sneakPeekTracking?.isFreeTrial;
+  }, [subscription.subscribed, sneakPeekTracking]);
+
   // Categories that are locked for users who haven't reviewed
   const lockedCategories = ['Intimacy & Connection', 'Communication & Conflict', 'Customize'];
 
@@ -183,7 +187,7 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
         onPaywallTrigger?.('view_limit');
       }
     }
-  }, [freeCategories, subscription, isIntimacyCategory, isCategoryLocked, selectCategory, sneakPeekTracking, onPaywallTrigger]);
+  }, [freeCategories, subscription, isIntimacyCategory, isCategoryLocked, selectCategory, sneakPeekTracking, onPaywallTrigger, requiresTrial]);
 
   // Memoized category emojis to prevent recreation
   const categoryEmojis = React.useMemo(() => ({
