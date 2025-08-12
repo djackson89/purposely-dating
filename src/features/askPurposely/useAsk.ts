@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { useRelationshipAI } from '@/hooks/useRelationshipAI';
 import { AskService, type ServiceState } from './service';
-import { normalizeScenario } from './types';
+import { generateScenarios as genScenarios, generatePerspectiveFor as genPerspective } from './gen';
 
 export interface OnboardingData {
   loveLanguage: string;
@@ -15,45 +14,29 @@ export interface OnboardingData {
 // Public API mirrors previous hook to avoid UI changes
 export function useAskPurposelyFeature(userProfile: OnboardingData) {
   const { user } = useAuth();
-  const { getAIResponse, getPurposelyPerspective } = useRelationshipAI();
   const userId = user?.id || 'anon';
 
   const serviceRef = useRef<AskService | null>(null);
   const [state, setState] = useState<ServiceState>({ current: null, queue: [], status: 'loading', error: null });
 
+  const audience: 'woman' | 'man' | 'unspecified' = (userProfile.gender === 'man' ? 'man' : userProfile.gender === 'woman' ? 'woman' : 'unspecified');
+  const baseOpts = { audience, spice_level: 3, length: 'standard' as const, topic_tags: [] as string[] };
+
   const gens = useMemo(() => ({
     generateScenarios: async (n: number) => {
-      // Try to generate n scenarios; fallback to single if needed
-      const items: any[] = [];
-      for (let i = 0; i < Math.max(1, n); i++) {
-        try {
-          const prompt = `Create a JSON object with keys question, perspective, tags that reflects a realistic modern dating or relationship dilemma for a ${userProfile.gender || 'woman'} in ${userProfile.relationshipStatus || 'a relationship'}. Keep it concise but specific. Respond with JSON only.`;
-          const raw = await getAIResponse(prompt, userProfile, 'therapy');
-          const match = raw.match(/\{[\s\S]*\}/);
-          const parsed = match ? JSON.parse(match[0]) : {};
-          items.push(parsed);
-        } catch {
-          // Degrade: synthesize a question, then ask purposely generator
-          const syntheticQ = `He cancels plans last-minute but keeps texting like nothing happened. I feel disrespected but don’t want drama. What should I say or do?`;
-          const res = await getPurposelyPerspective(syntheticQ, userProfile, {
-            audience: (userProfile.gender === 'man' ? 'man' : 'woman') as any,
-            spice_level: 3,
-            length: 'standard',
-            topic_tags: ['boundaries']
-          });
-          items.push({ question: syntheticQ, perspective: res.rendered, tags: ['boundaries'] });
-        }
+      try {
+        const items = await genScenarios(Math.max(1, n), baseOpts);
+        return items;
+      } catch {
+        // Fallback: single perspective for a synthetic question
+        const syntheticQ = "He cancels plans last-minute but keeps texting like nothing happened. I feel disrespected but don’t want drama. What should I say or do?";
+        const one = await genPerspective(syntheticQ, { ...baseOpts, topic_tags: ['boundaries'] });
+        return [{ question: one.question, perspective: one.perspective, tags: ['boundaries'] }];
       }
-      return items;
     },
     generatePerspectiveFor: async (question: string) => {
-      const res = await getPurposelyPerspective(question, userProfile, {
-        audience: (userProfile.gender === 'man' ? 'man' : 'woman') as any,
-        spice_level: 3,
-        length: 'standard',
-        topic_tags: []
-      });
-      return { question, perspective: res.rendered, tags: res.json?.actions || [] };
+      const s = await genPerspective(question, baseOpts);
+      return { question: s.question, perspective: s.perspective, tags: s.tags } as any;
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }), [userId, userProfile.gender, userProfile.relationshipStatus]);
