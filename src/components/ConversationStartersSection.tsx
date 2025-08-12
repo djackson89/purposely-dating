@@ -11,6 +11,7 @@ import LockedCategoryModal from './LockedCategoryModal';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { useSubscription } from '@/hooks/useSubscription';
 import IntimacyAddonPaywall from './IntimacyAddonPaywall';
+import { useIsAdmin } from '@/hooks/useIsAdmin';
 interface OnboardingData {
   loveLanguage: string;
   relationshipStatus: string;
@@ -125,6 +126,7 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
   const [selectedLockedCategory, setSelectedLockedCategory] = useState<string>('');
   const { subscription, createIntimacyAddonCheckout, checkSubscription } = useSubscription();
   const [showIntimacyAddonModal, setShowIntimacyAddonModal] = useState(false);
+  const { isAdmin } = useIsAdmin();
 
   const requiresTrial = React.useMemo(() => {
     return !subscription.subscribed && !sneakPeekTracking?.isFreeTrial;
@@ -139,15 +141,17 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
     'Pillow Talk & Tea',
   ]), []);
   
-  // Check if user has left a review
+  // Check if user has left a review (admins always pass)
   const hasReviewedApp = React.useMemo(() => {
+    if (isAdmin) return true;
     return localStorage.getItem('purposely_review_submitted') === 'true';
-  }, []);
+  }, [isAdmin]);
 
-  // Check if a category is locked
+  // Check if a category is locked (admins never locked)
   const isCategoryLocked = React.useCallback((category: string): boolean => {
+    if (isAdmin) return false;
     return lockedCategories.includes(category) && !hasReviewedApp;
-  }, [hasReviewedApp]);
+  }, [hasReviewedApp, isAdmin]);
 
   // Determine if category is part of the 18+ Intimacy master category
   const isIntimacyCategory = React.useCallback((category: string): boolean => {
@@ -157,6 +161,11 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
 
   // Handle category selection with Premium/Add-on gating + review lock check
   const handleCategoryClick = React.useCallback((category: string) => {
+    // Admins bypass all gating
+    if (isAdmin) {
+      selectCategory(category);
+      return;
+    }
     // 1) Premium gate: everything except explicitly free categories
     if (!freeCategories.has(category)) {
       if (!subscription.subscribed) {
@@ -187,7 +196,7 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
         onPaywallTrigger?.('view_limit');
       }
     }
-  }, [freeCategories, subscription, isIntimacyCategory, isCategoryLocked, selectCategory, sneakPeekTracking, onPaywallTrigger, requiresTrial]);
+  }, [freeCategories, subscription, isIntimacyCategory, isCategoryLocked, selectCategory, sneakPeekTracking, onPaywallTrigger, requiresTrial, isAdmin]);
 
   // Memoized category emojis to prevent recreation
   const categoryEmojis = React.useMemo(() => ({
@@ -292,16 +301,18 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
                 variant={masterCategory === '18+ Intimacy' ? 'default' : 'outline'}
                 size="sm"
                 onClick={async () => {
-                  // Require Premium + 18+ add-on
-                  if (!subscription.subscribed) {
-                    onPaywallTrigger?.('view_limit');
-                    return;
-                  }
-                  // Refresh subscription status just in case
-                  await checkSubscription();
-                  if (!subscription.has_intimacy_addon) {
-                    setShowIntimacyAddonModal(true);
-                    return;
+                  // Require Premium + 18+ add-on unless admin
+                  if (!isAdmin) {
+                    if (!subscription.subscribed) {
+                      onPaywallTrigger?.('view_limit');
+                      return;
+                    }
+                    // Refresh subscription status just in case
+                    await checkSubscription();
+                    if (!subscription.has_intimacy_addon) {
+                      setShowIntimacyAddonModal(true);
+                      return;
+                    }
                   }
                   setMasterCategory('18+ Intimacy');
                   setDepthLevel([1]); // Force default depth to Casual for 18+
@@ -693,21 +704,23 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
 
             <Button
               onClick={() => {
-                // Check if sneak peek user should see paywall before going to next question
-                if (sneakPeekTracking?.shouldShowPaywallForNext()) {
-                  onPaywallTrigger?.('next_question');
-                  return;
-                }
-                
-                // Track question view for sneak peek users
-                if (sneakPeekTracking?.isSneakPeek) {
-                  const shouldTriggerPaywall = sneakPeekTracking.trackQuestionViewed();
-                  if (shouldTriggerPaywall) {
-                    onPaywallTrigger?.('view_limit');
+                // Admins bypass all sneak peek/paywall checks
+                if (!isAdmin) {
+                  // Check if sneak peek user should see paywall before going to next question
+                  if (sneakPeekTracking?.shouldShowPaywallForNext()) {
+                    onPaywallTrigger?.('next_question');
                     return;
                   }
+                  
+                  // Track question view for sneak peek users
+                  if (sneakPeekTracking?.isSneakPeek) {
+                    const shouldTriggerPaywall = sneakPeekTracking.trackQuestionViewed();
+                    if (shouldTriggerPaywall) {
+                      onPaywallTrigger?.('view_limit');
+                      return;
+                    }
+                  }
                 }
-                
                 nextQuestion();
               }}
               disabled={isLoading}
