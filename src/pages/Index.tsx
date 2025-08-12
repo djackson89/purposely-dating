@@ -302,14 +302,8 @@ const Index = () => {
     return <NotificationPermissionStep onComplete={handleNotificationsComplete} userProfile={null} />;
   }
 
-  // 3. Show paywall after notifications if user doesn't have subscription
-  if (!subscriptionLoading && !settingsLoading && hasCompletedNotifications && !subscription.subscribed && !hasSeenPaywall) {
-    console.log('Rendering paywall');
-    return <Paywall onPlanSelected={handlePlanSelected} onSkipToFree={handleSkipToFree} />;
-  }
-
-  // 4. Show intake quiz if paywall has been seen but onboarding not completed and not premium
-  if (!subscriptionLoading && !settingsLoading && hasSeenPaywall && !hasCompletedOnboarding) {
+  // 3. Show intake quiz after notifications if onboarding not completed
+  if (!subscriptionLoading && !settingsLoading && hasCompletedNotifications && !hasCompletedOnboarding) {
     console.log('Rendering onboarding quiz');
     return <OnboardingFlow onComplete={handleOnboardingComplete} showOnlyQuiz />;
   }
