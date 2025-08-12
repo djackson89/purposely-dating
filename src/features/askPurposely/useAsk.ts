@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
-import { useRelationshipAI } from '@/hooks/useRelationshipAI';
 import { useAuth } from '@/hooks/useAuth';
-import { AskPurposelyService, type Scenario } from './service';
-import { truncate } from './types';
+import { useRelationshipAI } from '@/hooks/useRelationshipAI';
+import { AskService, type ServiceState } from './service';
+import { normalizeScenario } from './types';
 
 export interface OnboardingData {
   loveLanguage: string;
@@ -12,158 +12,88 @@ export interface OnboardingData {
   personalityType: string;
 }
 
-const TARGET_PREFETCH = 6;
-const REFILL_THRESHOLD = 3;
-const CLICK_DEBOUNCE_MS = 350;
-
+// Public API mirrors previous hook to avoid UI changes
 export function useAskPurposelyFeature(userProfile: OnboardingData) {
-  const { getAIResponse } = useRelationshipAI();
   const { user } = useAuth();
+  const { getAIResponse, getPurposelyPerspective } = useRelationshipAI();
+  const userId = user?.id || 'anon';
 
-  const userKey = useMemo(() => user?.id || 'anon', [user?.id]);
+  const serviceRef = useRef<AskService | null>(null);
+  const [state, setState] = useState<ServiceState>({ current: null, queue: [], status: 'loading', error: null });
 
-  const serviceRef = useRef<AskPurposelyService | null>(null);
-  const [current, setCurrent] = useState<Scenario | null>(null);
-  const [queue, setQueue] = useState<Scenario[]>([]);
-  const [status, setStatus] = useState<'idle' | 'loading' | 'swapping'>('loading');
-  const [error, setError] = useState<string | null>(null);
-  const lastClickRef = useRef<number>(0);
-  const consumedRef = useRef<Set<string>>(new Set());
-
-  // Initialize service once per user
-  useEffect(() => {
-    serviceRef.current = new AskPurposelyService({
-      userKey,
-      telemetry: localStorage.getItem('ap_telemetry_off') !== '1',
-      getAIResponse,
-      userProfile,
-    });
-
-    // Try fast path: rehydrate existing queue
-    const persisted = serviceRef.current.loadPersistedQueue?.() ?? [];
-    if (persisted.length) {
-      setCurrent(persisted[0]);
-      setQueue(persisted.slice(1));
-      setStatus('idle');
-    } else {
-      setCurrent(null);
-      setQueue([]);
-      setStatus('loading');
-    }
-
-    let mounted = true;
-    (async () => {
-      try {
-        const svc = serviceRef.current!;
-        const fresh = await svc.prefetch(TARGET_PREFETCH);
-        if (!mounted) return;
-        setCurrent(fresh[0] ?? null);
-        setQueue(fresh.slice(1));
-        svc.saveQueue?.(fresh);
-        setStatus('idle');
-      } catch (e) {
-        console.warn('AskPurposely prefetch failed', e);
-        if (mounted) setStatus('idle');
+  const gens = useMemo(() => ({
+    generateScenarios: async (n: number) => {
+      // Try to generate n scenarios; fallback to single if needed
+      const items: any[] = [];
+      for (let i = 0; i < Math.max(1, n); i++) {
+        try {
+          const prompt = `Create a JSON object with keys question, perspective, tags that reflects a realistic modern dating or relationship dilemma for a ${userProfile.gender || 'woman'} in ${userProfile.relationshipStatus || 'a relationship'}. Keep it concise but specific. Respond with JSON only.`;
+          const raw = await getAIResponse(prompt, userProfile, 'therapy');
+          const match = raw.match(/\{[\s\S]*\}/);
+          const parsed = match ? JSON.parse(match[0]) : {};
+          items.push(parsed);
+        } catch {
+          // Degrade: synthesize a question, then ask purposely generator
+          const syntheticQ = `He cancels plans last-minute but keeps texting like nothing happened. I feel disrespected but don’t want drama. What should I say or do?`;
+          const res = await getPurposelyPerspective(syntheticQ, userProfile, {
+            audience: (userProfile.gender === 'man' ? 'man' : 'woman') as any,
+            spice_level: 3,
+            length: 'standard',
+            topic_tags: ['boundaries']
+          });
+          items.push({ question: syntheticQ, perspective: res.rendered, tags: ['boundaries'] });
+        }
       }
-    })();
+      return items;
+    },
+    generatePerspectiveFor: async (question: string) => {
+      const res = await getPurposelyPerspective(question, userProfile, {
+        audience: (userProfile.gender === 'man' ? 'man' : 'woman') as any,
+        spice_level: 3,
+        length: 'standard',
+        topic_tags: []
+      });
+      return { question, perspective: res.rendered, tags: res.json?.actions || [] };
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), [userId, userProfile.gender, userProfile.relationshipStatus]);
+
+  // Initialize service
+  useEffect(() => {
+    const svc = new AskService(userId, gens);
+    serviceRef.current = svc;
+
+    const unsub = svc.subscribe((s) => setState(s));
+
+    // Hydrate fast if possible; then load/ensure
+    const had = svc.hydrateFromSession();
+    svc.loadInitial(had ? 4 : 6);
 
     return () => {
-      serviceRef.current?.cancel();
+      unsub();
+      serviceRef.current = null;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userKey]);
+  }, [userId, gens]);
 
-  // Consume seed once per shown id
-  useEffect(() => {
-    const id = current?.id;
-    if (!id || consumedRef.current.has(id)) return;
-    consumedRef.current.add(id);
-    serviceRef.current?.consumeIfSeed(id).catch(() => {});
-  }, [current?.id]);
-
-  const ensureRefill = useCallback(async () => {
-    const svc = serviceRef.current!;
-    if (!svc) return;
-    try {
-      const need = Math.max(0, TARGET_PREFETCH - (queue.length + 1)); // +1 for current
-      if (need <= 0) return;
-      const fresh = await svc.prefetch(need);
-      setQueue((prev) => {
-        const merged = [...prev, ...fresh].slice(0, TARGET_PREFETCH - 1);
-        svc.saveQueue?.([current!, ...merged].filter(Boolean as any));
-        console.info('telemetry:queue_refilled', { size: merged.length + 1 });
-        return merged;
-      });
-    } catch (e) {
-      console.warn('AskPurposely refill failed', e);
-    }
-  }, [queue.length, current]);
-
-  const seeMore = useCallback(async () => {
-    const now = Date.now();
-    if (now - lastClickRef.current < CLICK_DEBOUNCE_MS) return;
-    lastClickRef.current = now;
-
-    setError(null);
-
-    // Case 1: we already have next in queue
-    if (queue.length > 0) {
-      setQueue((prev) => {
-        const [next, ...rest] = prev;
-        setCurrent(next);
-        serviceRef.current?.saveQueue?.([next!, ...rest]);
-        // Background refill
-        ensureRefill();
-        return rest;
-      });
-      return;
-    }
-
-    // Case 2: queue empty → generate one immediately
-    setStatus('loading');
-    try {
-      const svc = serviceRef.current!;
-      const one = await svc.generateOne();
-      setCurrent(one);
-      setQueue([]);
-      svc.saveQueue?.([one]);
-      // Background refill
-      ensureRefill();
-    } catch (e) {
-      console.error('AskPurposely generation error', e);
-      setError("could_not_load");
-    } finally {
-      setStatus('idle');
-    }
-  }, [queue.length, ensureRefill]);
-
-  const refresh = useCallback(async () => {
-    setStatus('loading');
-    try {
-      const svc = serviceRef.current!;
-      const fresh = await svc.prefetch(TARGET_PREFETCH);
-      setCurrent(fresh[0] ?? null);
-      setQueue(fresh.slice(1));
-      svc.saveQueue?.(fresh);
-    } catch (e) {
-      console.warn('AskPurposely refresh failed', e);
-      setError('refresh_failed');
-    } finally {
-      setStatus('idle');
-    }
+  const nextScenario = useCallback(async () => {
+    await serviceRef.current?.advance();
   }, []);
 
-  // Public API to component
-  const currentItem = current
-    ? { id: current.id, question: current.question, answer: current.perspective, tags: current.tags }
-    : { id: 'none', question: '', answer: '' } as any;
+  const refresh = useCallback(async () => {
+    await serviceRef.current?.loadInitial(6);
+  }, []);
+
+  const currentItem = useMemo(() => {
+    const c = state.current;
+    return c ? { id: c.id, question: c.question, answer: c.perspective, tags: c.tags } : { id: 'none', question: '', answer: '' } as any;
+  }, [state.current]);
 
   return {
     current: currentItem,
-    nextScenario: seeMore,
+    nextScenario,
     refresh,
-    isLoading: status === 'loading' || !current,
-    isSwapping: status === 'swapping',
-    error,
+    isLoading: state.status === 'loading' || !state.current,
+    isSwapping: state.status === 'swapping',
+    error: state.error,
   } as const;
 }
