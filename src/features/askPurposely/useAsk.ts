@@ -20,7 +20,7 @@ export function useAskPurposelyFeature(userProfile: OnboardingData) {
   const [state, setState] = useState<ServiceState>({ current: null, queue: [], status: 'loading', error: null });
 
   const audience: 'woman' | 'man' | 'unspecified' = (userProfile.gender === 'man' ? 'man' : userProfile.gender === 'woman' ? 'woman' : 'unspecified');
-  const baseOpts = { audience, spice_level: 3, length: 'standard' as const, topic_tags: [] as string[] };
+  const baseOpts = { audience, spice_level: 3, length: 'long' as const, topic_tags: [] as string[] };
 
   const gens = useMemo(() => ({
     generateScenarios: async (n: number) => {
