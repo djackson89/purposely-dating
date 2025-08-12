@@ -41,16 +41,19 @@ export class AskService {
   }
 
   private pushUnique(items: Scenario[]) {
+    let added = 0;
     for (const it of items) {
       if (!it) continue;
       if (this.lru.has(it.hash)) continue;
       this.state.queue.push(it);
       this.lru.add(it.hash);
+      added++;
       if (this.lru.size > 50) {
         const [first] = Array.from(this.lru);
         if (first) this.lru.delete(first);
       }
     }
+    if (added > 0) console.info('enqueue_ok', { queue_size: this.state.queue.length });
   }
 
   hydrateFromSession() {
@@ -72,21 +75,53 @@ export class AskService {
   }
 
   async loadInitial(count = 6) {
-    this.state.status = 'loading';
-    this.emit();
-    try {
-      let items = (await seedTake(this.userId, count)).map(normalizeScenario).filter(Boolean);
-      if (!items.length) {
-        const gen = await this.gens.generateScenarios(Math.max(1, count));
-        items = gen.map(normalizeScenario).filter(Boolean);
-      }
-      this.state.current = items.shift() ?? null;
-      this.state.queue = [];
-      this.pushUnique(items);
-      this.state.status = this.state.current ? 'idle' : 'error';
+    const hadCurrent = !!this.state.current;
+    if (!hadCurrent) {
+      this.state.status = 'loading';
       this.emit();
-      // Background ensure
-      if (this.state.current) this.ensure(3).catch(() => {});
+      console.info('status_transition', { from: 'idle', to: 'loading' });
+    }
+    try {
+      // 1) Try seeds first for instant render
+      let items = (await seedTake(this.userId, count)).map(normalizeScenario).filter(Boolean);
+      if (items.length) {
+        if (!this.state.current) {
+          this.state.current = items.shift() ?? null;
+        }
+        this.state.queue = [];
+        this.pushUnique(items);
+        this.state.status = this.state.current ? 'idle' : 'error';
+        this.emit();
+        if (this.state.current) this.ensure(3).catch(() => {});
+        return;
+      }
+
+      // 2) No seeds — generate FIRST READY item immediately, then backfill
+      try {
+        const genOne = await this.gens.generateScenarios(1);
+        const firstList = genOne.map(normalizeScenario).filter(Boolean);
+        const first = firstList[0] ?? null;
+        if (first && !this.state.current) {
+          this.state.current = first;
+          console.info('render_ok', { id: first.id });
+        }
+      } catch (e) {
+        console.warn('first_ready_generation_failed', e);
+      }
+
+      this.state.status = this.state.current ? 'idle' : 'loading';
+      this.emit();
+
+      // 3) Background ensure to fill the queue without blocking UI
+      const remaining = Math.max(3, count - (this.state.current ? 1 : 0));
+      this.ensure(remaining).catch(() => {});
+
+      if (!this.state.current) {
+        // If still nothing, mark error so UI can show retry toast
+        this.state.status = 'error';
+        this.state.error = 'no_scenarios';
+        this.emit();
+      }
     } catch (e: any) {
       this.state.status = 'error';
       this.state.error = String(e?.message ?? e);

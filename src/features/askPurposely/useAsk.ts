@@ -80,7 +80,8 @@ export function useAskPurposelyFeature(userProfile: OnboardingData) {
   }, []);
 
   const refresh = useCallback(async () => {
-    await serviceRef.current?.loadInitial(6);
+    // Soft refresh: refill in background without flipping UI to loading
+    await serviceRef.current?.ensure(6);
   }, []);
 
   const currentItem = useMemo(() => {
