@@ -18,7 +18,7 @@ interface Props {
 
 const AskPurposelySection: React.FC<Props> = ({ userProfile, sneakPeekTracking, onPaywallTrigger }) => {
   const { toast } = useToast();
-  const { getAIResponse } = useRelationshipAI();
+  const { getPurposelyPerspective } = useRelationshipAI();
   const { current, nextScenario, refresh, isLoading, isSwapping, error } = useAskPurposelyFeature(userProfile);
 
   const [showInput, setShowInput] = useState(false);
@@ -90,8 +90,9 @@ useEffect(() => {
     setLoading(true);
     try {
       const prompt = `Provide a Purposely Perspective (5–7 sentences) to this first-person dilemma from a woman: "${question}"\n\nRules:\n- Open with a sharp, declarative line that frames the real dynamic.\n- Validate her feelings, name the pattern/red flag, and offer one decisive boundary or next step.\n- Prioritize angles: accountability, clarity, boundaries, reciprocity, consistency, honesty, empathy, conflict-resolution, values alignment.\n- Keep it punchy, quotable, and assertive—similar in tone to the provided scripts (hooks, clean lines, zero hedging).\n- Avoid clichés; do NOT use the exact phrase "emotional maturity". No disclaimers or therapy-speak.`;
-      const resp = await getAIResponse(prompt, userProfile, 'therapy');
-      setAnswer(resp);
+      const audience = userProfile.gender === 'man' ? 'man' : userProfile.gender === 'woman' ? 'woman' : 'unspecified';
+      const result = await getPurposelyPerspective(question, userProfile, { audience, spice_level: 3, length: 'long', topic_tags: [] });
+      setAnswer(result.rendered);
     } catch (e) {
       toast({ title: 'Oops!', description: "We couldn't get your Purposely Perspective right now. Please try again.", variant: 'destructive' });
     } finally {
