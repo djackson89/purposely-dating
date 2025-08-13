@@ -35,3 +35,6 @@ verify_jwt = false
 
 [functions.ap_refill]
 verify_jwt = false
+
+[functions.generate-qotd]
+verify_jwt = false

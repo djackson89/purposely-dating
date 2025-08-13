@@ -8,6 +8,7 @@ import { useRelationshipAI } from '@/hooks/useRelationshipAI';
 import { useAskPurposelyFeature, OnboardingData } from '@/features/askPurposely/useAsk';
 import { Skeleton } from '@/components/ui/skeleton';
 import { truncate } from '@/lib/ask/utils';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Props {
   userProfile: OnboardingData & { first_name?: string; full_name?: string };
@@ -24,6 +25,29 @@ const AskPurposelySection: React.FC<Props> = ({ userProfile, sneakPeekTracking, 
   const [question, setQuestion] = useState('');
   const [answer, setAnswer] = useState('');
   const [loading, setLoading] = useState(false);
+  const [fallback, setFallback] = useState<{ question: string; perspective: string } | null>(null);
+
+  // Instant fallback from Supabase backup (ap_seed) when loading
+  useEffect(() => {
+    let mounted = true;
+    if ((isLoading || isSwapping) && (!current?.question || !current?.answer)) {
+      (async () => {
+        try {
+          const { data } = await supabase
+            .from('ap_seed')
+            .select('question,perspective')
+            .eq('status', 'available')
+            .limit(25);
+          if (!mounted || !data?.length) return;
+          const pick = data[Math.floor(Math.random() * data.length)];
+          if (pick?.question && pick?.perspective) {
+            setFallback({ question: String(pick.question), perspective: String(pick.perspective) });
+          }
+        } catch (_) {}
+      })();
+    }
+    return () => { mounted = false; };
+  }, [isLoading, isSwapping, current]);
 
 // Force-refresh on first mount so the new tone is shown immediately
 useEffect(() => {
@@ -88,21 +112,36 @@ useEffect(() => {
           <>
             <div className="space-y-4">
               {(isLoading || isSwapping) ? (
-                <>
-                  <div className="p-4 bg-white rounded-lg border border-border">
-                    <div className="space-y-2">
-                      <Skeleton className="h-4 w-3/4" />
-                      <Skeleton className="h-4 w-5/6" />
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-2">Submitted by: Anonymous</p>
-                  </div>
-                  <div className="p-4 bg-gradient-soft rounded-lg border border-primary/10">
-                    <p className="text-sm font-bold text-foreground mb-2">Purposely Perspective:</p>
-                    <div className="space-y-2">
-                      <Skeleton className="h-4 w-4/5" />
-                      <Skeleton className="h-4 w-2/3" />
-                    </div>
-                  </div>
+                <> 
+                  {fallback ? (
+                    <>
+                      <div className="p-4 bg-white rounded-lg border border-border">
+                        <p className="text-foreground leading-relaxed font-medium">"{fallback.question}"</p>
+                        <p className="text-xs text-muted-foreground mt-2">Submitted by: Anonymous</p>
+                      </div>
+                      <div className="p-4 bg-gradient-soft rounded-lg border border-primary/10">
+                        <p className="text-sm font-bold text-foreground mb-2">Purposely Perspective:</p>
+                        <p className="text-foreground leading-relaxed font-bold">{fallback.perspective}</p>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="p-4 bg-white rounded-lg border border-border">
+                        <div className="space-y-2">
+                          <Skeleton className="h-4 w-3/4" />
+                          <Skeleton className="h-4 w-5/6" />
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-2">Submitted by: Anonymous</p>
+                      </div>
+                      <div className="p-4 bg-gradient-soft rounded-lg border border-primary/10">
+                        <p className="text-sm font-bold text-foreground mb-2">Purposely Perspective:</p>
+                        <div className="space-y-2">
+                          <Skeleton className="h-4 w-4/5" />
+                          <Skeleton className="h-4 w-2/3" />
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </>
               ) : (
                 <>

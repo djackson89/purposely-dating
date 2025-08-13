@@ -428,6 +428,24 @@ export type Database = {
         }
         Relationships: []
       }
+      qotd_backup: {
+        Row: {
+          created_at: string
+          id: string
+          item: Json
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          item: Json
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          item?: Json
+        }
+        Relationships: []
+      }
       subscribers: {
         Row: {
           created_at: string

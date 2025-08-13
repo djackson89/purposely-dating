@@ -105,6 +105,26 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
   // Get or set daily QOTD (changes at midnight)
   useEffect(() => {
     let mounted = true;
+    const todayKey = `qotd_${new Date().toDateString()}`;
+
+    if (!localStorage.getItem(todayKey)) {
+      (async () => {
+        try {
+          const { data } = await supabase
+            .from('qotd_backup')
+            .select('item')
+            .limit(25);
+          if (!mounted || !data?.length) return;
+          const raw = data[Math.floor(Math.random() * data.length)]?.item;
+          const pick = raw as unknown as QotdItem;
+          if (pick?.question) setQotd(pick);
+        } catch (_) {
+          // ignore
+        }
+      })();
+    }
+
+    // 2) Replace with generated/validated daily pick
     (async () => {
       try {
         const item = await getDailyQotd();
@@ -113,6 +133,7 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
         console.error('QOTD load failed', e);
       }
     })();
+
     return () => { mounted = false; };
   }, []);
 
