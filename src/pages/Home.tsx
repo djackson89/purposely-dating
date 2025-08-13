@@ -13,6 +13,9 @@ import QuickStartModule from '@/components/QuickStartModule';
 import SideMenu from '@/components/SideMenu';
 import WelcomeTour from '@/components/WelcomeTour';
 import AskPurposelySection from '@/components/AskPurposelySection';
+import { QotdItem } from '@/features/qotd/types';
+import { getDailyQotd } from '@/features/qotd/getDailyQotd';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface OnboardingData {
   loveLanguage: string;
@@ -42,7 +45,7 @@ const moduleNavigationMap = {
 };
 
 const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavigateToAIPractice, onNavigateToModule, sneakPeekTracking, onPaywallTrigger }) => {
-  const [dailyQuestion, setDailyQuestion] = useState('');
+  const [qotd, setQotd] = useState<QotdItem | null>(null);
   const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
   const [showWelcomeTour, setShowWelcomeTour] = useState(false);
   const [isFirstTimeUser, setIsFirstTimeUser] = useState(false);
@@ -99,40 +102,18 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
   // Minimum swipe distance (in pixels)
   const minSwipeDistance = 50;
 
-  // Relationship Talk conversation starters
-  const relationshipTalkQuestions = [
-    "What's something about your childhood that shaped who you are today?",
-    "If you could change one thing about how you were raised, what would it be?",
-    "What's your biggest fear when it comes to relationships?",
-    "How do you handle conflict in relationships?",
-    "What's the most important quality you look for in a long-term partner?",
-    "What does emotional intimacy mean to you?",
-    "How do you know when you're truly comfortable with someone?",
-    "What's something you've learned about love from watching your parents?",
-    "What role does vulnerability play in your relationships?",
-    "How do you maintain your individuality while being in a relationship?",
-    "What's your perspective on forgiveness in relationships?",
-    "How do you handle jealousy or insecurity?",
-    "What does 'being supportive' look like to you in a relationship?",
-    "What's something you're still working on about yourself in relationships?",
-    "How important is shared values versus shared interests in a partnership?"
-  ];
-
-
-  // Get or set daily question (changes at midnight)
+  // Get or set daily QOTD (changes at midnight)
   useEffect(() => {
-    const today = new Date().toDateString();
-    const savedQuestion = localStorage.getItem(`dailyQuestion_${today}`);
-    
-    if (savedQuestion) {
-      setDailyQuestion(savedQuestion);
-    } else {
-      // Generate new question for today
-      const randomIndex = Math.floor(Math.random() * relationshipTalkQuestions.length);
-      const newQuestion = relationshipTalkQuestions[randomIndex];
-      setDailyQuestion(newQuestion);
-      localStorage.setItem(`dailyQuestion_${today}`, newQuestion);
-    }
+    let mounted = true;
+    (async () => {
+      try {
+        const item = await getDailyQotd();
+        if (mounted) setQotd(item);
+      } catch (e) {
+        console.error('QOTD load failed', e);
+      }
+    })();
+    return () => { mounted = false; };
   }, []);
 
   // Check if user is first-time and show welcome tour
@@ -333,12 +314,26 @@ const Home: React.FC<HomeProps> = ({ userProfile, onNavigateToFlirtFuel, onNavig
         </CardHeader>
         <CardContent className="space-y-4">
           <Card className="w-full shadow-elegant border-primary/20 bg-gradient-romance">
-            <CardContent className="p-8 flex flex-col justify-center items-center text-center">
+            <CardContent className="p-8 flex flex-col justify-center items-center text-center gap-3">
               <div className="flex items-center justify-center h-full w-full">
                 <p className="text-xl font-bold text-white leading-relaxed">
-                  {dailyQuestion}
+                  {qotd?.question || 'Loading your question...'}
                 </p>
               </div>
+              {qotd?.angle && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="text-sm text-white/90 underline decoration-white/30 cursor-help">
+                        Why this matters
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs">
+                      <p className="text-sm">{qotd.angle}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
             </CardContent>
           </Card>
           <Button
