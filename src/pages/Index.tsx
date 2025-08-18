@@ -254,7 +254,7 @@ const Index = () => {
     // Remember where the user was to restore after checkout
     try { localStorage.setItem('returnToModule', activeModule); } catch {}
     // Start the Stripe checkout process
-    await createCheckoutSession('yearly', true);
+    await createCheckoutSession('single');
     setShowPaywallModal(false);
     setShowPaywallPopup(false);
     setHasSeenPaywall(true);
@@ -285,7 +285,7 @@ const Index = () => {
   const handlePaywallPopupUpgrade = async () => {
     // Remember where the user was to restore after checkout
     try { localStorage.setItem('returnToModule', activeModule); } catch {}
-    await createCheckoutSession('yearly', true);
+    await createCheckoutSession('single');
     setShowPaywallPopup(false);
     sneakPeekTracking.setAsFreeTrial();
   };

@@ -33,7 +33,12 @@ const AppSettings: React.FC<AppSettingsProps> = ({ onClose }) => {
   const { isAvailable: biometricAvailable, isBiometricEnabled, enableBiometricAuth, disableBiometricAuth } = useBiometricAuth();
   const { isSupported: hapticsSupported, success, medium } = useHaptics();
   const { toast } = useToast();
-  const { subscription, openCustomerPortal, createCheckoutSession } = useSubscription();
+  const { 
+    subscription, 
+    loading: subscriptionLoading, 
+    checkSubscription,
+    createCheckoutSession
+  } = useSubscription();
 
   // Check if notifications are supported (either native or browser)
   const notificationsSupported = pushSupported || ('Notification' in window);
@@ -181,27 +186,21 @@ const AppSettings: React.FC<AppSettingsProps> = ({ onClose }) => {
           {/* Subscription */}
           <div className="space-y-3">
             <h3 className="font-medium text-sm text-muted-foreground uppercase tracking-wide">Subscription</h3>
-            {subscription.subscribed ? (
-              <div className="space-y-2 text-sm">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="px-2 py-1 rounded-full bg-primary/10 text-primary font-medium">
-                    {subscription.is_trial ? 'Free Trial' : 'Premium Access'}{subscription.subscription_tier ? ` • ${subscription.subscription_tier}` : ''}
-                  </span>
-                  {subscription.has_intimacy_addon && (
-                    <span className="px-2 py-1 rounded-full bg-secondary text-secondary-foreground text-xs">18+ Add‑on</span>
-                  )}
-                </div>
-                {subscription.subscription_end && (
-                  <div className="text-muted-foreground">
-                    {subscription.is_trial ? 'Trial ends:' : 'Renews:'} {new Date(subscription.subscription_end).toLocaleDateString()}
-                  </div>
-                )}
-                <Button variant="soft" size="sm" onClick={openCustomerPortal} className="mt-1 w-full">Manage Billing</Button>
+            {subscription.subscribed && (
+              <div className="space-y-2">
+                <p className="text-sm text-green-600">Premium Access Active</p>
+                <p className="text-sm text-muted-foreground">
+                  {subscription.payment_plan === 'split' && subscription.remaining_payments 
+                    ? `${subscription.remaining_payments} payment(s) remaining`
+                    : 'Lifetime access'
+                  }
+                </p>
               </div>
-            ) : (
+            )}
+            {!subscription.subscribed && (
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground">Plan: Free</span>
-                <Button variant="link" onClick={() => createCheckoutSession('yearly', true)}>Go Premium</Button>
+                <Button variant="link" onClick={() => createCheckoutSession('single')}>Go Premium</Button>
               </div>
             )}
           </div>

@@ -188,15 +188,10 @@ const ProfileModule: React.FC<ProfileModuleProps> = ({ userProfile, onProfileUpd
 
   const handleManageBilling = async () => {
     light(); // Haptic feedback on button press
-    try {
-      await openCustomerPortal();
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to open billing portal. Please try again.",
-        variant: "destructive",
-      });
-    }
+    toast({
+      title: "One-time Payment",
+      description: "Your premium access was purchased with a one-time payment. No recurring billing to manage.",
+    });
   };
 
   const profileStats = [
@@ -398,16 +393,19 @@ const ProfileModule: React.FC<ProfileModuleProps> = ({ userProfile, onProfileUpd
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="font-semibold text-primary">Current Plan</h3>
                   <span className="bg-gradient-romance text-white px-3 py-1 rounded-full text-sm font-medium">
-                    {subscription.is_trial ? 'Free Trial' : 'Premium Access'}{subscription.subscription_tier ? ` • ${subscription.subscription_tier}` : ''}
+                    Premium Access{subscription.subscription_tier ? ` • ${subscription.subscription_tier}` : ''}
                   </span>
                 </div>
                 {subscription.subscription_end && (
                   <p className="text-sm text-muted-foreground">
-                    {subscription.is_trial ? 'Trial ends:' : 'Renews:'} {new Date(subscription.subscription_end).toLocaleDateString()}
+                    Access until: {new Date(subscription.subscription_end).toLocaleDateString()}
                   </p>
                 )}
-                {subscription.has_intimacy_addon && (
-                  <p className="text-xs text-muted-foreground mt-1">18+ Intimacy add‑on active</p>
+                {subscription.payment_plan && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Payment plan: {subscription.payment_plan === 'single' ? 'One-time payment' : 'Split payment'}
+                    {subscription.remaining_payments ? ` (${subscription.remaining_payments} payments remaining)` : ''}
+                  </p>
                 )}
               </div>
               <Button 
@@ -416,12 +414,12 @@ const ProfileModule: React.FC<ProfileModuleProps> = ({ userProfile, onProfileUpd
                 onClick={handleManageBilling}
               >
                 <CreditCard className="w-4 h-4 mr-2" />
-                Manage Subscription & Billing
+                Payment Information
               </Button>
               <div className="text-xs text-muted-foreground space-y-1">
-                <p>• Update payment methods</p>
-                <p>• Change or upgrade your plan</p>
-                <p>• View billing history</p>
+                <p>• One-time payment - no recurring charges</p>
+                <p>• Lifetime access to all premium features</p>
+                <p>• All 18+ content included</p>
               </div>
             </>
           ) : (
@@ -436,7 +434,7 @@ const ProfileModule: React.FC<ProfileModuleProps> = ({ userProfile, onProfileUpd
               <Button 
                 variant="romance" 
                 className="w-full"
-                onClick={() => createCheckoutSession('yearly', true)}
+                onClick={() => createCheckoutSession('single')}
               >
                 Go Premium
               </Button>
