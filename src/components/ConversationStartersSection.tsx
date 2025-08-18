@@ -124,8 +124,7 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
   const { isNative } = useDevice();
   const [lockedModalOpen, setLockedModalOpen] = useState(false);
   const [selectedLockedCategory, setSelectedLockedCategory] = useState<string>('');
-  const { subscription, createIntimacyAddonCheckout, checkSubscription } = useSubscription();
-  const [showIntimacyAddonModal, setShowIntimacyAddonModal] = useState(false);
+  const { subscription, checkSubscription } = useSubscription();
   const { isAdmin } = useIsAdmin();
 
   const requiresTrial = React.useMemo(() => {
@@ -172,11 +171,7 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
         onPaywallTrigger?.('view_limit');
         return;
       }
-      // 18+ add-on requirement
-      if (isIntimacyCategory(category) && !subscription.has_intimacy_addon) {
-        setShowIntimacyAddonModal(true);
-        return;
-      }
+      // Remove 18+ add-on requirement - all premium features now included
     }
 
     // 2) Review lock check (secondary)
@@ -307,12 +302,7 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
                       onPaywallTrigger?.('view_limit');
                       return;
                     }
-                    // Refresh subscription status just in case
-                    await checkSubscription();
-                    if (!subscription.has_intimacy_addon) {
-                      setShowIntimacyAddonModal(true);
-                      return;
-                    }
+                    // All 18+ content now included with premium
                   }
                   setMasterCategory('18+ Intimacy');
                   setDepthLevel([1]); // Force default depth to Casual for 18+
@@ -863,15 +853,6 @@ const ConversationStartersSection: React.FC<ConversationStartersSectionProps> = 
         </div>
       )}
 
-      {/* 18+ Add-on Modal */}
-      <IntimacyAddonPaywall
-        isOpen={showIntimacyAddonModal}
-        onClose={() => setShowIntimacyAddonModal(false)}
-        onUnlock={() => {
-          createIntimacyAddonCheckout();
-          setShowIntimacyAddonModal(false);
-        }}
-      />
 
       {/* Locked Category Modal */}
       <LockedCategoryModal

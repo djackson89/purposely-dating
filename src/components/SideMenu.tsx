@@ -153,16 +153,11 @@ const SideMenu: React.FC<SideMenuProps> = ({ isOpen, onClose, onNavigateToModule
           {subscription.subscribed ? (
             <div className="flex flex-wrap items-center gap-2 text-sm">
               <span className="px-2 py-1 rounded-full bg-primary/10 text-primary font-medium">
-                {subscription.is_trial ? 'Free Trial' : 'Premium Access'}
+                Premium Access
               </span>
-              {subscription.has_intimacy_addon && (
-                <span className="px-2 py-1 rounded-full bg-secondary text-secondary-foreground text-xs">
-                  18+ Add‑on
-                </span>
-              )}
               {subscription.subscription_end && (
                 <span className="text-muted-foreground">
-                  {subscription.is_trial ? 'Trial ends' : 'Renews'} {new Date(subscription.subscription_end).toLocaleDateString()}
+                  Access until {new Date(subscription.subscription_end).toLocaleDateString()}
                 </span>
               )}
             </div>
@@ -170,7 +165,7 @@ const SideMenu: React.FC<SideMenuProps> = ({ isOpen, onClose, onNavigateToModule
             <div className="text-sm">
               <span className="text-muted-foreground mr-2">Plan: Free</span>
               <button
-                onClick={() => createCheckoutSession('yearly', true)}
+                onClick={() => createCheckoutSession('single')}
                 className="text-primary underline-offset-4 hover:underline font-medium"
               >
                 Go Premium

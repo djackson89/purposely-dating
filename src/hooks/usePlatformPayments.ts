@@ -81,10 +81,10 @@ export const usePlatformPayments = () => {
   };
 
   // Handle web Stripe payment
-  const processStripePayment = async (plan: 'weekly' | 'yearly', hasTrial?: boolean): Promise<PlatformPaymentResult> => {
+  const processStripePayment = async (plan: 'single' | 'split'): Promise<PlatformPaymentResult> => {
     try {
       setIsProcessing(true);
-      await createCheckoutSession(plan, hasTrial);
+      await createCheckoutSession(plan);
       return { success: true };
     } catch (error) {
       console.error('Stripe payment failed:', error);
@@ -98,19 +98,19 @@ export const usePlatformPayments = () => {
   };
 
   // Main payment processing function
-  const processPayment = async (plan: 'weekly' | 'yearly', hasTrial?: boolean): Promise<PlatformPaymentResult> => {
+  const processPayment = async (plan: 'single' | 'split'): Promise<PlatformPaymentResult> => {
     if (isNativeMobile()) {
       toast({
         title: "Mobile Payment",
         description: "Processing via App Store...",
       });
-      return await processInAppPurchase(plan, hasTrial);
+      return await processInAppPurchase(plan as any);
     } else {
       toast({
         title: "Web Payment", 
         description: "Redirecting to Stripe...",
       });
-      return await processStripePayment(plan, hasTrial);
+      return await processStripePayment(plan);
     }
   };
 
@@ -119,29 +119,23 @@ export const usePlatformPayments = () => {
     if (isNativeMobile()) {
       // In a real app, these would come from the store
       return {
-        weekly: '$3.99',
-        yearly: '$49.99'
+        single: '$1,497',
+        split: '$997'
       };
     } else {
-      // Web pricing (same as current)
+      // Web pricing
       return {
-        weekly: '$3.99',
-        yearly: '$49.99'
+        single: '$1,497',
+        split: '$997'
       };
     }
   };
 
   // Get platform-specific payment button text
-  const getPaymentButtonText = (plan: 'weekly' | 'yearly', hasTrial?: boolean) => {
-    const platform = isNativeMobile() ? 'App Store' : 'Stripe';
-    
-    if (plan === 'yearly' && hasTrial) {
-      return isNativeMobile() ? 'Start Free Trial' : 'Start Free Trial';
-    }
-    
+  const getPaymentButtonText = (plan: 'single' | 'split') => {
     return isNativeMobile() 
       ? `Purchase via ${Capacitor.getPlatform() === 'ios' ? 'App Store' : 'Google Play'}`
-      : `Continue with ${plan === 'weekly' ? 'Weekly' : 'Yearly'} Plan`;
+      : `Pay ${plan === 'single' ? '$1,497' : '$997'} Now`;
   };
 
   return {
