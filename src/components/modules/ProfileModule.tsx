@@ -57,6 +57,27 @@ const ProfileModule: React.FC<ProfileModuleProps> = ({ userProfile, onProfileUpd
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const computedIsAdmin = (isAdmin === true) || (subscription?.subscription_tier?.toLowerCase?.() === 'admin');
 
+  const checkIfAdmin = async () => {
+    if (!user) return;
+    try {
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id);
+      
+      if (!error && data && data.some(r => r.role === 'admin')) {
+        setIsAdmin(true);
+        fetchAdminStats();
+      } else {
+        setIsAdmin(false);
+        setAdminStats(null);
+      }
+    } catch (e) {
+      setIsAdmin(false);
+      setAdminStats(null);
+    }
+  };
+
   const fetchAdminStats = async () => {
     if (!user) return;
     setAdminLoading(true);
@@ -68,8 +89,6 @@ const ProfileModule: React.FC<ProfileModuleProps> = ({ userProfile, onProfileUpd
         token = sess?.session?.access_token || null;
       }
       if (!token) {
-        setIsAdmin(false);
-        setAdminStats(null);
         toast({ title: 'Admin metrics unavailable', description: 'missing_jwt', variant: 'destructive' });
         return;
       }
@@ -82,17 +101,12 @@ const ProfileModule: React.FC<ProfileModuleProps> = ({ userProfile, onProfileUpd
       });
 
       if (error || !data) {
-        setIsAdmin(false);
-        setAdminStats(null);
         toast({ title: 'Admin metrics unavailable', description: error?.message || 'non_2xx', variant: 'destructive' });
       } else if (data?.error) {
         // Structured error from Edge Function (e.g., not_admin, missing_jwt, invalid_jwt, server_error)
         const code = data.error;
-        if (code === 'not_admin') setIsAdmin(false);
-        setAdminStats(null);
         toast({ title: 'Admin metrics unavailable', description: code, variant: 'destructive' });
       } else {
-        setIsAdmin(true);
         setAdminStats({
           users_all: data.totals?.users_all ?? 0,
           signups_today: data.totals?.signups_today ?? 0,
@@ -105,8 +119,6 @@ const ProfileModule: React.FC<ProfileModuleProps> = ({ userProfile, onProfileUpd
         });
       }
     } catch (e: any) {
-      setIsAdmin(false);
-      setAdminStats(null);
       toast({ title: 'Admin metrics error', description: e?.message || 'Unable to load admin analytics.', variant: 'destructive' });
     } finally {
       setAdminLoading(false);
@@ -129,15 +141,17 @@ const ProfileModule: React.FC<ProfileModuleProps> = ({ userProfile, onProfileUpd
 
   useEffect(() => {
     if (!user) return;
-    fetchAdminStats();
+    checkIfAdmin();
     const timeout = setTimeout(() => {
-      fetchAdminStats();
-      const interval = setInterval(fetchAdminStats, 24 * 60 * 60 * 1000);
-      // store interval on window to ensure cleanup is handled on reloads
-      // @ts-ignore
-      window.__adminStatsInterval && clearInterval(window.__adminStatsInterval);
-      // @ts-ignore
-      window.__adminStatsInterval = interval;
+      if (isAdmin) {
+        fetchAdminStats();
+        const interval = setInterval(fetchAdminStats, 24 * 60 * 60 * 1000);
+        // store interval on window to ensure cleanup is handled on reloads
+        // @ts-ignore
+        window.__adminStatsInterval && clearInterval(window.__adminStatsInterval);
+        // @ts-ignore
+        window.__adminStatsInterval = interval;
+      }
     }, msUntilNextChicagoMidnight());
     return () => {
       clearTimeout(timeout);
