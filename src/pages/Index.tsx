@@ -259,8 +259,7 @@ const Index = () => {
     setShowPaywallPopup(false);
     setHasSeenPaywall(true);
     localStorage.setItem('hasSeenPaywall', 'true');
-    // Set as free trial user
-    sneakPeekTracking.setAsFreeTrial();
+    // Handle payment for full access
   };
 
   const handleSkipToFree = () => {
@@ -287,7 +286,6 @@ const Index = () => {
     try { localStorage.setItem('returnToModule', activeModule); } catch {}
     await createCheckoutSession('single');
     setShowPaywallPopup(false);
-    sneakPeekTracking.setAsFreeTrial();
   };
 
   // 1. Show welcome screens first

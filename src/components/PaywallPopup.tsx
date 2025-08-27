@@ -102,14 +102,14 @@ const PaywallPopup: React.FC<PaywallPopupProps> = ({
               <div className="text-center space-y-2">
                 <div className="flex items-center justify-center space-x-2">
                   <Badge variant="secondary" className="bg-gradient-romance text-white border-0 px-3 py-1">
-                    3-Day Free Trial
+                    One-Time Payment
                   </Badge>
                 </div>
                 <div className="flex items-center justify-center space-x-2">
-                  <span className="text-3xl font-bold text-primary">$0</span>
+                  <span className="text-3xl font-bold text-primary">$997</span>
                   <div className="text-left">
-                    <div className="text-sm text-muted-foreground">for 3 days</div>
-                    <div className="text-xs text-muted-foreground">then $0.96/week</div>
+                    <div className="text-sm text-muted-foreground">one-time</div>
+                    <div className="text-xs text-muted-foreground">lifetime access</div>
                   </div>
                 </div>
               </div>
@@ -149,10 +149,10 @@ const PaywallPopup: React.FC<PaywallPopupProps> = ({
               {/* Trust Indicators */}
               <div className="text-center space-y-1 pt-3 border-t border-border/50">
                 <p className="text-xs text-muted-foreground">
-                  ✓ No commitment • ✓ Cancel anytime • ✓ Secure payment
+                  ✓ Lifetime access • ✓ No recurring fees • ✓ Secure payment
                 </p>
                 <p className="text-xs text-muted-foreground opacity-75">
-                  Start your 3-day free trial today
+                  Unlock all features with one payment
                 </p>
               </div>
             </CardContent>
